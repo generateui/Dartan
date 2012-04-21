@@ -391,12 +391,14 @@ class SvgBoard implements BoardVisual {
     _elementsByTile = new HashMap<Tile, SVGElement>();
     _elementsByVertice = new HashMap<Vertice, SVGElement>();
     observable = new ObservableHelper();
-//    boardState = new SelectOnHover(this);
-    boardState = new ChangeTile();
+    boardState = new SelectOnHover();
+    boardState.boardVisual = this;
+    //boardState = new ChangeTile();
     boardState.boardVisual = this;
     if (board2d==null)
       board2d = new Board2D(new Hexagon2D(35.0));
     portPicker = new PortPickerVisual(board2d);
+    portPicker.hide();
     tiles = new SVGElement.tag("g");
     vertices = new SVGElement.tag("g");
     edges = new SVGElement.tag("g");

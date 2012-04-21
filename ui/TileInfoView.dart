@@ -13,7 +13,6 @@ class TileInfoView {
       <p></p>
     """);
     
-    
     root.innerHTML = msg.toString();
   }
   String cellHtml(Cell c) {
