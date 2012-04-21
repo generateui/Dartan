@@ -1,0 +1,63 @@
+/** User interaction with a board */
+interface BoardState {
+  BoardVisual boardVisual; // The [BoardVisual] to interact with
+  
+  start(); // set begin state
+  end();   // set back to neutral state
+  
+  mouseOver(Visual visual);
+  mouseOut(Visual visual);
+  click(Visual visual);
+}
+/** Abstract convenience implementation for [BoardState] implementors */
+class AbstractBoardState implements BoardState {
+  BoardVisual boardVisual;
+  start() { }
+  end() { } 
+  mouseOver(Visual visual) { }
+  mouseOut(Visual visual) { }
+  click(Visual visual) { }
+}
+class NoState extends AbstractBoardState {
+  NoState();  
+}
+class SelectOnHover extends AbstractBoardState {
+  mouseOver(Visual visual) { 
+    visual.select(); 
+    boardVisual.currentVisual = visual;
+  }
+  mouseOut(Visual visual) { visual.deSelect(); }
+}
+/** Change a selected tile on a board */
+class ChangeTile extends AbstractBoardState {
+  mouseOver(Visual visual) { visual.select(); }
+  mouseOut(Visual visual) { visual.deSelect(); }
+  click(Visual visual) {
+    if (visual is TileVisual) {
+      TileVisual tv = visual;
+      Tile copy = new Desert(tv.tile.cell);
+      boardVisual.board.changeTile(copy);
+    }
+  }
+}
+/** Allow the user to pick a port on 6 triangles of a tile */
+class PickPort extends AbstractBoardState {
+  start() {
+    boardVisual.portPicker.show();
+  }
+  end() {
+    boardVisual.portPicker.hide();
+  }
+  mouseOver(Visual visual) {
+    if (visual is TileVisual) {
+      TileVisual tv = visual;
+      boardVisual.portPicker.setPosition(tv.tile);
+    }
+  }
+  click(Visual visual) {
+    if (visual is PortPickerVisual) {
+      PortPickerVisual ppv =  visual;
+      ppv.selectedTile.port = new ThreeToOnePort();
+    }
+  }
+}

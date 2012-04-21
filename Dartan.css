@@ -1,0 +1,127 @@
+*, p {
+font-family: 'Andika', sans-serif;
+font-size: 13px;
+}
+
+body {
+margin: 1em;
+//background-color: rgba(255,0,0, 0.1);
+}
+ h2, h3 {
+font-family: 'Andika', sans-serif;
+font-weight: normal;
+}
+#boardEditor {
+	height: 100%;
+	width: 100%;
+}
+.checkOk {
+  color: green;
+}
+polygon:hover {
+fill-opacity:0.5;
+}
+div#objects {
+columns: 3;
+column-count: 3;
+-webkit-column-count: 2;
+/*
+-moz-column-count: 2;
+
+
+	-moz-column-width
+-moz-columns
+-moz-column-gap
+-moz-column-rule
+-moz-column-rule-width
+-moz-column-rule-style
+-moz-column-rule-color
+-moz-column-fill
+-moz-column-span
+*/
+
+}
+.condensed {
+	-webkit-transform: rotate(90deg);	
+	-moz-transform: rotate(90deg);
+	-ms-transform: rotate(90deg);
+	-o-transform: rotate(90deg);
+	transform: rotate(90deg);
+    //transform-origin: 0 0;
+    //-webkit-transform-origin: 0 0;
+    transform-origin: 0 0;
+    margin-bottom:0.5em;
+  	vertical-align:bottom;
+  	display: table-caption;
+  	margin: 1em 0em 1em 0em;
+  	text-align: left;
+}
+.unicodeIcon {
+	font-size: 150%;
+	font-family: 'Ubuntu Mono', sans-serif;
+}
+.smallIconList {
+ height: 20px; 
+ display: table-row;
+}
+.logo {
+	background-image: url(img/icon48/City.png);
+	background-repeat: no-repeat;
+	background-size: 32px 32px;
+	background-position: 20px 5px;
+	padding-left: 5em;
+	font-family: 'Exo', sans-serif;
+	letter-spacing:2px;
+	font-weight: bold;
+}
+div#intro {
+	columns: 2;
+	column-count: 2;
+	-webkit-column-count: 2;
+}
+h1 {
+	color: white;
+	padding-top: 2px;
+}
+.ResourcePicker {
+	border: 2px dashed blue;
+	padding: 0.25em;
+}
+.PickedResources {
+	height: 1em;
+	//display: inline-block;
+	
+}
+.PickedResource:hover {
+	outline: 2px Grey dotted;
+}
+.PickerButton:disabled {
+	opacity: 0.5;
+}
+.testResults {
+	list-style-type: none;
+	padding-left:-1em;
+	columns: 2;
+//column-count: 2;
+//-webkit-column-count: 2;
+}
+.failure {
+	color: red;
+	font-family: 'Ubuntu Mono', sans-serif;
+}
+.pass {
+ 	color: green;
+ 	font-family: 'Ubuntu Mono', sans-serif;
+ }
+ .nothingTested {
+ 	color:black;
+ 	 	font-family: 'Ubuntu Mono', sans-serif;
+ }
+ .number {
+ 	font-size: 1.2em;
+  	font-family: 'Ubuntu Mono', sans-serif;
+ 
+ }
+ .none {
+   	 	font-family: 'Ubuntu Mono', sans-serif;
+ }

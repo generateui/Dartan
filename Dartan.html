@@ -1,0 +1,105 @@
+<html>
+  <head>
+    <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href='http://fonts.googleapis.com/css?family=Ubuntu+Mono' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Exo' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Oxygen' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Port+Lligat+Sans' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Andika' rel='stylesheet' type='text/css'>
+    <link href="Dartan.css" rel="stylesheet">
+    <title>Catan</title>
+     <style TYPE="text/css">
+      #Intro { display: none; }
+      #Test { display: none; }
+      #Objects { display: none; }
+      #Views { display: none; }
+      #Play { display: none; }
+      #BoardEditor { display: none; }
+      #Tldr { display: none; }	
+    </style>
+  </head>
+  <body>
+
+	<div class="navbar">
+	  <div class="logo navbar-inner">
+	  	<h1 class="nav">Dartan</h1>
+	    <div class="container">
+	      <ul class="nav">
+			  <li class="active"  id="Introli">
+			    <a href="#Home" id="IntroLink"><span class=unicodeIcon>&#x2302;</span> home</a>
+			  </li>
+			  <li id="Testli"><a href="#Test" id="TestLink"><span class="checkOk unicodeIcon">&#10004;</span> test</a></li>
+			  <li id="Objectsli"><a href="#Objects" id="ObjectsLink"><span class=unicodeIcon>&#9723;</span> objects</a></li>
+			  <li id="Viewsli"><a href="#Views" id="ViewsLink"><span class=unicodeIcon>&#x25f0;</span> views</a></li>
+			  <li id="Playli"><a href="#Play" id="PlayLink"><span class=unicodeIcon>&#x2b21;</span> play</a></li>
+			  <li id="Tldrli"><a href="#Tldr" id="TldrLink"><span class=unicodeIcon>&#x203d;</span> tl;dr</a></li>
+			  <li id="BoardEditorli"><a href="#BoardEditor" id="BoardEditorLink"><span class=unicodeIcon>&#x270e;</span> edit</a></li>
+			</ul>
+	    </div>
+	  </div>
+	</div>
+	
+  	<div id=Intro>
+	    <p>
+		    A web game implentation to build towns. This is the test zone.
+	    </p>
+    </div>
+    
+    <div id="Test" class="testResults">
+    	<h2>Test results</h2>
+    </div>
+    
+    <div id="Objects">
+        <p id=objectsSummary></p>
+        
+	    <h3>Resources</h3>
+	    <p>All supported resources.</p>
+	    <p id="resources"></p>
+	    
+	    <h3>Resource collections</h3>
+	    <p>All supported resource collections</p>
+	    <p id="resourceLists"></p>
+    </div>
+    
+    <div id=Views>
+    	<p>Mockups of all supported views</p>
+    	
+    	<h3>Resources</h3>
+    	<p>View watches ResourceList</p>
+	    <div id="resourcesView"></div>
+	    
+	    <h3>Pick resources</h3>
+	    <p>A resourcepicker in action. Click on a resource to remove.</p>
+	    <div id="ResourcePicker"></div>
+	    
+	    <canvas id=bord  width="350" height="350" style="display: none"></canvas>
+	    
+	    <div class="row" id=svgBoard>
+		  <div class="span4" id=svgBoardLeftColumn>
+		  
+		  	<div id=tileInfoView><p></p></div>
+		  </div>
+		  <div class="span8">		    
+		  	<p>SVG implementation of a board</p>
+		  	<svg  xmlns="http://www.w3.org/2000/svg" version="1.1"  id=bord2 width=800 height=600>
+		    </svg>
+		  </div>
+		</div>
+    </div>
+    
+    <div id=Play>
+    	<p>Sorry, no playtime yet :(</p>
+    </div>
+    
+    <div id=BoardEditor>
+    
+    </div>
+    
+    <div id=Tldr>
+    	<p>A developerfaq should come here</p>
+    </div>
+    
+    <script type="application/dart" src="Dartan.dart"></script>
+    <script src="http://dart.googlecode.com/svn/branches/bleeding_edge/dart/client/dart.js"></script>
+  </body>
+</html>
