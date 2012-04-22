@@ -58,7 +58,7 @@ class ObservableHelper {
     if (handler != null && listeners[propertyName] != null) {
       int index = listeners[propertyName].indexOf(handler, 0);
       if (index != -1) {
-        listeners[propertyName].removeRange(index, 1);
+        listeners[propertyName].removeRange(index, 1); //TODO: change to remove when possible
       }
     }
   }

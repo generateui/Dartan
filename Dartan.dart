@@ -33,7 +33,7 @@
 #source('ui/TileMeasurementInfo.dart');
 #source('ui/ResourcePicker.dart');
 #source('ui/ResourcesView.dart');
-#source('ui/BoardView.dart');
+#source('ui/Visual.dart');
 
 // Test
 #source('test/ResourcesTest.dart');
@@ -58,6 +58,16 @@ interface Identifyable {
 /** Mirror kitteh sees wall */
 interface Copyable {
   Dynamic copy();
+}
+
+interface EditorWidget<T> {
+  
+}
+interface TTest<T> {
+  test();
+}
+interface ViewWidget<T> {
+  
 }
 /** I'd like to be able to declare immutable collection types, not 
 necesarily instances with const. */
