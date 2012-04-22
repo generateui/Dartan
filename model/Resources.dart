@@ -38,7 +38,7 @@ class MonopolyableResources extends ResourceListIm {
   MonopolyableResources() : super([new Wheat(), new Ore(), new Timber(), new Sheep(), new Clay()]);
 }
 
-/* Wraps mutable list */
+/** Wraps mutable list */
 class ResourceListIm implements ResourceList {
   ResourceListMu wrapped;
   
@@ -73,7 +73,7 @@ class ResourceListIm implements ResourceList {
     new ResourceListImTest().test();
   }
 }
-
+/** Mutable variant of a collection of resources */
 class ResourceListMu extends ListenableList<Resource> implements ResourceList {
   Map<String, List<Resource>> _res; // Administer by type
 
@@ -89,7 +89,6 @@ class ResourceListMu extends ListenableList<Resource> implements ResourceList {
   
   ResourceListMu() : 
     super() { initr(); }
-    //_res = new Map<String, List<Resource>>();
   
   num halfCount() {
     num temp = _internal.length;
@@ -149,7 +148,7 @@ class ResourceListMu extends ListenableList<Resource> implements ResourceList {
     return _res.getKeys();
   }
 
-  /* True if this list has at least amount of resources contained in toHave, per Type */
+  /** True if this list has at least amount of resources contained in toHave, per Type */
   bool hasAtLeast(ResourceList toHave) {
     for (String t in toHave.types()) { 
       if (hasType(t)) {

@@ -21,6 +21,7 @@
 #source('model/Chit.dart');
 #source('model/Territory.dart');
 #source('model/Tile.dart');
+#source('model/GamePhase.dart');
 
 // UI
 #source('ui/BoardState.dart');
@@ -96,6 +97,7 @@ class AllSupportedLists extends ImmutableL<Iterable<Testable>> {
    new SupportedPorts(),
    new SupportedChits(),
    new SupportedTerritories(),
+   new SupportedGamePhases(),
    new SupportedListenableLists()]);
 }
 /** Various ungrouped implementations */
