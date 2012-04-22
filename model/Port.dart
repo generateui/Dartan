@@ -12,7 +12,7 @@ interface Port extends Hashable, Copyable, Identifyable, Testable {
   bool get hasResource();
 }
 class SupportedPorts extends ImmutableL<Port> {
-  SupportedPorts() : super([new AbstractPort(), new FourToOnePort()]);
+  SupportedPorts() : super([new AbstractPort(), new FourToOnePort(), new ThreeToOnePort()]);
 }
 class AbstractPort implements Port {
   int id;

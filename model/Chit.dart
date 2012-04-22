@@ -6,7 +6,7 @@ interface Chit extends Hashable, Copyable, Testable, Identifyable {
   bool get isRed(); // True on the best numbers
 }
 class SupportedChits extends ImmutableL {
-  SupportedChits() : super([
+  SupportedChits() : super([new AbstractChit(),
     new Chit2(), new Chit3(), new Chit4(), new Chit5(), new Chit6(),
     new Chit8(), new Chit9(), new Chit10(), new Chit11(), new Chit12(),
     new RandomChit()

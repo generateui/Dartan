@@ -28,7 +28,7 @@ interface Tile extends Copyable, Observable, Hashable, Testable  {
 }
 
 class SupportedTiles extends ImmutableL<Tile> {
-  SupportedTiles() : super([new Sea(), new AbstractTile(), new Desert(), new NoneTile()]);
+  SupportedTiles() : super([new AbstractTile(), new Sea(), new Desert(), new NoneTile()]);
 }
 
 /** Abstract convenience implementation of a [Tile] */
