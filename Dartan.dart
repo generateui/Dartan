@@ -22,6 +22,7 @@
 #source('model/Territory.dart');
 #source('model/Tile.dart');
 #source('model/GamePhase.dart');
+#source('model/GameStatus.dart');
 
 // UI
 #source('ui/BoardState.dart');
@@ -98,6 +99,7 @@ class AllSupportedLists extends ImmutableL<Iterable<Testable>> {
    new SupportedChits(),
    new SupportedTerritories(),
    new SupportedGamePhases(),
+   new SupportedGameStatuses(),
    new SupportedListenableLists()]);
 }
 /** Various ungrouped implementations */
@@ -155,8 +157,11 @@ class Dartan {
   static String supName(var obj) {
     String temp = Dartan.name(obj).substring(9);
     temp = temp.substring(0,temp.length - 1);
-    if (temp.endsWith("ie")) {
+    if (temp.endsWith("ie")) { // Territory
       temp = "${temp.substring(0, temp.length - 2)}y"; 
+    }
+    if (temp.endsWith("se")) { // GameStatus
+      temp = temp.substring(0,temp.length - 1);
     }
     return temp;  
   }
