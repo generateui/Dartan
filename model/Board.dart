@@ -17,6 +17,7 @@ class Board implements Observable {
   HashSet<Vertice> _vertices;
   HashSet<Edge> _edges;
   ObservableHelper observable;
+  HashSet<Vertice> _forbiddenVertices; // List of forbidden vertices, updated on town add/remove
   
   HashSet<Vertice> get vertices() => _vertices;
   HashSet<Edge> get edges() => _edges;
@@ -26,6 +27,7 @@ class Board implements Observable {
     _vertices = new HashSet<Vertice>();
     _tilesByCell = new HashMap<Cell, Tile>(); 
     _edges = new HashSet<Edge>();
+    _forbiddenVertices = new HashSet<Vertice>();
     observable = new ObservableHelper();
   }
   
@@ -43,7 +45,7 @@ class Board implements Observable {
   void onSetted(String property, PropertyChanged handler) { 
     observable.addListener(property, handler);
   }
-  void offSetted(String property, PropertyChanged handler) {
+  void offSetted(String property, PropertyChanged handler) {  
     observable.removeListener(property, handler);
   }
 
@@ -77,6 +79,22 @@ class Board implements Observable {
   void _addVertices(Cell c) {
     _vertices.addAll(c.vertices);
   }
+  
+  /** All spots target player allowed to build his first town on */
+  Set<Vertice> firstTownPossibilities() => _vertices.filter((Vertice v) => 
+      landBuildable(v) && !_forbiddenVertices.contains(v));
+  
+  /** All spots target player allowed to build his second town on */
+  Set<Vertice> secondTownPossibilities() => firstTownPossibilities();
+  
+  Set<Vertice> townPossibilities() {
+    return null;
+  }
+  
+  bool landBuildable(Vertice vertice) =>
+      _tilesByCell[vertice.c1].canBuildOnLand ||
+      _tilesByCell[vertice.c2].canBuildOnLand ||
+      _tilesByCell[vertice.c3].canBuildOnLand;
   
   bool cellWithinBounds(Cell cell) =>
     cell.row < rows && cell.row > -1 && 

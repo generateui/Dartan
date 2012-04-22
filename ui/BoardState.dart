@@ -61,3 +61,41 @@ class PickPort extends AbstractBoardState {
     }
   }
 }
+/** Player wants to pick a spot for a town */
+class PickTown extends AbstractBoardState {
+  bool firstTown; // True if first town to place for player
+  bool secondTownOrCity; // True if second town/city
+  HashSet<Vertice> _possibleVertices;
+  start() {
+    if (firstTown) {
+      _possibleVertices = boardVisual.board.firstTownPossibilities();
+    }
+    if (secondTownOrCity) {
+      _possibleVertices = boardVisual.board.secondTownPossibilities();
+    }
+    if (!firstTown && !secondTownOrCity) { 
+      _possibleVertices = boardVisual.board.townPossibilities();
+    }
+    boardVisual.showVertices(_possibleVertices);
+  }
+  end() {
+    boardVisual.hideAllVertices();
+  } 
+  mouseOver(Visual visual) {
+    if (visual is VerticeVisual) {
+      boardVisual.currentVisual = visual;
+      visual.select();
+    }
+  }
+  mouseOut(Visual visual) {
+    if (visual is VerticeVisual) {
+      visual.deSelect();
+    }
+  }
+  click(Visual visual) { 
+    if (visual is VerticeVisual) { // should be only 
+      // Yey! user picked a town spot
+      // Spawn a new BuildTown command? 
+    }
+  }
+}
