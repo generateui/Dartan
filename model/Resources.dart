@@ -70,7 +70,7 @@ class ResourceListIm implements ResourceList {
   int get length() => wrapped.length;
   
   test() {
-
+    new ResourceListImTest().test();
   }
 }
 
@@ -171,32 +171,7 @@ class ResourceListMu extends ListenableList<Resource> implements ResourceList {
     return new ResourceListIm(_res[type]);
   }
   
-  int test() {
-    /* simple cost check */
-    ResourceListMu hand = new ResourceListMu();
-    hand.add(new Wheat());
-    hand.add(new Ore());
-    hand.add(new Sheep());
-    Expect.isTrue(hand.hasAtLeast(new DevelopmentCardCost()));
-    Expect.isFalse(hand.hasAtLeast(new RoadCost()), "Cant pay for road");
-    
-    /* Testing event firing */
-    Ore ore = new Ore();
-    int firedOnRemove = 0;
-    int firedOnAdd = 0;
-    hand.onRemoved((Resource e)  { 
-      firedOnRemove ++;
-      Expect.equals(ore, e, "Unexpected removed item in event");
-    });
-    hand.onAdded((Resource r) {
-      firedOnAdd ++;
-      Expect.equals(ore, r, "Unexpected removed item in event");
-    });
-
-    hand.add(ore);
-    hand.remove(ore);
-    Expect.equals(1, firedOnRemove, "removed event not received");
-    Expect.equals(1, firedOnAdd, "add event not received");
-    return 2;
+  test() {
+    new ResourceListMuTest().test();
   }
 }
