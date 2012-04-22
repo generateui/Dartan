@@ -95,6 +95,7 @@ class AllSupportedLists extends ImmutableL<Iterable<Testable>> {
    new SupportedVariouss(),
    new SupportedPorts(),
    new SupportedChits(),
+   new SupportedTerritories(),
    new SupportedListenableLists()]);
 }
 /** Various ungrouped implementations */
@@ -151,7 +152,11 @@ class Dartan {
   }
   static String supName(var obj) {
     String temp = Dartan.name(obj).substring(9);
-    return temp.substring(0,temp.length - 1);
+    temp = temp.substring(0,temp.length - 1);
+    if (temp.endsWith("ie")) {
+      temp = "${temp.substring(0, temp.length - 2)}y"; 
+    }
+    return temp;  
   }
   static void swap(Dynamic first, Dynamic second) {
     Dynamic temp = first;
