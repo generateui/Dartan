@@ -8,7 +8,7 @@ interface GamePhase extends Hashable, Testable {
   bool get isEnded();
 }
 class SupportedGamePhases extends ImmutableL<GamePhase> {
-  SupportedGamePhases() : super([new LobbyPhase(), new DetermineFirstPlayerPhase()]);
+  SupportedGamePhases() : super([new AbstractGamePhase(), new LobbyPhase(), new DetermineFirstPlayerPhase()]);
 }
 /** Abstract conveience implementation of a [GamePhase] */
 class AbstractGamePhase implements GamePhase {
