@@ -14,7 +14,7 @@ interface Port extends Hashable, Copyable, Identifyable, Testable {
 class SupportedPorts extends ImmutableL<Port> {
   SupportedPorts() : super([new AbstractPort(), new FourToOnePort(), new ThreeToOnePort()]);
 }
-class AbstractPort implements Port {
+class AbstractPort implements Port {  
   int id;
   Cell _landCell;
   Cell _seaCell;

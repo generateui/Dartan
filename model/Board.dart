@@ -19,6 +19,8 @@ class Board implements Observable {
   ObservableHelper observable;
   HashSet<Vertice> _forbiddenVertices; // List of forbidden vertices, updated on town add/remove
   
+  ListenableList<Territory> territories;
+  
   HashSet<Vertice> get vertices() => _vertices;
   HashSet<Edge> get edges() => _edges;
   Set<Tile> get tiles() => _tilesByCell.getValues();

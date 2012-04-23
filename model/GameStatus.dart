@@ -6,7 +6,7 @@ interface GameStatus extends Hashable, Testable {
   bool get isPlaying();
 }
 class SupportedGameStatuses extends ImmutableL<GameStatus> {
-  SupportedGameStatuses() : super([new AbstractGameStatus(), new Playing()]);
+  SupportedGameStatuses() : super([new AbstractGameStatus(), new Playing(), new WaitingForReplacingUser()]);
 }
 class AbstractGameStatus implements GameStatus {
   int id;
@@ -23,4 +23,12 @@ class AbstractGameStatus implements GameStatus {
 }
 class Playing extends AbstractGameStatus {
   String get description() => "Game is currently going";
+}
+/** A user left or disconnected, and now other players wait for a new user to join */
+class WaitingForReplacingUser extends AbstractGameStatus{
+  List<Player> playerWithoutUser;
+  bool get blocks() => true;
+  WaitingForReplacingUser() {
+    playerWithoutUser = new List<Player>();
+  }
 }

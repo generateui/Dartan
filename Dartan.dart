@@ -23,6 +23,14 @@
 #source('model/Tile.dart');
 #source('model/GamePhase.dart');
 #source('model/GameStatus.dart');
+#source('model/DevelopmentCard.dart');
+#source('model/TurnPhase.dart');
+#source('model/Turn.dart');
+#source('model/Player.dart');
+#source('model/action/Action.dart');
+#source('model/ServerGame.dart');
+#source('model/Dice.dart');
+#source('model/Random.dart');
 
 // UI
 #source('ui/BoardState.dart');
@@ -45,6 +53,7 @@
 #source('test/CellTest.dart');
 #source('test/ListenableListTest.dart');
 #source('test/PortTest.dart');
+#source('test/RandomTest.dart');
 
 #resource('zettown.css');
 
@@ -69,7 +78,11 @@ interface TTest<T> {
   test();
 }
 interface ViewWidget<T> {
-  
+  T model;
+  Element text(T item); // ToString
+  Element html(T item); 
+  Element icon(T item);   
+  Element debug(T item); // a widget showing details of instance
 }
 /** I'd like to be able to declare immutable collection types, not 
 necesarily instances with const. */
@@ -99,7 +112,11 @@ class AllSupportedLists extends ImmutableL<Iterable<Testable>> {
    new SupportedChits(),
    new SupportedTerritories(),
    new SupportedGamePhases(),
+   new SupportedTurnPhases(),
    new SupportedGameStatuses(),
+   new SupportedDevelopmentCards(), 
+   new SupportedRandoms(),  
+   new SupportedActions(),
    new SupportedListenableLists()]);
 }
 /** Various ungrouped implementations */
@@ -136,21 +153,6 @@ class Dartan {
   static int generateHashCode(var obj) {
     return (Math.random()* 10000000).toInt();
   }
-  /** Needs refactoring */
-  static Object grabRandom(List<Object> from) {
-    if (from.length == 0) {
-      return null;
-    } else if (from.length == 0) {
-      return from.iterator().next();
-    } else {
-      double rnd = Math.random();
-      //rnd *= 10;
-      double rndl = rnd * from.length.toDouble();
-      print ("r:${rnd}, rndl: ${rndl}");
-      int r = rndl.toInt();
-      return from[r];
-    }
-  }
   void run() {
     new BoardInfoView(new Board(10,10));
   }
@@ -165,12 +167,6 @@ class Dartan {
     }
     return temp;  
   }
-  static void swap(Dynamic first, Dynamic second) {
-    Dynamic temp = first;
-    first = second;
-    second = temp;
-  }
-
   static String toHtml(bool b) {
     return b ? check : noCheck;
   }

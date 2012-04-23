@@ -10,7 +10,7 @@ interface BoardState {
   click(Visual visual);
 }
 /** Abstract convenience implementation for [BoardState] implementors */
-class AbstractBoardState implements BoardState {
+class AbstractBoardState implements BoardState {  
   BoardVisual boardVisual;
   start() { }
   end() { } 
@@ -25,7 +25,7 @@ class SelectOnHover extends AbstractBoardState {
   mouseOver(Visual visual) { 
     visual.select(); 
     boardVisual.currentVisual = visual;
-  }
+  } 
   mouseOut(Visual visual) { visual.deSelect(); }
 }
 /** Change a selected tile on a board */

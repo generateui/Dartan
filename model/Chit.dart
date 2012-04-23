@@ -13,7 +13,7 @@ class SupportedChits extends ImmutableL {
   ]);
 }
 /** Abstract convenience implementation of a [Chit] */
-class AbstractChit implements Chit {
+class AbstractChit implements Chit { 
   int _id;
   int get number() => 0;
   int get chance() => 0;
