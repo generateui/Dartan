@@ -1,5 +1,4 @@
 ui/EdgeNeightboursView.dart
 model/GameSetting.dart
 model/Bot.dart
-model/Server.dart
 Dartan.dart

@@ -32,6 +32,9 @@
 #source('model/Dice.dart');
 #source('model/Random.dart');
 #source('model/action/TradeAction.dart');
+#source('model/action/GameAction.dart');
+#source('model/action/LobbyAction.dart');
+#source('model/GameServer.dart');
 
 // UI
 #source('ui/BoardState.dart');
@@ -119,6 +122,8 @@ class AllSupportedLists extends ImmutableL<Iterable<Testable>> {
    new SupportedDevelopmentCards(), 
    new SupportedRandoms(),  
    new SupportedTradeActions(),
+   new SupportedGameActions(),
+   new SupportedLobbyActions(),
    new SupportedActions(),
    new SupportedListenableLists()]);
 }
@@ -143,6 +148,8 @@ class Dartan {
     viewRouter = new ViewRouter();
   }
     
+  static Identifyable byId(int theid, List<Identifyable> withIds) => 
+      withIds.filter((Identifyable hasId) => hasId.id == theid).iterator().next();
   /* ಠ_ಠ */
   static String name(obj) {
     if (obj != null) {

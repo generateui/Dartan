@@ -16,7 +16,7 @@ class Game implements Testable, Observable {
   
   ListenableList<User> spectators;
   ListenableList<User> users;
-  ListenableList<Action> actions;
+  ListenableList<GameAction> actions;
   ListenableList<Say> chats;
   ListenableList<Action> queue;
   ListenableList<DevelopmentCard> developmentCards;
@@ -44,6 +44,8 @@ class Game implements Testable, Observable {
     players = new PlayerListMu();
     observable = new ObservableHelper();
     bank = new ResourceListMu();
+    actions = new ListenableList<GameAction>();
+    queue = new ListenableList<Action>();
   }
   
   Game() {
@@ -56,6 +58,9 @@ class Game implements Testable, Observable {
   prepareDevelopmentCards() {
     
   }
+  
+  User userById(int userId) => Dartan.byId(userId, users);
+  Player playerById(int playerId) => Dartan.byId(playerId, players);
 
   nextPhase() {
     if (phasesIterator.hasNext()) {
@@ -76,7 +81,7 @@ class Game implements Testable, Observable {
       observable.fire("playerOnTurn", oldPlayer, playerOnTurn);
     }
   }
-  void performAction(Action action) {
+  void performAction(GameAction action) {
     action.perform(this);
     actions.add(action);
   }

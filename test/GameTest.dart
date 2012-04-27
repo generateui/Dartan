@@ -27,27 +27,68 @@ class GameTest {
     board.addTile(new Sea(new Cell(6, 3)));
     board.addTile(new Sea(new Cell(6, 4)));
     
-    board.addTile(new Field(new Cell(1, 2))); // Add a row of wheat
-    board.addTile(new Field(new Cell(1, 3))); 
-    board.addTile(new Field(new Cell(1, 4)));
-    board.addTile(new Mountain(new Cell(2, 1))); // Add a row of Ore/mountian
-    board.addTile(new Mountain(new Cell(2, 2))); 
-    board.addTile(new Mountain(new Cell(2, 3)));
-    board.addTile(new Mountain(new Cell(2, 4)));
-    board.addTile(new Hill(new Cell(3, 1))); // Add a row of Brick
-    board.addTile(new Hill(new Cell(3, 2))); 
-    board.addTile(new Hill(new Cell(3, 3)));
-    board.addTile(new Hill(new Cell(3, 4)));
-    board.addTile(new Hill(new Cell(3, 5)));
-    board.addTile(new Forest(new Cell(4, 1))); // Add a row of Timber
-    board.addTile(new Forest(new Cell(4, 2))); 
-    board.addTile(new Forest(new Cell(4, 3)));
-    board.addTile(new Forest(new Cell(4, 4)));
-    board.addTile(new Pasture(new Cell(5, 2))); // Add a row of Sheep
-    board.addTile(new Pasture(new Cell(5, 3))); 
-    board.addTile(new Pasture(new Cell(5, 4)));
-
-    Player player = new Player();
+    MainIsland mainIsland = new MainIsland();
+    board.territories.add(mainIsland);
+    
+    for (int col = 2; col < 5; col++) { // Add a row of Wheat/Field
+      Chit chit = new Chit6();
+      Field field = new Field(new Cell(1, col));
+      field.chit = chit;
+      field.territory = mainIsland;
+    }
+    for (int col = 1; col < 5; col++) { // Add a row of Ore/Mountain
+      Chit chit = new Chit5();
+      Tile tile = new Mountain(new Cell(2, col));
+      tile.chit = chit;
+      tile.territory = mainIsland;
+    }
+    for (int col = 1; col < 6; col++) { // Add a row of Clay/Hill
+      Chit chit = new Chit4();
+      Tile tile = new Hill(new Cell(3, col));
+      tile.chit = chit;
+      tile.territory = mainIsland;
+    }
+    for (int col = 1; col < 5; col++) { // Add a row of Timber/Forest
+      Chit chit = new Chit3();
+      Tile tile = new Forest(new Cell(4, col));
+      tile.chit = chit;
+      tile.territory = mainIsland;
+    }
+    for (int col = 2; col < 5; col++) { // Add a row of Sheep/Pasture
+      Chit chit = new Chit2();
+      Tile tile = new Pasture(new Cell(5, col));
+      tile.chit = chit;
+      tile.territory = mainIsland;
+    }
+    Player player1 = new Player();
+    Player player2 = new Player();
+    Player player3 = new Player();
     
   }
+  
+  /** Have an environment where every second, a command is played, so the user 
+  an experience a test game as if he is spectating a game */ 
+  
+  
+  void runGame() {
+    /*
+    Create a server
+    Create a game
+    Join 3 players
+    Chat
+    Start game
+    Determine first player (host)
+    Setup 6 towns
+    Roll predictable dices
+    
+    Let one player win using all commands
+    -trading 
+    -build town, build city, development point, LA, LR
+    -move robber, rob player
+    -play RB, Mono, Invention, 3 knights
+    -loose cards
+    -win game
+    */
+  }
+  
 }
