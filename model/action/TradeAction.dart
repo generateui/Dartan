@@ -1,5 +1,5 @@
 /** Any action related to trading in the game */
-interface TradeAction {
+interface TradeAction extends Action {
   ResourceList offered;
   ResourceList wanted;
 }
@@ -16,6 +16,8 @@ interface TradeResponse extends TradeAction {
 class AbstractTradeAction extends AbstractAction implements TradeAction {
   ResourceList offered;
   ResourceList wanted;
+  bool allowedGamePhase(GamePhase gp) => gp.isTurns; 
+  bool allowedTurnPhase(TurnPhase tp) => tp.isTrading;
 }
 /** Use a [Port] to trade resources with the bank */
 class TradeBank extends AbstractTradeAction implements TradeAction {

@@ -28,7 +28,8 @@ interface Tile extends Copyable, Observable, Hashable, Testable  {
 }
 
 class SupportedTiles extends ImmutableL<Tile> {
-  SupportedTiles() : super([new AbstractTile(), new Sea(), new Desert(), new NoneTile()]);
+  SupportedTiles() : super([new AbstractTile(), new Sea(), new Desert(), 
+    new NoneTile(), new Field(), new Mountain(), new Forest(), new Hill(), new Pasture()]);
 }
 
 /** Abstract convenience implementation of a [Tile] */
@@ -154,4 +155,84 @@ class NoneTile extends AbstractTile {
   String get color() => "lightgrey";
   Tile copy() => new NoneTile(cell);
   Resource resource() => null;
+}
+class Field extends AbstractTile {
+  Field([Cell loc]) : super(loc);
+  
+  bool get canBuildOnLand() => true;
+  bool get canBuildOnSea() => false;
+  bool get isPartOfGame() => true;
+  bool get isRobberPlaceable() => true;
+  bool get isPiratePlaceable() => false;
+  bool get producesResource() => true;
+  bool get hasChit() => false; 
+  bool get canHaveChit() => true;
+  bool get canHavePort() => false;
+  String get color() => "yellow";
+  Tile copy() => new Field(cell);
+  Resource resource() => new Wheat();
+}
+class Forest extends AbstractTile {
+  Forest([Cell loc]) : super(loc);
+  
+  bool get canBuildOnLand() => true;
+  bool get canBuildOnSea() => false;
+  bool get isPartOfGame() => true;
+  bool get isRobberPlaceable() => true;
+  bool get isPiratePlaceable() => false;
+  bool get producesResource() => true;
+  bool get hasChit() => false; 
+  bool get canHaveChit() => true;
+  bool get canHavePort() => false;
+  String get color() => "darkgreen";
+  Tile copy() => new Forest(cell);
+  Resource resource() => new Timber();
+}
+class Mountain extends AbstractTile {
+  Mountain([Cell loc]) : super(loc);
+  
+  bool get canBuildOnLand() => true;
+  bool get canBuildOnSea() => false;
+  bool get isPartOfGame() => true;
+  bool get isRobberPlaceable() => true;
+  bool get isPiratePlaceable() => false;
+  bool get producesResource() => true;
+  bool get hasChit() => false; 
+  bool get canHaveChit() => true;
+  bool get canHavePort() => false;
+  String get color() => "purple";
+  Tile copy() => new Mountain(cell);
+  Resource resource() => new Ore();
+}
+class Pasture extends AbstractTile {
+  Pasture([Cell loc]) : super(loc);
+  
+  bool get canBuildOnLand() => true;
+  bool get canBuildOnSea() => false;
+  bool get isPartOfGame() => true;
+  bool get isRobberPlaceable() => true;
+  bool get isPiratePlaceable() => false;
+  bool get producesResource() => true;
+  bool get hasChit() => false; 
+  bool get canHaveChit() => true;
+  bool get canHavePort() => false;
+  String get color() => "lightgreen";
+  Tile copy() => new Pasture(cell);
+  Resource resource() => new Sheep();
+}
+class Hill extends AbstractTile {
+  Hill([Cell loc]) : super(loc);
+  
+  bool get canBuildOnLand() => true;
+  bool get canBuildOnSea() => false;
+  bool get isPartOfGame() => true;
+  bool get isRobberPlaceable() => true;
+  bool get isPiratePlaceable() => false;
+  bool get producesResource() => true;
+  bool get hasChit() => false; 
+  bool get canHaveChit() => true;
+  bool get canHavePort() => false;
+  String get color() => "red";
+  Tile copy() => new Hill(cell);
+  Resource resource() => new Clay();
 }

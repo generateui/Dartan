@@ -55,6 +55,7 @@
 #source('test/ListenableListTest.dart');
 #source('test/PortTest.dart');
 #source('test/RandomTest.dart');
+#source('test/GameTest.dart');
 
 #resource('zettown.css');
 
