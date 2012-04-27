@@ -31,6 +31,7 @@
 #source('model/ServerGame.dart');
 #source('model/Dice.dart');
 #source('model/Random.dart');
+#source('model/action/TradeAction.dart');
 
 // UI
 #source('ui/BoardState.dart');
@@ -116,6 +117,7 @@ class AllSupportedLists extends ImmutableL<Iterable<Testable>> {
    new SupportedGameStatuses(),
    new SupportedDevelopmentCards(), 
    new SupportedRandoms(),  
+   new SupportedTradeActions(),
    new SupportedActions(),
    new SupportedListenableLists()]);
 }
