@@ -5,8 +5,10 @@ class ServerGame {
   Game game;
   List<DevelopmentCard> developmentCards;
   Random random;
+  Dice dice;
   _init() {
     random = new ClientRandom();
+    dice = new RandomDice(random);
     developmentCards = new List<DevelopmentCard>();
   }
   ServerGame(this.game) {

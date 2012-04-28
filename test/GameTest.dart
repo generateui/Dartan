@@ -1,8 +1,6 @@
 class GameTest {
   void test() {
-    
     Game game = new Game();
-    
     
     /** Create a test board */
     Board board = new Board();
@@ -60,9 +58,56 @@ class GameTest {
       tile.chit = chit;
       tile.territory = mainIsland;
     }
-    Player player1 = new Player();
-    Player player2 = new Player();
-    Player player3 = new Player();
+    
+    game.board = board;
+    GameServer server = new LocalServer(game);
+    
+    User observer = new User(0, "Whooptidoo", "whoop@tidoo.com");
+    User user1 = new User(1, "Piet", "piet@example.com");
+    User user2 = new User(2, "Henk", "henk@example.com");
+    User user3 = new User(3, "Truus", "truus@example.com");
+    User leaverUser = new User(4, "SomeLeaver", "leaver@example.com");
+    Player player1 = new Player(user1);
+    Player player2 = new Player(user2);
+    Player player3 = new Player(user3);
+    Player leaver = new Player(leaverUser);
+    
+    // Let the observer join
+    JoinLobby observerJoin = new JoinLobby();
+    observerJoin.userId = observer.id;
+    server.send(observerJoin);
+
+    // Join the first 2 players
+    JoinLobby join = new JoinLobby();
+    join.userId = player1.user.id;
+    server.send(join);
+    JoinLobby join2 = new JoinLobby();
+    join2.user.id = player2.user.id;
+    server.send(join2);
+
+    // Test joining & leaving
+    JoinLobby leaverJoin = new JoinLobby();
+    leaverJoin.userId = leaver.user.id;
+    server.send(leaverJoin);
+    LeaveLobby leave = new LeaveLobby();
+    leave.userId = leaver.user.id;
+    server.send(leave);
+    
+    // Join the last player
+    JoinLobby join3 = new JoinLobby();
+    join3.userId = player3.user.id;
+    server.send(join3);
+    
+    // Test a chat message
+    Say say = new Say();
+    say.message = "Merp. gotta get another player";
+    say.userId = player1.user.id;
+    server.send(say);
+    
+    // Start the game
+    StartGame start = new StartGame();
+    start.userId = player1.user.id;
+    server.send(start);
     
   }
   

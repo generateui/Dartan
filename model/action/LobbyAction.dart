@@ -3,7 +3,8 @@ interface LobbyAction extends Action {
   prepare(Lobby lobby);
 }
 class SupportedLobbyActions extends ImmutableL<LobbyAction> {
-  SupportedLobbyActions() : super([new AbstractLobbyAction(), new JoinLobby(), new NewGame()]);
+  SupportedLobbyActions() : super([new AbstractLobbyAction(), new JoinLobby(), 
+    new NewGame(), new JoinLobby(), new LeaveLobby()]);
 }
 class Lobby {
   ListenableList<User> users;
@@ -37,11 +38,21 @@ class AbstractLobbyAction implements Action {
   test() {}
   String toText() => Dartan.name(this);
 }
+/** A user just logged in */
 class JoinLobby extends AbstractLobbyAction {
   update(Lobby lobby) {
     lobby.users.add(user);
   }
+  String toText() => "${user.name} joined";
 }
+/** A user left the lobby */
+class LeaveLobby extends AbstractLobbyAction {
+  update(Lobby lobby) {
+    lobby.users.remove(user);
+  }
+  String toText() => "${user.name} left";
+}
+/** A user starts a new game */
 class NewGame extends AbstractLobbyAction {
   Game game;
   prepare(Lobby lobby) {
@@ -51,4 +62,3 @@ class NewGame extends AbstractLobbyAction {
     lobby.games.add(game);
   }
 }
-

@@ -5,6 +5,9 @@ class Player implements Hashable, Identifyable, Observable {
   int id;
   String color;
   ObservableHelper observable;
+  Player(this.user) {
+    id = user.id;
+  }
   int hashCode() {
     if (id==null)
       id = Dartan.generateHashCode(this);

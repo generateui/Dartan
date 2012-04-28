@@ -48,6 +48,7 @@
 #source('ui/ResourcePicker.dart');
 #source('ui/ResourcesView.dart');
 #source('ui/Visual.dart');
+#source('ui/GameView.dart');
 
 // Test
 #source('test/ResourcesTest.dart');

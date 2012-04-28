@@ -5,7 +5,7 @@ interface GameServer {
 class LocalServer implements GameServer {
   Game game;
   ServerGame serverGame;
-  LocalServer() {
+  LocalServer(this.game) {
     serverGame  = new ServerGame(game);
   }
   send(Action action) {
