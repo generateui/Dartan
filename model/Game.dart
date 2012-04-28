@@ -26,6 +26,7 @@ class Game implements Testable, Observable {
   List<GamePhase> phases;
   Iterator<GamePhase> phasesIterator;
   GamePhase /* on */ currentGamePhase;
+  TurnPhase /* on */ currentTurnPhase;
   GameStatus /* on */ status;
   ListenableList<Turn> turns;
   Turn /* on */ turn = null;  // init to null, non-null when first time in [TurnsGamePhase]

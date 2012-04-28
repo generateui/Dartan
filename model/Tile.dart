@@ -117,7 +117,6 @@ class Sea extends AbstractTile {
   bool get isPiratePlaceable() => true;
   Tile copy() => new Sea(cell);
   bool get producesResource() => false;
-  bool get hasChit() => false; 
   Resource resource() => null;
   bool get canHaveChit() => false;
   bool get canHavePort() => true;
@@ -132,7 +131,6 @@ class Desert extends AbstractTile {
   bool get isRobberPlaceable() => true;
   bool get isPiratePlaceable() => false;
   bool get producesResource() => false;
-  bool get hasChit() => false; 
   bool get canHaveChit() => false;
   bool get canHavePort() => false;
   String get color() => "yellow";
@@ -149,7 +147,6 @@ class NoneTile extends AbstractTile {
   bool get isRobberPlaceable() => false;
   bool get isPiratePlaceable() => false;
   bool get producesResource() => false;
-  bool get hasChit() => false; 
   bool get canHaveChit() => false;
   bool get canHavePort() => false;
   String get color() => "lightgrey";
@@ -165,7 +162,6 @@ class Field extends AbstractTile {
   bool get isRobberPlaceable() => true;
   bool get isPiratePlaceable() => false;
   bool get producesResource() => true;
-  bool get hasChit() => false; 
   bool get canHaveChit() => true;
   bool get canHavePort() => false;
   String get color() => "yellow";
@@ -181,7 +177,6 @@ class Forest extends AbstractTile {
   bool get isRobberPlaceable() => true;
   bool get isPiratePlaceable() => false;
   bool get producesResource() => true;
-  bool get hasChit() => false; 
   bool get canHaveChit() => true;
   bool get canHavePort() => false;
   String get color() => "darkgreen";
@@ -197,7 +192,6 @@ class Mountain extends AbstractTile {
   bool get isRobberPlaceable() => true;
   bool get isPiratePlaceable() => false;
   bool get producesResource() => true;
-  bool get hasChit() => false; 
   bool get canHaveChit() => true;
   bool get canHavePort() => false;
   String get color() => "purple";
@@ -213,7 +207,6 @@ class Pasture extends AbstractTile {
   bool get isRobberPlaceable() => true;
   bool get isPiratePlaceable() => false;
   bool get producesResource() => true;
-  bool get hasChit() => false; 
   bool get canHaveChit() => true;
   bool get canHavePort() => false;
   String get color() => "lightgreen";
@@ -229,7 +222,6 @@ class Hill extends AbstractTile {
   bool get isRobberPlaceable() => true;
   bool get isPiratePlaceable() => false;
   bool get producesResource() => true;
-  bool get hasChit() => false; 
   bool get canHaveChit() => true;
   bool get canHavePort() => false;
   String get color() => "red";

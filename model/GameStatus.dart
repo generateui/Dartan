@@ -25,7 +25,7 @@ class Playing extends AbstractGameStatus {
   String get description() => "Game is currently going";
 }
 /** A user left or disconnected, and now other players wait for a new user to join */
-class WaitingForReplacingUser extends AbstractGameStatus{
+class WaitingForReplacingUser extends AbstractGameStatus {
   List<Player> playerWithoutUser;
   bool get blocks() => true;
   WaitingForReplacingUser() {

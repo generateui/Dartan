@@ -126,6 +126,7 @@ class AllSupportedLists extends ImmutableL<Iterable<Testable>> {
    new SupportedGameActions(),
    new SupportedLobbyActions(),
    new SupportedActions(),
+   new SupportedDices(), 
    new SupportedListenableLists()]);
 }
 /** Various ungrouped implementations */

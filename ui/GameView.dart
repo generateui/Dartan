@@ -8,4 +8,9 @@ class GameView {
   
   // Views
   BoardView boardView;
+  
+  Element root;
+  GameView() {
+    
+  }
 }

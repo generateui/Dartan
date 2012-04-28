@@ -2,9 +2,9 @@
 developmentcard stack, dice, basically anything that needs 
 randomization */
 class ServerGame {
-  Game game;
-  List<DevelopmentCard> developmentCards;
-  Random random;
+  Game game; // Wrapped game
+  List<DevelopmentCard> developmentCards; // Development cards in randomized order
+  Random random; // Abstracted randomization generator
   Dice dice;
   _init() {
     random = new ClientRandom();

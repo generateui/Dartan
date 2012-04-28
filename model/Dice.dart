@@ -1,18 +1,49 @@
 /** Anything which produces a dice roll */
-interface Dice {
+interface Dice extends Testable {
   DiceRoll roll();
+}
+class SupportedDices extends ImmutableL<Dice> {
+  SupportedDices() : super([new RandomDice(), new PredictableDice(), new StackDice()]);
 }
 class DiceRoll {
   int dice1;
   int dice2;
   int total() => dice1 + dice2;
   DiceRoll(this.dice1, this.dice2);
+  DiceRoll.fromTotal(int total) {
+    if (total > 6) {
+      dice1 = 6;
+      dice2 = total - 6;
+    } else {
+      dice1 = total - 1;
+      dice2 = 1;
+    }
+  }
 }
 /** Produces a random roll each time this dice is rolled */
 class RandomDice implements Dice {
   Random random;
-  RandomDice(this.random);
-  DiceRoll roll() => new DiceRoll(random.intFromOne(11) + 1, random.intFromOne(11) + 1);
+  RandomDice([this.random]) {
+    if (random == null) {
+      random = new ClientRandom();
+    }
+  }
+  DiceRoll roll() => new DiceRoll(random.intFromOne(6), random.intFromOne(6));
+  test() {  
+    RandomDice dice = new RandomDice(new ClientRandom());
+    HashMap<int, int> rolls = new HashMap<int, int>();
+    for (int i=0; i<1000; i++) { // Roll the dice many times, add it to the roll count
+      DiceRoll rollll = dice.roll();
+      if (rolls[rollll.total()] == null)
+        rolls[rollll.total()] = 0;
+      rolls[rollll.total()]++;
+    }
+    
+    for (int i=2; i< 13; i++) { // 2-12
+      Expect.isTrue(rolls[i] != null, "${i} should have rolled at least once"); 
+      Expect.isTrue(rolls[i] > 0, "${i} should have rolled at least once");
+    }
+  }
 }
 /** Takes a roll from 36 predefined rolls */
 class StackDice implements Dice {
@@ -20,17 +51,22 @@ class StackDice implements Dice {
   int reshuffleTreshold;
   int rollCount = 0;
   Random random;
-  StackDice(this.random) {
+  StackDice([this.random]) {
+    if (random == null)
+      random = new ClientRandom();
     resetRolls();
   }
+  /** Returns roll from 36 predefined rolls,. Reshuffles if x rolls are left,
+  where x is a random count between 1-6. */
   DiceRoll roll() {
-    rollCount++;
-    if ((36-rollCount)== reshuffleTreshold)
-      resetRolls();
     int totalRoll = rolls[random.intFromZero(rolls.length)];
     rolls.removeRange(rolls.indexOf(totalRoll), 1);
-    return new DiceRoll(totalRoll / 6, totalRoll % 6);
+    rollCount++;
+    if ((36-rollCount) == reshuffleTreshold)
+      resetRolls();
+    return new DiceRoll.fromTotal(totalRoll);
   }
+  /** Remove all rolls and add 36 new dice rolls */
   void resetRolls() {
     if (rolls==null) {
       rolls = new List<int>();
@@ -42,16 +78,49 @@ class StackDice implements Dice {
         rolls.add(first + second);
     reshuffleTreshold = random.intFromOne(6); 
   }
+  test() {
+    StackDice dice = new StackDice();
+    dice.reshuffleTreshold = 0;
+    HashMap<int, int> testRolls = new HashMap<int, int>();
+    for (int i=1; i<37; i++) {
+      DiceRoll rollll = dice.roll();
+      if (testRolls[rollll.total()] == null)
+        testRolls[rollll.total()]=0;
+      testRolls[rollll.total()]++;
+    }
+    Expect.isTrue(testRolls[2] == 1, "2 should have been rolled 1x");
+    Expect.isTrue(testRolls[3] == 2, "3 should have been rolled 2x");
+    Expect.isTrue(testRolls[4] == 3, "4 should have been rolled 3x");
+    Expect.isTrue(testRolls[5] == 4, "5 should have been rolled 4x");
+    Expect.isTrue(testRolls[6] == 5, "6 should have been rolled 5x");
+    Expect.isTrue(testRolls[7] == 6, "7 should have been rolled 6x");
+    Expect.isTrue(testRolls[8] == 5, "8 should have been rolled 5x");
+    Expect.isTrue(testRolls[9] == 4, "9 should have been rolled 4x");
+    Expect.isTrue(testRolls[10] == 3, "10 should have been rolled 3x");
+    Expect.isTrue(testRolls[11] == 2, "11 should have been rolled 2x");
+    Expect.isTrue(testRolls[12] == 1, "12 should have been rolled 1x");
+  }
 }
 /** Dice where the rolls are known up-front for testing purposes */
 class PredictableDice implements Dice {
   List<int> rolls; // the rolls to produce [DiceRoll]s from
   Iterator<int> rollsIterator;
-  PredictableDice(this.rolls) {
+  PredictableDice([this.rolls]) {
+    if (rolls == null)
+      rolls = new List<int>();
     rollsIterator = rolls.iterator();
   }
+  /** Returns next diceroll from stack */
   DiceRoll roll()  {
+    Expect.isTrue(rollsIterator.hasNext(), "Out of rolls");
     int totalRoll = rollsIterator.next();
-    return new DiceRoll(totalRoll / 6, totalRoll % 6);
+    return new DiceRoll.fromTotal(totalRoll);
+  }
+  test() {
+    PredictableDice dice = new PredictableDice([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+    for (int i=2; i< 13; i++) {
+      DiceRoll diceRoll = dice.roll();
+      Expect.isTrue(diceRoll.total() == i, "Expected to roll ${i}, instead got ${diceRoll.total()}");
+    }
   }
 }

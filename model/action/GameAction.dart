@@ -24,17 +24,28 @@ class AbstractGameAction implements GameAction {
   Date  performedTime;
   GamePhase gamePhase;
   TurnPhase turnPhase;
+  AbstractGameAction();
   bool get isFromServer() => false;
   bool get inGame() => false;
-  bool isValid() => false;
+  bool isValid() {
+    Expect.isNotNull(id);
+    Expect.isNotNull(player);
+    Expect.isNotNull(playerId);
+    Expect.isNotNull(user);
+    Expect.isNotNull(userId);
+    Expect.isNotNull(gamePhase);
+    Expect.isNotNull(turnPhase);
+    return true;
+  }
   bool allowedTurnPhase(TurnPhase tp) => false;
   bool allowedGamePhase(GamePhase gp) => false;
   bool get isServer() => this is ServerAction;
   bool get isGame() => true;
   bool get isLobby() => this is LobbyAction;
   bool get isTrade() => this is TradeAction;
-  AbstractGameAction();
-  prepare(Game game) { }
+  prepare(Game game) { 
+    gamePhase = game.currentGamePhase;
+  }
   perform(Game game) { }
   performServer(ServerGame serverGame) { }
   /** grabs user and player by userId and sets it */
@@ -67,7 +78,7 @@ class StartGame extends AbstractGameAction {
 }
 class RollDice extends AbstractGameAction {
   DiceRoll rolledDice;
-  bool allowedGamePhase(GamePhase gp) => gp.isDetermineFirstPlayer; // chatting is always allowed
+  bool allowedGamePhase(GamePhase gp) => gp.isDetermineFirstPlayer || gp.isTurns;
   bool allowedTurnPhase(TurnPhase tp) => tp.isBeforeDiceRoll;
   prepare(Game game) {
     findUserAndPlayer(game);
@@ -82,8 +93,6 @@ class RollDice extends AbstractGameAction {
     }
   }
   performServer(ServerGame serverGame) {
-    int first = serverGame.random.intFromOne(6);
-    int second = serverGame.random.intFromOne(6);
-    rolledDice = new DiceRoll(first, second);
+    rolledDice = serverGame.dice.roll();
   }
 }
