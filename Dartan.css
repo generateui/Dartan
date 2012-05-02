@@ -125,3 +125,8 @@ h1 {
  .none {
    	 	font-family: 'Ubuntu Mono', sans-serif;
  }
+ .lobby {
+ }
+ .lobby ul {
+ 	list-style: none;
+ }

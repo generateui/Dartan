@@ -35,6 +35,7 @@
 #source('model/action/GameAction.dart');
 #source('model/action/LobbyAction.dart');
 #source('model/GameServer.dart');
+#source('model/Lobby.dart');
 
 // UI
 #source('ui/BoardState.dart');
@@ -49,6 +50,7 @@
 #source('ui/ResourcesView.dart');
 #source('ui/Visual.dart');
 #source('ui/GameView.dart');
+#source('ui/LobbyView.dart');
 
 // Test
 #source('test/ResourcesTest.dart');

@@ -56,7 +56,7 @@ class StackDice implements Dice {
       random = new ClientRandom();
     resetRolls();
   }
-  /** Returns roll from 36 predefined rolls,. Reshuffles if x rolls are left,
+  /** Returns roll from 36 predefined rolls. Reshuffles if x rolls are left,
   where x is a random count between 1-6. */
   DiceRoll roll() {
     int totalRoll = rolls[random.intFromZero(rolls.length)];
@@ -122,5 +122,8 @@ class PredictableDice implements Dice {
       DiceRoll diceRoll = dice.roll();
       Expect.isTrue(diceRoll.total() == i, "Expected to roll ${i}, instead got ${diceRoll.total()}");
     }
+  }
+  predict(int predictedRoll) {
+    rolls.add(predictedRoll);
   }
 }

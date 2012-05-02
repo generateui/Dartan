@@ -1,7 +1,7 @@
 class CellTest {
   static test() {
     Cell c = new Cell(0, 0);
-    Expect.equals(6, c.cells.length, "Each cell should have 6 neighbours");
+    Expect.equals(6, c.cells.length, "A cell should have 6 neighbours");
     //Expect.equals(new Cell(-1, 0), c.cells[0]);
     Cell copy = new Cell(0,0);
     Expect.equals(c.hashCode(), copy.hashCode(), "equal hashes");

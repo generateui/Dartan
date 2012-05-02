@@ -2,7 +2,7 @@ class SupportedGames extends ImmutableL<Game> {
   SupportedGames() : super([new Game()]);
 }
 
-class Game implements Testable, Observable {
+class Game implements Testable, Observable, Hashable {
   ObservableHelper observable;
   static User get serverUser() => new ServerUser();
   
@@ -11,13 +11,15 @@ class Game implements Testable, Observable {
   Player /* on */ playerOnTurn;
   User host; 
   Board board;
+  String name = "UnnamedGame";
+  int id;
   
   int developmentCardCount = 0; 
   
   ListenableList<User> spectators;
   ListenableList<User> users;
   ListenableList<GameAction> actions;
-  ListenableList<Say> chats;
+  ListenableList<SayGame> chats;
   ListenableList<Action> queue;
   ListenableList<DevelopmentCard> developmentCards;
   PlayerListMu players;
@@ -93,6 +95,13 @@ class Game implements Testable, Observable {
   void offSetted(String property, PropertyChanged handler) {
     observable.removeListener(property, handler);
   }
+  // Hashable
+  int hashCode() {
+    if (id==null)
+      id = Dartan.generateHashCode(this);
+    return id;
+  }
   
   test() { }
+  
 }

@@ -1,11 +1,11 @@
 class GameTest {
   Territory mainIsland;
+  PredictableDice dice;
   void test() {
     Game game = new Game();
+    dice = new PredictableDice();
     
-
-    
-    game.board = board;
+    game.board = createTestBoard();
     GameServer server = new LocalServer(game);
     
     User observer = new User(0, "Whooptidoo", "whoop@tidoo.com");
@@ -45,7 +45,7 @@ class GameTest {
     server.send(join3);
     
     // Test a chat message
-    Say say = new Say();
+    SayGame say = new SayGame();
     say.message = "Merp. gotta get another player";
     say.userId = player1.user.id;
     server.send(say);
@@ -82,7 +82,7 @@ class GameTest {
     board.addTile(new Sea(new Cell(6, 4)));
     
     // Get a reference to a territory and add it to the board
-    MainIsland mainIsland = new MainIsland();
+    mainIsland = new MainIsland();
     board.territories.add(mainIsland);
     
     // Add every basic type of tile on a seperate row

@@ -17,7 +17,7 @@ interface ServerAction extends Action {
   //perform(Application app);
 }
 class SupportedActions extends ImmutableL {
-  SupportedActions() : super([new AbstractGameAction(), new Say()]);
+  SupportedActions() : super([new AbstractGameAction(), new SayGame()]);
 }
 /** Abstract convenience implementation of an [Action] */
 class AbstractAction implements Action {
@@ -40,13 +40,4 @@ class AbstractAction implements Action {
       id = Dartan.generateHashCode(this);
     return id;
   }
-}
-
-class Say extends AbstractAction {
-  String message;
-  perform(Game game) {
-    game.chats.add(this); // just add it to the chat history of the game
-  } 
-  bool allowedGamePhase(GamePhase gp) => true; // chatting is always allowed
-  bool allowedTurnPhase(TurnPhase tp) => true;
 }

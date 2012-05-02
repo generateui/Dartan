@@ -62,6 +62,15 @@ class AbstractGameAction implements GameAction {
   toText() => "[${id}, ${Dartan.name(this)}, ${user.name}]";
   test() {}
 }
+class SayGame extends AbstractAction {
+  String message;
+  perform(Game game) {
+    game.chats.add(this); // just add it to the chat history of the game
+  } 
+  bool allowedGamePhase(GamePhase gp) => true; // chatting is always allowed
+  bool allowedTurnPhase(TurnPhase tp) => true;
+  String toText() => "${user.name}: ${message}";
+}
 /** A player starts the game */
 class StartGame extends AbstractGameAction {
   bool allowedGamePhase(GamePhase gp) => gp.isLobby; // chatting is always allowed
@@ -76,8 +85,9 @@ class StartGame extends AbstractGameAction {
     serverGame.game.startedDateTime = new Date.now();
   }
 }
+/** Roll the dice in various phases of the game */
 class RollDice extends AbstractGameAction {
-  DiceRoll rolledDice;
+  DiceRoll rolledDice; // Diceroll, generated at the server
   bool allowedGamePhase(GamePhase gp) => gp.isDetermineFirstPlayer || gp.isTurns;
   bool allowedTurnPhase(TurnPhase tp) => tp.isBeforeDiceRoll;
   prepare(Game game) {

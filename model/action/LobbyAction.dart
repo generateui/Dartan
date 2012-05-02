@@ -6,19 +6,7 @@ class SupportedLobbyActions extends ImmutableL<LobbyAction> {
   SupportedLobbyActions() : super([new AbstractLobbyAction(), new JoinLobby(), 
     new NewGame(), new JoinLobby(), new LeaveLobby()]);
 }
-class Lobby {
-  ListenableList<User> users;
-  ListenableList<Game> games;
-  Lobby() {
-    users = new ListenableList<User>();
-    games = new ListenableList<Game>();
-  }
-  prepareAction(LobbyAction action) {
-    //action.user = byId(action.id, users);
-  }
-
-}
-class AbstractLobbyAction implements Action {
+class AbstractLobbyAction implements LobbyAction {
   int id;
   Date performedTime;
   int userId;
@@ -38,12 +26,19 @@ class AbstractLobbyAction implements Action {
   test() {}
   String toText() => Dartan.name(this);
 }
+class SayLobby extends AbstractLobbyAction {
+  String message;
+  update(Lobby lobby) {
+    lobby.chats.add(this);
+  }
+  String toText() => "${user.name}: ${message}";
+}
 /** A user just logged in */
 class JoinLobby extends AbstractLobbyAction {
   update(Lobby lobby) {
     lobby.users.add(user);
   }
-  String toText() => "${user.name} joined";
+  String toText() => "${user.name} joined the lobby";
 }
 /** A user left the lobby */
 class LeaveLobby extends AbstractLobbyAction {
@@ -61,4 +56,5 @@ class NewGame extends AbstractLobbyAction {
   update(Lobby lobby) {
     lobby.games.add(game);
   }
+  String toText() => "${user.name} created a new game: ${game.name}";
 }
