@@ -105,3 +105,42 @@ class Town implements Piece, VerticePiece, Producer, VictoryPointItem {
     
   }
 }
+class City implements Piece, VerticePiece, Producer, VictoryPointItem {
+  Player player;
+  int id;
+  Vertice vertice;
+  ResourceList get cost() => new CityCost();
+  bool get isStock() => true;
+  bool get affectsRoad() => false;
+  int get points() => 2;
+  addToPlayer(Player p) {
+    p.cities.add(this);
+    p.stock.cities.remove(this);
+    p.victoryPoints.add(this);
+    p.producers.add(this);
+  }
+  removeFromPlayer(Player p) {
+    p.cities.remove(this);
+    p.stock.cities.add(this);
+    p.victoryPoints.remove(this);
+    p.producers.remove(this);
+  }
+  ResourceList produce(Tile tile) {
+    // TODO: implement
+  }
+  // Copyable
+  City copy() {
+    City copyy = new City();
+    copyy.player = player;
+    return copyy;
+  }
+  // Hashable
+  int hashCode() {
+    if (id==null)
+      id = Dartan.generateHashCode(this);
+    return id;
+  }
+  test() {
+    
+  }
+}

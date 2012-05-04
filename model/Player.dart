@@ -11,6 +11,7 @@ class Player implements Hashable, Identifyable, Observable {
   ListenableList<Town> towns;
   ListenableList<Producer> producers;
   ListenableList<VerticePiece> verticePieces;
+  ListenableList<City> cities;
   Stock stock;
   set /* on */ user(User u) {
     if (user != u) {
@@ -30,6 +31,7 @@ class Player implements Hashable, Identifyable, Observable {
     towns = new ListenableList<Town>();
     producers = new ListenableList<Producer>();
     verticePieces = new ListenableList<VerticePiece>();
+    cities = new ListenableList<City>();
   }
   int hashCode() {
     if (id==null)
