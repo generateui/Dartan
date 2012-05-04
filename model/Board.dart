@@ -24,6 +24,8 @@ class Board implements Observable {
   HashSet<Vertice> get vertices() => _vertices;
   HashSet<Edge> get edges() => _edges;
   Set<Tile> get tiles() => _tilesByCell.getValues();
+  HashMap<Vertice, List<VerticePiece>> verticePieces; // Keep 'em in a list, multiple pieces per vertice possible
+  HashMap<Edge, EdgePiece> edgePieces;
   
   init() {
     _vertices = new HashSet<Vertice>();
@@ -81,7 +83,12 @@ class Board implements Observable {
   void _addVertices(Cell c) {
     _vertices.addAll(c.vertices);
   }
-  
+  void addRoad(Road road) {
+    edgePieces[road.edge] = road;
+  }
+  void removeRoad(Road road) {
+    edgePieces[road.edge] = null;
+  }
   /** All spots target player allowed to build his first town on */
   Set<Vertice> firstTownPossibilities() => _vertices.filter((Vertice v) => 
       landBuildable(v) && !_forbiddenVertices.contains(v));

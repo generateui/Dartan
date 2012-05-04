@@ -5,6 +5,9 @@ class Player implements Hashable, Identifyable, Observable {
   int id;
   String color;
   ObservableHelper observable;
+  ListenableList<Road> roads;
+  ListenableList<EdgePiece> edgePieces;
+  Stock stock;
   set /* on */ user(User u) {
     if (user != u) {
       User old = user;
@@ -16,6 +19,9 @@ class Player implements Hashable, Identifyable, Observable {
   Player(this._user) {
     id = user.id;
     observable = new ObservableHelper();
+    stock = new Stock();
+    roads = new ListenableList<Road>();
+    edgePieces = new ListenableList<EdgePiece>();
   }
   int hashCode() {
     if (id==null)

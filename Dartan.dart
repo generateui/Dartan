@@ -36,6 +36,9 @@
 #source('model/action/LobbyAction.dart');
 #source('model/GameServer.dart');
 #source('model/Lobby.dart');
+#source('model/Piece.dart');
+#source('model/Stock.dart');
+
 
 // UI
 #source('ui/BoardState.dart');
