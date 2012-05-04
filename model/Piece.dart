@@ -10,7 +10,7 @@ interface Piece extends Identifyable, Hashable, Copyable, Testable {
   removeFromPlayer(Player player);
 }
 /** A piece producing resources for the player */
-interface Producable {
+interface Producer {
   ResourceList produce(Tile tile);
   Vertice get vertice();
 }
@@ -26,6 +26,9 @@ interface EdgePiece {
 /** Piece residing on a vertice, e.g. a town or city */
 interface VerticePiece {
   Vertice vertice;
+}
+interface VictoryPointItem {
+  int get points();
 }
 class Road implements Piece, EdgePiece {
   Player player;
@@ -50,6 +53,45 @@ class Road implements Piece, EdgePiece {
   // Copyable
   Road copy() {
     Road copyy = new Road();
+    copyy.player = player;
+    return copyy;
+  }
+  // Hashable
+  int hashCode() {
+    if (id==null)
+      id = Dartan.generateHashCode(this);
+    return id;
+  }
+  test() {
+    
+  }
+}
+class Town implements Piece, VerticePiece, Producer, VictoryPointItem {
+  Player player;
+  int id;
+  Vertice vertice;
+  ResourceList get cost() => new TownCost();
+  bool get isStock() => true;
+  bool get affectsRoad() => true;
+  int get points() => 1;
+  addToPlayer(Player p) {
+    p.towns.add(this);
+    p.stock.towns.remove(this);
+    p.victoryPoints.add(this);
+    p.producers.add(this);
+  }
+  removeFromPlayer(Player p) {
+    p.towns.remove(this);
+    p.stock.towns.add(this);
+    p.victoryPoints.remove(this);
+    p.producers.remove(this);
+  }
+  ResourceList produce(Tile tile) {
+    // TODO: implement
+  }
+  // Copyable
+  Town copy() {
+    Town copyy = new Town();
     copyy.player = player;
     return copyy;
   }

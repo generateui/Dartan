@@ -7,6 +7,10 @@ class Player implements Hashable, Identifyable, Observable {
   ObservableHelper observable;
   ListenableList<Road> roads;
   ListenableList<EdgePiece> edgePieces;
+  ListenableList<VictoryPointItem> victoryPoints;
+  ListenableList<Town> towns;
+  ListenableList<Producer> producers;
+  ListenableList<VerticePiece> verticePieces;
   Stock stock;
   set /* on */ user(User u) {
     if (user != u) {
@@ -22,6 +26,10 @@ class Player implements Hashable, Identifyable, Observable {
     stock = new Stock();
     roads = new ListenableList<Road>();
     edgePieces = new ListenableList<EdgePiece>();
+    victoryPoints= new ListenableList<VictoryPointItem>();
+    towns = new ListenableList<Town>();
+    producers = new ListenableList<Producer>();
+    verticePieces = new ListenableList<VerticePiece>();
   }
   int hashCode() {
     if (id==null)
