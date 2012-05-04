@@ -33,12 +33,19 @@ class Player implements Hashable, Identifyable, Observable {
     verticePieces = new ListenableList<VerticePiece>();
     cities = new ListenableList<City>();
   }
+  int totalPoints() {
+    int total = 0;
+    for (VictoryPointItem vp in victoryPoints) {
+      total += vp.points;
+    }
+    return total;
+  }
   int hashCode() {
     if (id==null)
       id = Dartan.generateHashCode(this);
     return id;
   }
-  String toText() => "[${id}, ${_user.name}, ${color}";
+  String toText() => "${id}, ${_user.name}, ${color}";
   /** Observable */
   void onSetted(String property, PropertyChanged handler) {
     observable.addListener(property, handler);

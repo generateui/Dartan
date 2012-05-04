@@ -9,6 +9,9 @@ interface Piece extends Identifyable, Hashable, Copyable, Testable {
   addToPlayer(Player player); 
   removeFromPlayer(Player player);
 }
+class SupportedPieces extends ImmutableL<Piece> {
+  SupportedPieces() : super([new Road(), new Town(), new City()]);
+}
 /** A piece producing resources for the player */
 interface Producer {
   ResourceList produce(Tile tile);
@@ -63,7 +66,17 @@ class Road implements Piece, EdgePiece {
     return id;
   }
   test() {
-    
+    User user = new ServerUser();
+    Player testPlayer = new Player(user);
+    Road road = new Road();
+    testPlayer.stock.roads.add(road);
+    Expect.isTrue(testPlayer.roads.length == 0, "Player should have no roads");
+    Expect.isTrue(testPlayer.stock.roads.length == 1, "Player should have one road in stock");
+    Expect.isTrue(testPlayer.totalPoints() == 0, "Player should have 0 points");
+    road.addToPlayer(testPlayer);
+    Expect.isTrue(testPlayer.roads.length == 1, "Player should have 1 road");
+    Expect.isTrue(testPlayer.stock.roads.length == 0, "Player should have no roads in stock");
+    Expect.isTrue(testPlayer.edgePieces.length == 1, "Player should have one edgePiece");
   }
 }
 class Town implements Piece, VerticePiece, Producer, VictoryPointItem {
