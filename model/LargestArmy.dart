@@ -1,20 +1,20 @@
-/** Represents the 2 points of the longest road */
-class LongestRoad implements VictoryPointItem, PlayerPiece, Observable {
+class LargestArmy implements VictoryPointItem, Observable, PlayerPiece, Testable {
   Player /* on */ _player;
   ObservableHelper observable;
-  LongestRoute route;
   int get points() => 2;
-  LongestRoad() {
+  int get knightCount() => _player == null ? 0 : player.knights.length;
+  LargestArmy() {
     observable = new ObservableHelper();
   }
-  Player get /* on */ player() => _player;
-  set /* on */ player(Player p) {
+  Player get player() => _player;
+  set player(Player p) {
     if (p != _player) {
       Player oldPlayer = _player;
       _player = p;
       observable.fire("player", oldPlayer, p);
     }
   }
+  // PlayerPiece
   addToPlayer(Player p) {
     p.victoryPoints.add(this);
   }
@@ -27,5 +27,9 @@ class LongestRoad implements VictoryPointItem, PlayerPiece, Observable {
   }
   void offSetted(String property, PropertyChanged handler) {
     observable.removeListener(property, handler);
+  }
+  // Testable
+  test() {
+    
   }
 }

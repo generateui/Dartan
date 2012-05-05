@@ -57,9 +57,9 @@ class Road implements Piece, EdgePiece, PlayerPiece {
   }
   // Copyable
   Road copy() {
-    Road copyy = new Road();
-    copyy.player = player;
-    return copyy;
+    Road roadCopy = new Road();
+    roadCopy.player = player;
+    return roadCopy;
   }
   // Hashable
   int hashCode() {
@@ -99,9 +99,9 @@ class Town implements Piece, VerticePiece, Producer, VictoryPointItem, PlayerPie
   }
   // Copyable
   Town copy() {
-    Town copyy = new Town();
-    copyy.player = player;
-    return copyy;
+    Town townCopy = new Town();
+    townCopy.player = player;
+    return townCopy;
   }
   // Hashable
   int hashCode() {
@@ -140,9 +140,9 @@ class City implements Piece, VerticePiece, Producer, VictoryPointItem, PlayerPie
   }
   // Copyable
   City copy() {
-    City copyy = new City();
-    copyy.player = player;
-    return copyy;
+    City cityCopy = new City();
+    cityCopy.player = player;
+    return cityCopy;
   }
   // Hashable
   int hashCode() {

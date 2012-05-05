@@ -12,6 +12,8 @@ class Player implements Hashable, Identifyable, Observable {
   ListenableList<VerticePiece> verticePieces;
   ListenableList<VictoryPointItem> victoryPoints;
   ListenableList<Producer> producers;
+  ListenableList<Knight> knights;
+  ListenableList<DevelopmentCard> playedDevelopmentCards;
   Stock stock;
   set /* on */ user(User u) {
     if (user != u) {
@@ -32,6 +34,8 @@ class Player implements Hashable, Identifyable, Observable {
     producers = new ListenableList<Producer>();
     verticePieces = new ListenableList<VerticePiece>();
     cities = new ListenableList<City>();
+    knights = new ListenableList<Knight>();
+    playedDevelopmentCards = new ListenableList<DevelopmentCard>();
   }
   int totalPoints() {
     int total = 0;

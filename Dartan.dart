@@ -41,6 +41,7 @@
 #source('model/Robber.dart');
 #source('model/LongestRoad.dart');
 #source('model/Route.dart');
+#source('model/LargestArmy.dart');
 
 
 // UI

@@ -37,3 +37,8 @@ class VictoryPoint extends AbstractDevelopmentCard {
 class DummyDevelopmentCard extends AbstractDevelopmentCard {
   DummyDevelopmentCard([int id]) : super(id);
 }
+class Knight extends AbstractDevelopmentCard {
+  Knight([id]) : super(id);
+  bool turnAllowed(TurnPhase turnPhase) => turnPhase.isBeforeDiceRoll || turnPhase.isBuilding;
+  bool gameAllowed(GamePhase gamePhase) => gamePhase.isTurns;
+}
