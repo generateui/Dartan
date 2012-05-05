@@ -6,12 +6,12 @@ class Player implements Hashable, Identifyable, Observable {
   String color;
   ObservableHelper observable;
   ListenableList<Road> roads;
-  ListenableList<EdgePiece> edgePieces;
-  ListenableList<VictoryPointItem> victoryPoints;
   ListenableList<Town> towns;
-  ListenableList<Producer> producers;
-  ListenableList<VerticePiece> verticePieces;
   ListenableList<City> cities;
+  ListenableList<EdgePiece> edgePieces;
+  ListenableList<VerticePiece> verticePieces;
+  ListenableList<VictoryPointItem> victoryPoints;
+  ListenableList<Producer> producers;
   Stock stock;
   set /* on */ user(User u) {
     if (user != u) {

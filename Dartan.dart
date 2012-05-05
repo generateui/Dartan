@@ -65,6 +65,9 @@
 #source('test/PortTest.dart');
 #source('test/RandomTest.dart');
 #source('test/GameTest.dart');
+#source('test/TownTest.dart');
+#source('test/CityTest.dart');
+#source('test/RoadTest.dart');
 
 #resource('zettown.css');
 

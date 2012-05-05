@@ -68,17 +68,7 @@ class Road implements Piece, EdgePiece {
   }
   // Testable
   test() {
-    User user = new ServerUser();
-    Player testPlayer = new Player(user);
-    Road road = new Road();
-    testPlayer.stock.roads.add(road);
-    Expect.isTrue(testPlayer.roads.length == 0, "Player should have no roads");
-    Expect.isTrue(testPlayer.stock.roads.length == 1, "Player should have one road in stock");
-    Expect.isTrue(testPlayer.totalPoints() == 0, "Player should have 0 points");
-    road.addToPlayer(testPlayer);
-    Expect.isTrue(testPlayer.roads.length == 1, "Player should have 1 road");
-    Expect.isTrue(testPlayer.stock.roads.length == 0, "Player should have no roads in stock");
-    Expect.isTrue(testPlayer.edgePieces.length == 1, "Player should have one edgePiece");
+    new RoadTest().test();
   }
 }
 class Town implements Piece, VerticePiece, Producer, VictoryPointItem {
@@ -119,18 +109,7 @@ class Town implements Piece, VerticePiece, Producer, VictoryPointItem {
     return id;
   }
   test() {
-    User user = new ServerUser();
-    Player testPlayer = new Player(user);
-    Town town = new Town();
-    testPlayer.stock.towns.add(town);
-    Expect.isTrue(testPlayer.totalPoints() == 0, "Player shouldn't have any points");
-    Expect.isTrue(testPlayer.stock.towns.length == 1, "Player should have one stock town");
-    town.addToPlayer(testPlayer);
-    Expect.isTrue(testPlayer.totalPoints() == 1, "Player got a town, should have 1 point");
-    Expect.isTrue(testPlayer.towns.length == 1, "Player got a town, should have 1 town");
-    Expect.isTrue(testPlayer.victoryPoints.length == 1, "Player should have 1 victoryPointItem");
-    Expect.isTrue(testPlayer.stock.towns.length == 0, "Player shouldn't have any stock towns");
-    Expect.isTrue(testPlayer.verticePieces.length == 1, "Player should have one verticePiece in his verticePiece collection");
+    new TownTest().test();
   }
 }
 class City implements Piece, VerticePiece, Producer, VictoryPointItem { 
@@ -145,12 +124,14 @@ class City implements Piece, VerticePiece, Producer, VictoryPointItem {
     p.cities.add(this);
     p.stock.cities.remove(this);
     p.victoryPoints.add(this);
+    p.verticePieces.add(this);
     p.producers.add(this);
   }
   removeFromPlayer(Player p) {
     p.cities.remove(this);
     p.stock.cities.add(this);
     p.victoryPoints.remove(this);
+    p.verticePieces.remove(this);
     p.producers.remove(this);
   }
   ResourceList produce(Tile tile) {
@@ -169,6 +150,6 @@ class City implements Piece, VerticePiece, Producer, VictoryPointItem {
     return id;
   }
   test() {
-    
+    new CityTest().test();
   }
 }
