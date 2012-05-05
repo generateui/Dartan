@@ -30,6 +30,7 @@ interface EdgePiece {
 interface VerticePiece {
   Vertice vertice;
 }
+/** Anything giving the player a point */
 interface VictoryPointItem {
   int get points();
 }
@@ -65,6 +66,7 @@ class Road implements Piece, EdgePiece {
       id = Dartan.generateHashCode(this);
     return id;
   }
+  // Testable
   test() {
     User user = new ServerUser();
     Player testPlayer = new Player(user);
@@ -91,12 +93,14 @@ class Town implements Piece, VerticePiece, Producer, VictoryPointItem {
     p.towns.add(this);
     p.stock.towns.remove(this);
     p.victoryPoints.add(this);
+    p.verticePieces.add(this);
     p.producers.add(this);
   }
   removeFromPlayer(Player p) {
     p.towns.remove(this);
     p.stock.towns.add(this);
-    p.victoryPoints.remove(this);
+    p.victoryPoints.remove(this); 
+    p.verticePieces.remove(this); 
     p.producers.remove(this);
   }
   ResourceList produce(Tile tile) {
@@ -115,10 +119,21 @@ class Town implements Piece, VerticePiece, Producer, VictoryPointItem {
     return id;
   }
   test() {
-    
+    User user = new ServerUser();
+    Player testPlayer = new Player(user);
+    Town town = new Town();
+    testPlayer.stock.towns.add(town);
+    Expect.isTrue(testPlayer.totalPoints() == 0, "Player shouldn't have any points");
+    Expect.isTrue(testPlayer.stock.towns.length == 1, "Player should have one stock town");
+    town.addToPlayer(testPlayer);
+    Expect.isTrue(testPlayer.totalPoints() == 1, "Player got a town, should have 1 point");
+    Expect.isTrue(testPlayer.towns.length == 1, "Player got a town, should have 1 town");
+    Expect.isTrue(testPlayer.victoryPoints.length == 1, "Player should have 1 victoryPointItem");
+    Expect.isTrue(testPlayer.stock.towns.length == 0, "Player shouldn't have any stock towns");
+    Expect.isTrue(testPlayer.verticePieces.length == 1, "Player should have one verticePiece in his verticePiece collection");
   }
 }
-class City implements Piece, VerticePiece, Producer, VictoryPointItem {
+class City implements Piece, VerticePiece, Producer, VictoryPointItem { 
   Player player;
   int id;
   Vertice vertice;
