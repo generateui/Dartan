@@ -39,6 +39,8 @@
 #source('model/Piece.dart');
 #source('model/Stock.dart');
 #source('model/Robber.dart');
+#source('model/LongestRoad.dart');
+#source('model/Route.dart');
 
 
 // UI

@@ -4,13 +4,14 @@ interface Piece extends Identifyable, Hashable, Copyable, Testable {
   bool get isStock(); // If not yet placed on the board, is this piece kept in stock?
   bool get affectsRoad(); // When placed on board, recalculate longest road?
   ResourceList get cost(); // Cost to buy this piece, might be null
-
-  // Dispatched calls to add/remove the piece
-  addToPlayer(Player player); 
-  removeFromPlayer(Player player);
 }
 class SupportedPieces extends ImmutableL<Piece> {
   SupportedPieces() : super([new Road(), new Town(), new City()]);
+}
+/** Dispatched calls to add/remove the piece */
+interface PlayerPiece {
+  addToPlayer(Player player); 
+  removeFromPlayer(Player player);
 }
 /** A piece producing resources for the player */
 interface Producer {
@@ -34,7 +35,7 @@ interface VerticePiece {
 interface VictoryPointItem {
   int get points();
 }
-class Road implements Piece, EdgePiece {
+class Road implements Piece, EdgePiece, PlayerPiece {
   Player player;
   int id;
   Edge edge;
@@ -71,7 +72,7 @@ class Road implements Piece, EdgePiece {
     new RoadTest().test();
   }
 }
-class Town implements Piece, VerticePiece, Producer, VictoryPointItem {
+class Town implements Piece, VerticePiece, Producer, VictoryPointItem, PlayerPiece {
   Player player;
   int id;
   Vertice vertice;
@@ -112,7 +113,7 @@ class Town implements Piece, VerticePiece, Producer, VictoryPointItem {
     new TownTest().test();
   }
 }
-class City implements Piece, VerticePiece, Producer, VictoryPointItem { 
+class City implements Piece, VerticePiece, Producer, VictoryPointItem, PlayerPiece { 
   Player player;
   int id;
   Vertice vertice;
