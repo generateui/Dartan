@@ -38,6 +38,7 @@
 #source('model/Lobby.dart');
 #source('model/Piece.dart');
 #source('model/Stock.dart');
+#source('model/Robber.dart');
 
 
 // UI

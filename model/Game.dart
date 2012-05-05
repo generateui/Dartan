@@ -24,6 +24,7 @@ class Game implements Testable, Observable, Hashable {
   ListenableList<DevelopmentCard> developmentCards;
   PlayerListMu players;
   ResourceListMu bank;
+  Robber robber;
   
   List<GamePhase> phases;
   Iterator<GamePhase> phasesIterator;
