@@ -10,11 +10,12 @@ interface Port extends Hashable, Copyable, Identifyable, Testable {
   bool canTrade(Resource resource);
   String get color();
   bool get hasResource();
+  setCellAndDirection(Cell seaCell, int direction);
 }
 class SupportedPorts extends ImmutableL<Port> {
   SupportedPorts() : super([new AbstractPort(), new FourToOnePort(), new ThreeToOnePort()]);
 }
-class AbstractPort implements Port {  
+class AbstractPort implements Port {
   int id;
   Cell _landCell;
   Cell _seaCell;
@@ -31,8 +32,17 @@ class AbstractPort implements Port {
   Port copy() => new AbstractPort();
   bool get hasResource() => false;
   AbstractPort([this._seaCell, this._edgeDirection]) {
-    if (_seaCell != null)
-      _landCell = _seaCell.cells[edgeDirection];
+    if (_seaCell != null) {
+      setCellAndDirection(_seaCell, _edgeDirection);
+    }
+  }
+  setCellAndDirection(Cell seaCell, int direction) {
+    if (seaCell== null) {
+      print ("whoops");
+    }
+    _seaCell=seaCell;
+    _landCell = _seaCell.cells[direction];
+    _edge = new Edge(seaCell, landCell);
   }
   int divide(ResourceList resources, String resourceType) {
     return (resources.ofType(resourceType).length / inAmount).toInt();
@@ -59,5 +69,16 @@ class ThreeToOnePort extends AbstractPort {
   ThreeToOnePort([Cell seaCell, int edgeDirection]): super(seaCell, edgeDirection);
   int get inAmount() => 3;
   int get outAmount() => 1;
-  String get color() => "lightGrey";
+  String get color() => "blue";
+}
+class TwoToOnePort extends AbstractPort {
+  Resource resource;
+  TwoToOnePort(this.resource, [Cell seaCell, int edgeDirection]): super(seaCell, edgeDirection);
+  int get inAmount() => 2;
+  int get outAmount() => 1;
+  String get color() => resource.color;
+}
+class RandomPort extends AbstractPort {
+  RandomPort([Cell seaCell, int edgeDirection]): super(seaCell, edgeDirection);
+  String get color() => "black";
 }

@@ -10,7 +10,7 @@ class SupportedPieces extends ImmutableL<Piece> {
 }
 /** Dispatched calls to add/remove the piece */
 interface PlayerPiece {
-  addToPlayer(Player player); 
+  addToPlayer(Player player);
   removeFromPlayer(Player player);
 }
 /** A piece producing resources for the player */
@@ -21,7 +21,7 @@ interface Producer {
 /** Piece residing on an edge, e.g. a road, ship or bridge */
 interface EdgePiece {
   Edge edge;
-  
+
   // Assuming the vertice is not occupied by (friendly/non-friendly) VerticePiece
   bool get connectsWithRoad();
   bool get connectsWithShip();
@@ -34,6 +34,11 @@ interface VerticePiece {
 /** Anything giving the player a point */
 interface VictoryPointItem {
   int get points();
+}
+interface RoadData {
+  int id;
+  int playerId;
+  EdgeData edge;
 }
 class Road implements Piece, EdgePiece, PlayerPiece {
   Player player;
@@ -90,8 +95,8 @@ class Town implements Piece, VerticePiece, Producer, VictoryPointItem, PlayerPie
   removeFromPlayer(Player p) {
     p.towns.remove(this);
     p.stock.towns.add(this);
-    p.victoryPoints.remove(this); 
-    p.verticePieces.remove(this); 
+    p.victoryPoints.remove(this);
+    p.verticePieces.remove(this);
     p.producers.remove(this);
   }
   ResourceList produce(Tile tile) {
@@ -113,7 +118,7 @@ class Town implements Piece, VerticePiece, Producer, VictoryPointItem, PlayerPie
     new TownTest().test();
   }
 }
-class City implements Piece, VerticePiece, Producer, VictoryPointItem, PlayerPiece { 
+class City implements Piece, VerticePiece, Producer, VictoryPointItem, PlayerPiece {
   Player player;
   int id;
   Vertice vertice;

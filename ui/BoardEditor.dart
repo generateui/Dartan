@@ -6,14 +6,15 @@ class BoardEditor extends View {
   Board board;
   BoardVisual boardVisual;
   List<BoardState> boardStates;
-  
+
   BoardEditor([this.root]) {
-    if (root == null)
+    if (root == null) {
       root = new Element.tag("div");
+    }
     div = document.query(id);
     board = new Board(7,7);
-    boardRoot = new SVGElement.tag("svg");
-    boardVisual = new SvgBoard(board, boardRoot);
+    boardVisual = new SvgBoard();
+    boardVisual.board = board;
     buttonList = new Element.tag("div");
     stateName = new Element.tag("span");
     stateName.innerHTML = Dartan.name(boardVisual.boardState);
@@ -27,7 +28,7 @@ class BoardEditor extends View {
     }
     root.elements.add(stateName);
     root.elements.add(buttonList);
-    root.elements.add(boardRoot);
+    root.elements.add(boardVisual.element);
     div.elements.add(root);
     boardVisual.hideAllEdges();
     boardVisual.hideAllVertices();
@@ -37,6 +38,6 @@ class BoardEditor extends View {
     stateName.innerHTML = Dartan.name(bs);
   }
   show() {
-    
+
   }
 }

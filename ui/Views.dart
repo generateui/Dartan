@@ -6,7 +6,9 @@ class Views extends View {
   }
   show() {
     if (!isRendered) {
-      //makeTestPicker();
+      BoardInfoView biv = new BoardInfoView(new Board(10,10));
+      document.query("#infoBoard").elements.add(biv.element);
+      isRendered=true;
     }
   }
   void makeTestPicker() {
@@ -15,7 +17,7 @@ class Views extends View {
     new ResourcePicker(new MonopolyableResources(), 2);
     ResourceListMu mu = new ResourceListMu();
     new ResourcesView(mu, div);
-    
+
     for (ResourceList l in new SupportedResourceLists()) {
       ButtonElement addListButton = new Element.html("<button>${Dartan.smallIcon(l)} ${Dartan.name(l)}</button>");
       addListButton.on.click.add((Event e) {
@@ -34,51 +36,58 @@ class Views extends View {
 }
 /** Show a debug info view of a board */
 class BoardInfoView {
-  BoardVisual boardVisual; // Actual board
+  SvgBoard boardVisual; // Actual board
   Board board;
   CellNeighboursView cellNeighbours;
-  
+  Element element;
+
   BoardInfoView(this.board) {
-    boardVisual = new SvgBoard(board, document.query("#bord2"));
-    Element svgDiv = document.query("#svgBoardLeftColumn");
-    SVGElement svg = new SVGElement.tag("svg");
-    svg.attributes = {
-      "width": 200,
-      "height": 200
-    };
-    TileMeasurementInfo tmi = new TileMeasurementInfo(svg);
-    
+    element = new Element.tag("div");
+    Element boardColumn = new Element.html("<div class=span8></div>");
+    Element infoColumn = new Element.html("<div class=span4></div>");
+    boardVisual = new SvgBoard();
+    boardVisual.board = board;
+    boardColumn.elements.add(boardVisual.element);
+    TileMeasurementInfo tmi = new TileMeasurementInfo();
+
     // Show neighbours of hovered tile
-    cellNeighbours = new CellNeighboursView("#svgBoardLeftColumn");
+    cellNeighbours = new CellNeighboursView();
     boardVisual.onSetted("currentVisual", (Visual old, TileVisual newValue) {
       if (newValue is TileVisual)
         cellNeighbours.showCell(newValue.tile.cell);
     });
-    
+
     // Some buttons to switch edges/vertices groups on/off
     ButtonElement buttonShowEdges = new Element.html("<button>show edges</button>");
-    buttonShowEdges.on.click.add((Event e) { 
+    buttonShowEdges.on.click.add((Event e) {
       boardVisual.showAllEdges();
     });
-    svgDiv.elements.add(buttonShowEdges);
-    
+    infoColumn.elements.add(buttonShowEdges);
+
     ButtonElement buttonHideEdges = new Element.html("<button>hide edges</button>");
-    buttonHideEdges.on.click.add((Event e) { 
+    buttonHideEdges.on.click.add((Event e) {
       boardVisual.hideAllEdges();
     });
-    svgDiv.elements.add(buttonHideEdges);
-    
+    infoColumn.elements.add(buttonHideEdges);
+
     ButtonElement buttonShowVertices = new Element.html("<button>show vertices</button>");
-    buttonShowVertices.on.click.add((Event e) { 
+    buttonShowVertices.on.click.add((Event e) {
       boardVisual.showAllVertices();
     });
-    svgDiv.elements.add(buttonShowVertices);
-    
+    infoColumn.elements.add(buttonShowVertices);
+
     ButtonElement buttonHideVertices= new Element.html("<button>hide vertices</button>");
-    buttonHideVertices.on.click.add((Event e) { 
+    buttonHideVertices.on.click.add((Event e) {
       boardVisual.hideAllVertices();
     });
-    svgDiv.elements.add(buttonHideVertices);
-    svgDiv.elements.add(svg);
+    infoColumn.elements.add(buttonHideVertices);
+
+    infoColumn.elements.add(cellNeighbours.element);
+    //infoColumn.elements.add(tmi.element);
+
+    boardColumn.elements.add(boardVisual.element);
+
+    element.elements.add(infoColumn);
+    element.elements.add(boardColumn);
   }
 }

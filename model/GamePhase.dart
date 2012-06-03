@@ -15,7 +15,7 @@ class SupportedGamePhases extends ImmutableL<GamePhase> {
 /** Abstract convenience implementation of a [GamePhase] */
 class AbstractGamePhase implements GamePhase {
   int hash;
-  int hashCode() {    
+  int hashCode() {
     if (hash == null)
       hash = Dartan.generateHashCode(this);
     return hash;
@@ -32,6 +32,13 @@ class AbstractGamePhase implements GamePhase {
 /** Game is in the lobby, waiting for players */
 class LobbyPhase extends AbstractGamePhase {
   bool get isLobby() => true;
+  ListenableList<User> readyUsers;
+  LobbyPhase() : super() {
+    readyUsers = new ListenableList<User>();
+  }
+  unreadyAllExceptHost(User host) {
+    readyUsers.filter((User u) => u.id == host.id);
+  }
 }
 /** Game just started, players rolling dice to determine the first player */
 class DetermineFirstPlayerGamePhase extends AbstractGamePhase {
@@ -43,7 +50,7 @@ class DetermineFirstPlayerGamePhase extends AbstractGamePhase {
     currentRound = new HashMap<Player, DiceRoll>();
     rolls.add(currentRound);
   }
-  registerRoll(Game game, Player player, DiceRoll roll) { 
+  registerRoll(Game game, Player player, DiceRoll roll) {
     currentRound[player] = roll;
     if (currentRound.length == game.players.length) {
       //
@@ -60,4 +67,44 @@ class TurnsGamePhase extends AbstractGamePhase {
 class InitialPlacementGamePhase  extends AbstractGamePhase {
   bool get isInitialPlacement() => true;
 }
-  
+interface AllPhasesData {
+
+}
+class AllPhases extends AbstractGamePhase {
+  LobbyPhase lobby;
+  DetermineFirstPlayerGamePhase determinFirstPlayer;
+  InitialPlacementGamePhase initialPlacement;
+  TurnsGamePhase turns;
+  EndedGamePhase ended;
+  GamePhase current;
+  List<GamePhase> allPhases;
+  Iterator<GamePhase> iterator;
+  ObservableHelper observable;
+
+  AllPhases() : super() {
+    observable = new ObservableHelper();
+    allPhases = new List<GamePhase>();
+    allPhases.add(lobby);
+    allPhases.add(determinFirstPlayer);
+    allPhases.add(initialPlacement);
+    allPhases.add(turns);
+    allPhases.add(ended);
+    iterator = allPhases.iterator();
+  }
+
+  next(Game game) {
+    if (iterator.hasNext()) {
+      GamePhase oldPhase = current;
+      current.end(game);
+      current = iterator.next();
+      current.start(game);
+      observable.fire("current", oldPhase, current);
+    }
+  }
+
+  bool get isLobby() => current.isLobby;
+  bool get isDetermineFirstPlayer() => current.isDetermineFirstPlayer;
+  bool get isInitialPlacement() => current.isInitialPlacement;
+  bool get isTurns() => current.isTurns;
+  bool get isEnded() => current.isEnded;
+}

@@ -1,16 +1,16 @@
-/** Simple cycle presenter for main views. The name of the [View] implementor 
+/** Simple cycle presenter for main views. The name of the [View] implementor
 is used as unique identification */
 class ViewRouter {
   List<View> views;
   View activeView;
   ViewRouter() {
     views = new List.from([
-      new Test(), 
-      new BoardEditor(), 
-      new Intro(), 
-      new Tldr(), 
+      new Test(),
+      new BoardEditor(),
+      new Intro(),
+      new Tldr(),
       new Play(),
-      new Views(), 
+      new Views(),
       new Objects()
     ]);
     for (View view in views) {
@@ -20,12 +20,12 @@ class ViewRouter {
     }
     String loc = window.location.hash;
     if (loc == null || loc == "")
-      loc = "#Test";
-    
+      loc = "#Intro";
+
     show(views.filter((View v) => v.id == loc).iterator().next());
 
   }
-  
+
   show(View view) {
     print(view.id);
     if (activeView != null)
@@ -45,10 +45,21 @@ class View {
     div = document.query(id);
   }
   show() {
-    
+
   }
 }
-class Intro extends View { }
+class Intro extends View {
+  bool rendered = false;
+  show() {
+    if (!rendered) {
+      rendered=true;
+
+      Element beEl = document.query("#welcomeEditor");
+      BoardsViewer bv = new BoardsViewer();
+      beEl.elements.add(bv.element);
+    }
+  }
+}
 class Tldr extends View { }
 class Play extends View {
   bool rendered = false;
@@ -60,25 +71,25 @@ class Play extends View {
       div = document.query(id);
       Lobby lobby = new Lobby();
       LobbyView lobbyView = new LobbyView(lobby);
-      
+
       div.elements.add(lobbyView.toElement());
-      
+
       User user = new ServerUser();
-      
+
       JoinLobby join = new JoinLobby();
       join.user = user;
       lobby.performAction(join);
-      
+
       SayLobby say = new SayLobby();
       say.message = "jeuj";
       say.user = user;
       lobby.performAction(say);
-      
+
       NewGame newGame = new NewGame();
       newGame.user=user;
       lobby.performAction(newGame);
-      
+
       rendered = true;
     }
   }
-} 
+}

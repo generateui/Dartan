@@ -1,19 +1,14 @@
 /** Displays 6 neighbours with coordinates of target cell */
 class CellNeighboursView {
-  Element root; // root html element to add SVG element with board onto
+  Element element; // root html element to add SVG element with board onto
   Board board; // the fake board with 7 tiles to display
   BoardVisual boardVisual; // visual to display the board
-  SVGElement boardElement; // SVG element to put board on
   Cell fake; // fake cell to create a board from, using the cell itself and his neighbours
   List<Cell> cells; // All the fake cells to display (center + 6 neighbours)
   List<CellTextEntry> entries; // Keep track of SVG text elements by index
-  CellNeighboursView([String elementId]) {
-    root = document.query(elementId);
-    boardElement = new SVGElement.tag("svg");
-    boardElement.attributes = {
-      "width": 200,
-      "height": 200
-    };
+  CellNeighboursView() {
+    element = new Element.tag("div");
+
     cells = new List<Cell>();
     entries = new List<CellTextEntry>();
     fake = new Cell(1,1);
@@ -24,7 +19,12 @@ class CellNeighboursView {
     for (Cell c in cells) {
       board.addTile(new Sea(c));
     }
-    boardVisual = new SvgBoard(board, boardElement);
+    boardVisual = new SvgBoard();
+    boardVisual.svg.attributes = {
+      "width": 200,
+      "height": 200
+    };
+    boardVisual.board = board;
     boardVisual.hideAllEdges();
     boardVisual.hideAllVertices();
     for (Cell c in cells) {
@@ -39,9 +39,9 @@ class CellNeighboursView {
       };
       text.text = "woei";
       entries.add(new CellTextEntry(c, text));
-      boardElement.elements.add(text);
+      boardVisual.svg.elements.add(text);
+      element.elements.add(boardVisual.svg);
     }
-    root.elements.add(boardElement);
   }
   void showCell(Cell cellToShow) {
     showText(entries[6].textElement, cellToShow, "C: ${cellToShow.toText()}");

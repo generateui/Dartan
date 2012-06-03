@@ -17,8 +17,8 @@ class Lobby {
   }
   /** Performs given action on this lobby instance */
   performAction(LobbyAction action) {
-    prepareAction(action);
-    action.update(this);
-    actions.add(action);
+    prepareAction(action); // Ensure action instance is initialized
+    action.update(this);   // Dispatch call to the action instance
+    actions.add(action);   // Add to the log of actions in this lobby
   }
 }

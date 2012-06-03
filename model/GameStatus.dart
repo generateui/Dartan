@@ -24,6 +24,9 @@ class AbstractGameStatus implements GameStatus {
 class Playing extends AbstractGameStatus {
   String get description() => "Game is currently going";
 }
+class Lobbying extends AbstractGameStatus {
+  String get description() => "Waiting for new players";
+}
 /** A user left or disconnected, and now other players wait for a new user to join */
 class WaitingForReplacingUser extends AbstractGameStatus {
   List<Player> playerWithoutUser;

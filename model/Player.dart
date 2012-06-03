@@ -1,10 +1,29 @@
-/** A [Player] *has* a user, because players never leave 
+interface PlayerData {
+  int id;
+  UserData user;
+  String color;
+  List<Resource> resources;
+  List<Port> ports;
+  List<RoadData> roads;
+  List<Town> towns;
+  List<City> cities;
+  List<EdgePiece> edgePieces;
+  List<VerticePiece> verticePieces;
+  List<VictoryPointItem> victoryPoints;
+  List<Producer> producers;
+  List<Knight> knights;
+  List<DevelopmentCard> playedDevelopmentCards;
+}
+/** A [Player] *has* a user, because players never leave
 the game, but users do leave the game */
 class Player implements Hashable, Identifyable, Observable {
+  static List<String> allColors = ["green", "blue", "white", "orange"];
   User /* on */ _user;
   int id;
   String color;
   ObservableHelper observable;
+  ResourceListMu resources;
+  PortList ports;
   ListenableList<Road> roads;
   ListenableList<Town> towns;
   ListenableList<City> cities;
@@ -26,6 +45,7 @@ class Player implements Hashable, Identifyable, Observable {
   Player(this._user) {
     id = user.id;
     observable = new ObservableHelper();
+    ports = new PortListMu();
     stock = new Stock();
     roads = new ListenableList<Road>();
     edgePieces = new ListenableList<EdgePiece>();
@@ -44,6 +64,11 @@ class Player implements Hashable, Identifyable, Observable {
     }
     return total;
   }
+  /* TODO IMPLEMENT */
+  bool canPay(Piece toBuy) {
+    return false;
+  }
+
   int hashCode() {
     if (id==null)
       id = Dartan.generateHashCode(this);
@@ -57,6 +82,11 @@ class Player implements Hashable, Identifyable, Observable {
   void offSetted(String property, PropertyChanged handler) {
     observable.removeListener(property, handler);
   }
+}
+interface UserData {
+  int id;
+  String name;
+  String email;
 }
 /** A person playing the game */
 class User implements Hashable, Identifyable {
@@ -82,8 +112,8 @@ class ServerUser extends User {
 }
 class PlayerListMu extends ListenableList<Player> {
   /** All opponents of target player */
-  List<Player> opponents(Player ofPlayer) => 
-      filter(((Player p) => p != ofPlayer)); 
+  List<Player> opponents(Player ofPlayer) =>
+      filter(((Player p) => p != ofPlayer));
   /** Returns the next player based on given player from this list */
   Player next(Player from) {
     int index = indexOf(from);

@@ -1,3 +1,8 @@
+interface StockData {
+  List<RoadData> roads;
+  List<Town> towns;
+  List<City> cities;
+}
 class Stock {
   ListenableList<Road> roads;
   ListenableList<Town> towns;

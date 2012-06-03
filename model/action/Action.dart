@@ -1,20 +1,34 @@
-/** Any user or server initiated action */
-interface Action extends Hashable, Copyable, Identifyable, Testable {
+/** Any user or server initiated action
+    -When sending from client, action is wrapped in a [ClientAction]
+    -When sending via server, action is wrapped in a [ViaServer] action
+    -When server initiates something, action si wrapped in a [ServerAction]  */
+interface Action
+  extends Hashable, Copyable, Identifyable, Testable
+  default ActionFactory {
+
   User user;
   int userId;
   Date performedTime;
-  
+
   /** Flags */
   bool get isServer();
   bool get isGame();
   bool get isLobby();
   bool get isTrade();
 
+  Action.name(String name, JsonObject json);
+
   toText();
 }
-/** An action initiated by the server himself */
-interface ServerAction extends Action {
-  //perform(Application app);
+class ActionFactory {
+  static Map<String, Action> _actions;
+  factory Action.name(String name, JsonObject json) {
+    if (_actions.containsKey(name)) {
+      Action action = _actions[name];
+      action.setJson(json);
+      return action.copy();
+    }
+  }
 }
 class SupportedActions extends ImmutableL {
   SupportedActions() : super([new AbstractGameAction(), new SayGame()]);
@@ -25,7 +39,7 @@ class AbstractAction implements Action {
   User user;
   int userId;
   Date performedTime;
-  
+
   /** Flags */
   bool get isServer() => this is ServerAction;
   bool get isGame() => this is GameAction;
@@ -40,4 +54,17 @@ class AbstractAction implements Action {
       id = Dartan.generateHashCode(this);
     return id;
   }
+}
+/** An wrapped action from the client to the server */
+class ClientAction extends AbstractAction {
+  String actionName;
+  JsonObject action;
+}
+/** Action is received at server, performed and broadcasted to interested users */
+class ClientViaServer extends AbstractAction {
+
+}
+/** Action initiated by server, e.g. Error, notification */
+class ServerAction extends AbstractAction {
+
 }

@@ -21,6 +21,30 @@ font-weight: normal;
 polygon:hover {
 fill-opacity:0.5;
 }
+p.title {
+	margin: 0.5em;
+}
+span.title {
+	line-height: 16px;
+		font-size:32px;
+}
+ul.boardslist {
+	list-style: none;
+}
+li.boardslist:hover {
+	background: rgba(0,0,0,0.1);
+	border: dotted 1px black;
+}
+li.boardslist.selected {
+	border: solid 1px black;
+	background: rgba(0,0,0,0.2);
+}
+li.boardslist {
+	border: solid 1px white;
+	background: white;
+	padding: 0.25em;
+}
+
 div#objects {
 columns: 3;
 column-count: 3;
@@ -40,6 +64,14 @@ column-count: 3;
 -moz-column-span
 */
 
+}
+.action {
+	color: black;
+	font-size: 48px;
+	background-color: rgba(255,0,0,0.1);
+}
+li.action {
+	padding: 0.5em;
 }
 .condensed {
 	-webkit-transform: rotate(90deg);	
@@ -75,9 +107,6 @@ column-count: 3;
 	font-weight: bold;
 }
 div#intro {
-	columns: 2;
-	column-count: 2;
-	-webkit-column-count: 2;
 }
 h1 {
 	color: white;

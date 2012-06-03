@@ -6,7 +6,6 @@
 
 #source('Observable.dart');
 #source('Testable.dart');
-#source('model/Player.dart');
 
 // Model
 #source('model/Resource.dart');
@@ -59,6 +58,7 @@
 #source('ui/Visual.dart');
 #source('ui/GameView.dart');
 #source('ui/LobbyView.dart');
+#source('ui/BoardViewer.dart');
 
 // Test
 #source('test/ResourcesTest.dart');
@@ -76,14 +76,18 @@
 
 #resource('zettown.css');
 
-/** global unique id 
+/** global unique id
 To ensure the server and client are talkin' about the same thing, each supported
-interface extends [Identifyable]. Implementors should assume the thing is first 
-instantiated serverside (which may be on the client for local games), and assigned a fresh 
-GUID. 
+interface extends [Identifyable]. Implementors should assume the thing is first
+instantiated serverside (which may be on the client for local games), and assigned a fresh
+GUID.
 */
 interface Identifyable {
   int get id();
+}
+interface Jsonable {
+//  Jsonable.data(JsonObject json);
+//  JsonObject get data();
 }
 /** Mirror kitteh sees wall */
 interface Copyable {
@@ -91,7 +95,7 @@ interface Copyable {
 }
 
 interface EditorWidget<T> {
-  
+
 }
 interface TTest<T> {
   test();
@@ -99,11 +103,11 @@ interface TTest<T> {
 interface ViewWidget<T> {
   T model;
   Element text(T item); // ToString
-  Element html(T item); 
-  Element icon(T item);   
+  Element html(T item);
+  Element icon(T item);
   Element debug(T item); // a widget showing details of instance
 }
-/** I'd like to be able to declare immutable collection types, not 
+/** I'd like to be able to declare immutable collection types, not
 necesarily instances with const. */
 class ImmutableL<T> implements Iterable<T> {
   List<T> wrapped;
@@ -122,9 +126,9 @@ class ImmutableL<T> implements Iterable<T> {
     One day, AllSupportedLists can add itself to itself. */
 class AllSupportedLists extends ImmutableL<Iterable<Testable>> {
   AllSupportedLists() : super([
-   new SupportedGames(), 
-   new SupportedResources(), 
-   new SupportedResourceLists(), 
+   new SupportedGames(),
+   new SupportedResources(),
+   new SupportedResourceLists(),
    new SupportedTiles(),
    new SupportedVariouss(),
    new SupportedPorts(),
@@ -133,13 +137,13 @@ class AllSupportedLists extends ImmutableL<Iterable<Testable>> {
    new SupportedGamePhases(),
    new SupportedTurnPhases(),
    new SupportedGameStatuses(),
-   new SupportedDevelopmentCards(), 
-   new SupportedRandoms(),  
+   new SupportedDevelopmentCards(),
+   new SupportedRandoms(),
    new SupportedTradeActions(),
    new SupportedGameActions(),
    new SupportedLobbyActions(),
    new SupportedActions(),
-   new SupportedDices(), 
+   new SupportedDices(),
    new SupportedPieces(),
    new SupportedListenableLists()]);
 }
@@ -148,13 +152,23 @@ class SupportedVariouss extends ImmutableL<Testable> {
   SupportedVariouss() : super([
      new Cell(0,0),
      new Board(),
-     //new Vertice(new Cell(0,0), 
+     //new Vertice(new Cell(0,0),
      ]);
 }
 
 void main() {
-  new Dartan().run();
+  new Dartan();
 }
+
+List copiesOf(Copyable c, int amount) {
+  var l = new List();
+  for (int i=0; i<amount; i++) {
+    l.add(c.copy());
+  }
+  return l;
+}
+Identifyable byId(int theid, List<Identifyable> withIds) =>
+    withIds.filter((Identifyable hasId) => hasId.id == theid).iterator().next();
 
 class Dartan {
   static String check = "<span class=checkOk>&#10004</span>";
@@ -163,9 +177,8 @@ class Dartan {
   Dartan() {
     viewRouter = new ViewRouter();
   }
-    
-  static Identifyable byId(int theid, List<Identifyable> withIds) => 
-      withIds.filter((Identifyable hasId) => hasId.id == theid).iterator().next();
+
+
   /* ಠ_ಠ */
   static String name(obj) {
     if (obj != null) {
@@ -179,40 +192,37 @@ class Dartan {
   static int generateHashCode(var obj) {
     return (Math.random()* 10000000).toInt();
   }
-  void run() {
-    new BoardInfoView(new Board(10,10));
-  }
   static String supName(var obj) {
     String temp = Dartan.name(obj).substring(9);
     temp = temp.substring(0,temp.length - 1);
     if (temp.endsWith("ie")) { // Territory
-      temp = "${temp.substring(0, temp.length - 2)}y"; 
+      temp = "${temp.substring(0, temp.length - 2)}y";
     }
     if (temp.endsWith("se")) { // GameStatus
       temp = temp.substring(0,temp.length - 1);
     }
-    return temp;  
+    return temp;
   }
   static String toHtml(bool b) {
     return b ? check : noCheck;
   }
-  
+
   String toIconList(Iterable<Object> objectz) {
     StringBuffer result = new StringBuffer();
-    for (Object o in objectz) 
+    for (Object o in objectz)
       result.add(smallIcon(o));
     return result.toString();
   }
-  
+
   static String link(var obj) {
     return """<span>${smallIcon(obj)} <a href="${name(obj)}.html">${name(obj)}</a></span>""";
   }
-  
+
   static String smallIcon(var obj) {
     String n = name(obj);
     if (n.startsWith("Abstract")) {
       return "<img src=\"img/icon16/Abstract.png\">";
     }
     return "<img src=\"img/icon16/${name(obj)}.png\">";
-  } 
+  }
 }

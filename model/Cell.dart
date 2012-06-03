@@ -1,19 +1,27 @@
-/** A location to put a tile 
+interface CellData {
+  int row;
+  int column;
+}
+/** A location to put a tile
    also called coordinate, point, coord */
 class Cell implements Hashable, Testable {
   int row, column;  // The meat of it all!
   List<Cell> _cells;
   List<Vertice> _vertices;
   List<Edge> _edges;
-  
+
   // TODO: delegate to hashmap lookup
   Cell(this.row, this.column);
+  Cell.data(CellData data) {
+    row = data.row;
+    column = data.column;
+  }
 
   String toText() => "[${row}, ${column}]";
   bool equals(Cell other) => row == other.row && column == other.column;
-  
-  bool operator ==(other) { 
-    if (other === this) 
+
+  bool operator ==(other) {
+    if (other === this)
       return true;
     if (other == null)
       return false;
@@ -25,10 +33,10 @@ class Cell implements Hashable, Testable {
     int hash = 1;
     hash = hash * 31 + row;
     hash = hash * 31 + column;
-    hash = hash * 31; 
+    hash = hash * 31;
     return hash;
   }
-  
+
   /** Returns a list containing 6 HexLocations starting with deg0 and ending with deg300 */
   List<Cell> get cells() {
     if (_cells == null) { // Lazy init
@@ -47,7 +55,7 @@ class Cell implements Hashable, Testable {
   List<Vertice> get vertices() {
     if (_vertices == null) { // Lazy init
        _vertices = new List<Vertice>();
-      
+
        for (int i = 0; i < 6; i++) {
          int j = i == 0 ? 5 : i - 1;
          _vertices.add(new Vertice(this, cells[j], cells[i]));
@@ -55,7 +63,7 @@ class Cell implements Hashable, Testable {
     }
     return _vertices;
   }
-  
+
   void test() {
     CellTest.test();
   }
@@ -67,5 +75,16 @@ class Cell implements Hashable, Testable {
         _edges.add(new Edge(this, n));
     }
     return _edges;
+  }
+  /** Two vertices derived from a direction */
+  List<Vertice> fromDirection(int direction) {
+      int after = direction + 1;
+      int before = direction - 1;
+      after = after == 6 ? 0 : after;
+      before = before == -1 ? 5 : before;
+      List<Vertice> result = new List<Vertice>.from([
+        new Vertice(this, cells[direction], cells[before]),
+        new Vertice(this, cells[direction], cells[after])]);
+      return result;
   }
 }

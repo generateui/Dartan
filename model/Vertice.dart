@@ -1,12 +1,17 @@
+interface VerticeData {
+  Cell c1;
+  Cell c2;
+  Cell c3;
+}
 /**
- Position on hexagon 
+ Position on hexagon
           TopMiddle,
               ^
     TopLeft  /  \  TopRight
             |    |
             |    |
  BottomLeft  \  /  BottomRight
-               +    
+               +
          BottomMiddle            */
 class VerticePosition {
   static int TopMiddle = 0;
@@ -23,21 +28,21 @@ class VerticeType {
 }
 
 /** A vertice of a tile */
-class Vertice implements Hashable { 
+class Vertice implements Hashable {
   Cell c1, c2, c3, _topMost;
-  
-  int _type;
+
+  int _type = -1;
   List<Cell> _cells;       // c1, c2 and c3 as a collection
   Set<Vertice> _vertices; // neighbouring vertices
   Set<Edge> _edges;       // the three edges
-  
+
   int hashCode() => c1.hashCode() * c2.hashCode() * c3.hashCode();
   bool equals(o) => hashCode() == o.hashCode();
   String toString() => "Vertice [cell1: ${c1.toString()}, cell2: ${c2.toString()}, cell3: ${c3.toString()}]\n";
   bool hasCell(Cell c) => c1 == c || c2 == c || c3 == c;
 
   bool operator ==(other) {
-    if (other === this) 
+    if (other === this)
       return true;
     if (other == null)
       return false;
@@ -46,11 +51,12 @@ class Vertice implements Hashable {
   Vertice(this.c1, this.c2, this.c3){
     _swapCellsIfNecesary();
   }
-  Vertice.coords(c1row, c1col, c2row, c2col, c3row, c3col) : 
-    this(new Cell(c1row, c1col), new Cell(c2row, c2col), new Cell(c3row, c3col)); 
+
+  Vertice.coords(c1row, c1col, c2row, c2col, c3row, c3col) :
+    this(new Cell(c1row, c1col), new Cell(c2row, c2col), new Cell(c3row, c3col));
   Vertice.fromEdges(Edge e1, Edge e2) {
     List<Cell> allCells= new List<Cell>.from([e1.c1, e1.c2, e2.c1, e2.c2]);
-    
+
     // Find the Cell used by both edges, remove it
     Cell equalCell = null;
     if (e1.c1 == e2.c1)
@@ -58,19 +64,19 @@ class Vertice implements Hashable {
     if (e1.c1 == e2.c2)
       equalCell = e1.c1;
     allCells.removeRange(allCells.indexOf(equalCell), 1);
-    
+
     c1 = allCells[0];
     c2 = allCells[1];
     c3 = allCells[2];
   }
-  
+
   /** Ensures c1 is always on highest (lowest in number) row and leftmost,
   c2 next to c1 on the right if on same row */
   void _swapCellsIfNecesary() {
     List<Cell> cs = new List<Cell>.from([c1, c2, c3]);
     Cell leftTop = c1;
     Cell second, third;
-    
+
     // Determine lefttop cell & remove from list
     for (int i = 0; i<3; i++) {
       if (cs[i].row < leftTop.row) {
@@ -81,8 +87,8 @@ class Vertice implements Hashable {
       }
     }
     cs.removeRange(cs.indexOf(leftTop), 1);
-    
-    if (type() == VerticeType.UpperRow1) {
+
+    if (type == VerticeType.UpperRow1) {
       if (cs[0].column < cs[1].column) { // 2 other cells on the same, lower rows
         second=cs[0];
         third=cs[1];
@@ -106,7 +112,7 @@ class Vertice implements Hashable {
 //  Vertice.fromPositionOnCell(this.c1, int relativePosition) {
 //    // we must assume hex comes from a uneven row, and
 //    // relative position on the hex is never the two left positions
-//    
+//
 //    if (relativePosition == VerticePosition.TopMiddle) {
 //        c2 = new Cell(c1.row - 1, c1.column - 1);
 //        c3 = new Cell(c1.row, c1.column - 1);
@@ -125,34 +131,37 @@ class Vertice implements Hashable {
 //    }
 //  }
   /** Returns a list of neighbours, with the given neighbour excluded */
-  List<Vertice> otherNeighbours(Vertice ignore) => 
+  List<Vertice> otherNeighbours(Vertice ignore) =>
       neighbours.filter((Vertice v) => v != ignore);
-  
+
   /** The three cells in a set */
   List<Cell> get cells() {
     if (_cells == null) // lazy init
       _cells = new List<Cell>.from([c1, c2, c3]);
-    
+
     return _cells;
   }
   /** Returns the type of the hex: one or two Hexes on the upper row */
-  int type() {
-    List<Cell> cells = new List<Cell>.from([c1, c2, c3]);
-    int rmax = 220; //arbitrary high number
-    for (Cell c in cells) 
-      if (c.row < rmax)
-        rmax = c.row;
-        
-    int count = 0;
-    for (Cell c in cells)
-      if (c.row == rmax) 
-        count++;
-        
-    return count == 1 ? VerticeType.UpperRow1 : VerticeType.UpperRow2;
+  int get type() {
+    if (_type == -1) {
+      List<Cell> cells = new List<Cell>.from([c1, c2, c3]);
+      int rmax = 220; //arbitrary high number
+      for (Cell c in cells)
+        if (c.row < rmax)
+          rmax = c.row;
+
+      int count = 0;
+      for (Cell c in cells)
+        if (c.row == rmax)
+          count++;
+
+      _type = count == 1 ? VerticeType.UpperRow1 : VerticeType.UpperRow2;
+    }
+    return _type;
   }
   /** Returns position on of this point on the top or top left most Cell */
   int hexPositionOnTopLeftMost() {
-    return type() == VerticeType.UpperRow1 ? VerticePosition.BottomMiddle : VerticePosition.BottomRight;
+    return type == VerticeType.UpperRow1 ? VerticePosition.BottomMiddle : VerticePosition.BottomRight;
   }
   /** Returns a list of the three [Edge]s adjacent to this point */
   Set<Edge> get edges() {
@@ -165,7 +174,7 @@ class Vertice implements Hashable {
     }
     return _edges;
   }
-  /** All edges except specified [Edge], which must be contained by this [this] */ 
+  /** All edges except specified [Edge], which must be contained by this [this] */
   Set<Edge> otherEdges(Edge ignore) => edges.filter((Edge e) => e != ignore);
 
   /** Returns the topmost hex of the three hexes */
@@ -209,34 +218,34 @@ class Vertice implements Hashable {
     Cell topmost = topMost();
     if (topmost.column % 2 == 0) {
       // even rows
-      if (type() == VerticeType.UpperRow1) {
+      if (type == VerticeType.UpperRow1) {
         Vertice p1 = new Vertice(
-          topmost, 
+          topmost,
           new Cell(topmost.row - 1, topmost.column),
           new Cell(topmost.row, topmost.column + 1));
         result.add(p1);
-        
-        Vertice p2 = new Vertice( 
-          new Cell(topmost.row + 1, topmost.column + 1), 
+
+        Vertice p2 = new Vertice(
+          new Cell(topmost.row + 1, topmost.column + 1),
           new Cell(topmost.row, topmost.column + 1),
           new Cell(topmost.row,topmost.column + 2));
         result.add(p2);
-        
-        Vertice p3 = new Vertice(topmost, 
+
+        Vertice p3 = new Vertice(topmost,
           new Cell(topmost.row + 1, topmost.column + 1),
           new Cell(topmost.row + 1, topmost.column));
         result.add(p3);
       } else {
-        Vertice p1 = new Vertice(topmost, 
+        Vertice p1 = new Vertice(topmost,
           new Cell(topmost.row + 1, topmost.column),
           new Cell(topmost.row + 1, topmost.column - 1));
         result.add(p1);
         Vertice p2 = new Vertice(
-          new Cell(topmost.row + 2, topmost.column + 1), 
+          new Cell(topmost.row + 2, topmost.column + 1),
           new Cell(topmost.row + 1, topmost.column + 1),
           new Cell(topmost.row + 1, topmost.column));
         result.add(p2);
-        Vertice p3 = new Vertice(topmost, 
+        Vertice p3 = new Vertice(topmost,
           new Cell(topmost.row + 1, topmost.column + 1),
           new Cell(topmost.row,topmost.column + 1));
         result.add(p3);
@@ -244,35 +253,35 @@ class Vertice implements Hashable {
     } else {
       // uneven rows
       if (type == VerticeType.UpperRow1) {
-        Vertice p1 = new Vertice(topmost, 
+        Vertice p1 = new Vertice(topmost,
           new Cell(topmost.row - 1, topmost.column + 1),
           new Cell(topmost.row - 1, topmost.column));
         result.add(p1);
-        
+
         Vertice p2 = new Vertice(
-          new Cell(topmost.row, topmost.column + 1), 
+          new Cell(topmost.row, topmost.column + 1),
           new Cell(topmost.row - 1, topmost.column + 1),
           new Cell(topmost.row, topmost.column + 2));
         result.add(p2);
-        
-        Vertice p3 = new Vertice(topmost, 
+
+        Vertice p3 = new Vertice(topmost,
           new Cell(topmost.row, topmost.column + 1),
           new Cell(topmost.row + 1, topmost.column));
         result.add(p3);
-        
+
       } else {
-        Vertice p1 = new Vertice(topmost, 
+        Vertice p1 = new Vertice(topmost,
           new Cell(topmost.row, topmost.column - 1),
           new Cell(topmost.row + 1, topmost.column));
         result.add(p1);
-        
+
         Vertice p2 = new Vertice(
-          new Cell(topmost.row + 1,topmost.column), 
+          new Cell(topmost.row + 1,topmost.column),
           new Cell(topmost.row + 1, topmost.column + 1),
           new Cell(topmost.row, topmost.column + 1));
         result.add(p2);
-        
-        Vertice p3 = new Vertice(topmost, 
+
+        Vertice p3 = new Vertice(topmost,
           new Cell(topmost.row, topmost.column + 1),
           new Cell(topmost.row - 1, topmost.column + 1));
         result.add(p3);

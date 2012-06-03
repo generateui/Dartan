@@ -1,23 +1,38 @@
 /** A setting represented as an object */
 interface GameSetting extends Observable {
+  bool isEnabled;
   setSetting(GameSettings settings);
 }
 class SupportedSettings extends ImmutableL<GameSetting> {
-  SupportedSettings() : super([new WithRobber(), new MaximumCardsInHandWhenSeven(), 
+  SupportedSettings() : super([new WithRobber(), new MaximumCardsInHandWhenSeven(),
     new MaximumTradesPerTurn()]);
 }
 
 /** All the possible settings of a game */
-class GameSettings extends ListenableList<GameSetting> {
+class GameSettings {
   WithRobber withRobber;
   MaximumCardsInHandWhenSeven maximumCardsInHandWhenSeven;
   MaximumTradesPerTurn maximumTradesPerTurn;
+  GameSettings() {
+    withRobber = new WithRobber();
+    maximumCardsInHandWhenSeven = new MaximumCardsInHandWhenSeven();
+    maximumTradesPerTurn = new MaximumTradesPerTurn();
+  }
 }
 /** Abstract convenenience implementation of a Setting */
 class AbstractGameSetting implements GameSetting {
   ObservableHelper observable;
+  bool _isEnabled;
+  bool get isEnabled() => _isEnabled;
+  set isEnabled(bool enabled) {
+    if (enabled != _isEnabled) {
+      bool oldEnabled = _isEnabled;
+      _isEnabled = enabled;
+      observable.fire("isEnabled", oldEnabled, enabled);
+    }
+  }
   AbstractGameSetting() : observable = new ObservableHelper();
-  // Observable 
+  // Observable
   void onSetted(String property, PropertyChanged handler) {
     observable.addListener(property, handler);
   }
@@ -28,12 +43,16 @@ class AbstractGameSetting implements GameSetting {
 }
 /** The game will use the robber as playing item */
 class WithRobber extends AbstractGameSetting {
-  WithRobber() : super();
+  WithRobber() : super() {
+    _isEnabled = true;
+  }
   setSetting(GameSettings settings) => settings.withRobber = this;
 }
 /** When 7 rolls, this amount of cards is allowed in the hand of a player */
 class MaximumCardsInHandWhenSeven extends AbstractGameSetting {
-  MaximumCardsInHandWhenSeven() : super();
+  MaximumCardsInHandWhenSeven() : super() {
+    _isEnabled = true;
+  }
   int _maxCards = 7;
   int get maxCards() => _maxCards;
   set maxCards(int newAmount) {
@@ -43,11 +62,15 @@ class MaximumCardsInHandWhenSeven extends AbstractGameSetting {
       observable.fire("maxCards", old, _maxCards);
     }
   }
-  setSetting(GameSettings settings) => settings.maximumCardsInHandWhenSeven = this;
+  setSettings(GameSettings settings) {
+    settings.maximumCardsInHandWhenSeven.maxCards = maxCards;
+  }
 }
 /** When not present, there is no maximum amount of trades per turn */
 class MaximumTradesPerTurn extends AbstractGameSetting {
-  MaximumTradesPerTurn() : super();
+  MaximumTradesPerTurn() : super() {
+    _isEnabled = true;
+  }
   int _maxTrades = 3;
   int get maxTrades() => _maxTrades;
   set maxTrades(int newAmount) {
@@ -57,5 +80,7 @@ class MaximumTradesPerTurn extends AbstractGameSetting {
       observable.fire("maxTrades", old, newAmount);
     }
   }
-  setSetting(GameSettings settings) => settings.maximumTradesPerTurn = this;
+  setSettings(GameSettings settings) {
+    settings.maximumTradesPerTurn.maxTrades = maxTrades;
+  }
 }

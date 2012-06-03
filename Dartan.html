@@ -43,6 +43,29 @@
 	    <p>
 		    A web game implentation to build towns. This is the test zone.
 	    </p>
+	    <div class="row-fluid">
+			  <div class="span3">
+			    	<ul>
+				    	<li class=action>
+				    		<button class=action>
+					    		<img src="img/icon48/City.png">
+					    		<span class=title>Play</span>
+					    		<p class=title>Instantly play a test game</p>
+				    		</button>
+			    		</li>
+			    		<li class=action>
+				    		<button class=action>
+					    		<img src="img/icon48/City.png">
+					    		<span class=title>Test</span>
+					    		<p class=title>See testresults</p>
+				    		</button>
+			    		</li>
+			    	</ul>	  
+			  </div>
+			  <div class="span9">
+			  	<div id=welcomeEditor></div>
+			  </div>
+	    </div>
     </div>
     
     <div id="Test" class="testResults">
@@ -74,16 +97,7 @@
 	    
 	    <canvas id=bord  width="350" height="350" style="display: none"></canvas>
 	    
-	    <div class="row" id=svgBoard>
-		  <div class="span4" id=svgBoardLeftColumn>
-		  
-		  	<div id=tileInfoView><p></p></div>
-		  </div>
-		  <div class="span8">		    
-		  	<p>SVG implementation of a board</p>
-		  	<svg  xmlns="http://www.w3.org/2000/svg" version="1.1"  id=bord2 width=800 height=600>
-		    </svg>
-		  </div>
+	    <div id=infoBoard>
 		</div>
     </div>
     

@@ -1,9 +1,11 @@
-/** A simple class would work here, but the approach to have a defined 
+/** A simple class would work here, but the approach to have a defined
 implementation for a concept eventually creates an API */
-interface Chit extends Hashable, Copyable, Testable, Identifyable {
+interface Chit extends Hashable, Copyable, Testable, Identifyable default ChitFactory {
   int get number();
   int get chance();
   bool get isRed(); // True on the best numbers
+  Chit.number(int n);
+  Chit.name(String name);
 }
 class SupportedChits extends ImmutableL {
   SupportedChits() : super([new AbstractChit(),
@@ -12,13 +14,47 @@ class SupportedChits extends ImmutableL {
     new RandomChit()
   ]);
 }
+class ChitFactory {
+  static Map<int, Chit> chitsByNumber;
+  static Map<String, Chit> chitsByType;
+  factory Chit.number(int n) {
+    if (chitsByNumber == null) {
+      chitsByNumber = new HashMap<int, Chit>();
+      for (Chit c in new SupportedChits()) {
+        if (c.number != 0) {
+          chitsByNumber[c.number] = c;
+        }
+      }
+    }
+    if (chitsByNumber.containsKey(n)) {
+      return chitsByNumber[n].copy();
+    } else {
+      throw new Exception("No chit exists with number ${n}");
+    }
+  }
+  factory Chit.name(String name) {
+    if (chitsByType == null) {
+      chitsByType = new HashMap<String, Chit>();
+      for (Chit c in new SupportedChits()) {
+        chitsByType[Dartan.name(c)] = c;
+      }
+    }
+    if (chitsByType.containsKey(name)) {
+      return chitsByType[name];
+    } else {
+      throw new Exception("No chit found with name ${name}");
+    }
+  }
+}
 /** Abstract convenience implementation of a [Chit] */
-class AbstractChit implements Chit { 
+class AbstractChit implements Chit {
   int _id;
   int get number() => 0;
   int get chance() => 0;
   bool get isRed() => number == 6 || number == 8;
   int get id() => _id;
+  AbstractChit();
+
   test() {}
   int hashCode() {
     if (_id==null)
@@ -27,10 +63,10 @@ class AbstractChit implements Chit {
   }
   Chit copy() => new AbstractChit();
 }
-/** Design-time placeholder for a chit to be randomly exchanged for another 
+/** Design-time placeholder for a chit to be randomly exchanged for another
 at game initialization-time */
 class RandomChit extends AbstractChit {
-  Chit copy() => new RandomChit();  
+  Chit copy() => new RandomChit();
 }
 class Chit2 extends AbstractChit {
   int get number() => 2;
