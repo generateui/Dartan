@@ -1,10 +1,10 @@
-interface CellData {
+interface CellData extends JsonObject {
   int row;
   int column;
 }
 /** A location to put a tile
    also called coordinate, point, coord */
-class Cell implements Hashable, Testable {
+class Cell implements Hashable, Testable, Jsonable, Copyable {
   int row, column;  // The meat of it all!
   List<Cell> _cells;
   List<Vertice> _vertices;
@@ -12,9 +12,16 @@ class Cell implements Hashable, Testable {
 
   // TODO: delegate to hashmap lookup
   Cell(this.row, this.column);
-  Cell.data(CellData data) {
-    row = data.row;
-    column = data.column;
+  Cell.data(JsonObject json) {
+    CellData d = json;
+    this.row = d.row;
+    this.column = d.column;
+  }
+  JsonObject get data() {
+    CellData d = new JsonObject();
+    d.row = row;
+    d.column = column;
+    return d;
   }
 
   String toText() => "[${row}, ${column}]";
@@ -78,13 +85,16 @@ class Cell implements Hashable, Testable {
   }
   /** Two vertices derived from a direction */
   List<Vertice> fromDirection(int direction) {
-      int after = direction + 1;
-      int before = direction - 1;
-      after = after == 6 ? 0 : after;
-      before = before == -1 ? 5 : before;
-      List<Vertice> result = new List<Vertice>.from([
-        new Vertice(this, cells[direction], cells[before]),
-        new Vertice(this, cells[direction], cells[after])]);
-      return result;
+    int after = direction + 1;
+    int before = direction - 1;
+    after = after == 6 ? 0 : after;
+    before = before == -1 ? 5 : before;
+    List<Vertice> result = new List<Vertice>.from([
+      new Vertice(this, cells[direction], cells[before]),
+      new Vertice(this, cells[direction], cells[after])]);
+    return result;
   }
+  // Copyable
+  copy([JsonObject data]) =>
+      data == null ? new Cell(row, column) : new Cell.data(data);
 }

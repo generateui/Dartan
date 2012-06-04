@@ -1,23 +1,25 @@
-interface PlayerData {
+interface PlayerData extends JsonObject{
   int id;
+  String type;
   UserData user;
   String color;
-  List<Resource> resources;
-  List<Port> ports;
-  List<RoadData> roads;
-  List<Town> towns;
-  List<City> cities;
-  List<EdgePiece> edgePieces;
-  List<VerticePiece> verticePieces;
-  List<VictoryPointItem> victoryPoints;
-  List<Producer> producers;
-  List<Knight> knights;
-  List<DevelopmentCard> playedDevelopmentCards;
+  List resources;
+  List ports;
+  List roads;
+  List towns;
+  List cities;
+  List edgePieces;
+  List verticePieces;
+  List victoryPoints;
+  List producers;
+  List knights;
+  List playedDevelopmentCards;
+  StockData stock;
 }
 /** A [Player] *has* a user, because players never leave
 the game, but users do leave the game */
 class Player implements Hashable, Identifyable, Observable {
-  static List<String> allColors = ["green", "blue", "white", "orange"];
+  static List<String> allColors = const ["green", "blue", "white", "orange"];
   User /* on */ _user;
   int id;
   String color;
@@ -34,6 +36,7 @@ class Player implements Hashable, Identifyable, Observable {
   ListenableList<Knight> knights;
   ListenableList<DevelopmentCard> playedDevelopmentCards;
   Stock stock;
+  /* A user can change because users may leave or join, but players stay */
   set /* on */ user(User u) {
     if (user != u) {
       User old = user;
@@ -42,8 +45,7 @@ class Player implements Hashable, Identifyable, Observable {
     }
   }
   User /* on */ get user() => _user;
-  Player(this._user) {
-    id = user.id;
+  init() {
     observable = new ObservableHelper();
     ports = new PortListMu();
     stock = new Stock();
@@ -56,6 +58,25 @@ class Player implements Hashable, Identifyable, Observable {
     cities = new ListenableList<City>();
     knights = new ListenableList<Knight>();
     playedDevelopmentCards = new ListenableList<DevelopmentCard>();
+  }
+  Player.data(JsonObject json) {
+    init();
+
+    PlayerData data = json;
+    id = data.id;
+    color = data.color;
+
+    data.resources.forEach((d) { resources.add(new Resource.data(d)); });
+    data.roads.forEach((p) { roads.add(new Road.data(p)); });
+    data.towns.forEach((p) { towns.add(new Town.data(p)); });
+    data.cities.forEach((p) { cities.add(new City.data(p)); });
+    stock = new Stock.data(data.stock);
+    data.knights.forEach((p) { knights.add(new Knight.data(p)); });
+  }
+  Player(this._user) {
+    init();
+
+    id = user.id;
   }
   int totalPoints() {
     int total = 0;
@@ -74,8 +95,13 @@ class Player implements Hashable, Identifyable, Observable {
       id = Dartan.generateHashCode(this);
     return id;
   }
+  JsonObject get data() {
+    PlayerData data = new JsonObject();
+    data.id = id;
+    return data;
+  }
   String toText() => "${id}, ${_user.name}, ${color}";
-  /** Observable */
+  // Observable
   void onSetted(String property, PropertyChanged handler) {
     observable.addListener(property, handler);
   }
@@ -83,23 +109,45 @@ class Player implements Hashable, Identifyable, Observable {
     observable.removeListener(property, handler);
   }
 }
-interface UserData {
+interface UserData extends JsonObject {
   int id;
   String name;
   String email;
+  String type;
 }
 /** A person playing the game */
-class User implements Hashable, Identifyable {
+class User implements Hashable, Identifyable, Jsonable {
   int id;
   String name;
   String email;
+
   bool get hasEmail() => email != null;
-  User([int id, String name, String email]);
+
+  User([this.id, this.name, this.email]);
+  User.data(JsonObject json) {
+    UserData data = json;
+    id = data.id;
+    name = data.name;
+    email = data.email;
+  }
+
+  // Jsonable
+  JsonObject get data() {
+    UserData data = new JsonObject();
+    data.id = id;
+    data.name = name;
+    data.email = email;
+    data.type = Dartan.name(this);
+    return data;
+  }
+  // Hashable
   int hashCode() {
     if (id==null)
       id = Dartan.generateHashCode(this);
     return id;
   }
+  // Copyable
+  User copy([JsonObject data]) => data == null ? new User() : new User.data(data);
   String toText() => "[${id}, ${name}, ${email}]";
 }
 /** The server as a user */

@@ -6,6 +6,7 @@
 
 #source('Observable.dart');
 #source('Testable.dart');
+#source('JsonObject.dart');
 
 // Model
 #source('model/Resource.dart');
@@ -85,13 +86,92 @@ GUID.
 interface Identifyable {
   int get id();
 }
-interface Jsonable {
-//  Jsonable.data(JsonObject json);
-//  JsonObject get data();
+interface Jsonable extends Copyable default Oracle {
+  Jsonable.data(JsonObject json);
+  JsonObject get data();
+}
+class JsonableFactory {
+  factory Jsonable.data(JsonObject json) { return null; }
+}
+class Oracle implements Jsonable {
+  static Map<String, Map<String, Copyable>> mapOfMaps;
+  static Map<String, Iterable<Copyable>> mapOfSupportedTypes;
+  static ensureMap() {
+    if (mapOfMaps == null) {
+      mapOfMaps = new HashMap<String, Map<String, Copyable>>();
+      mapOfSupportedTypes = new HashMap<String, Collection<Copyable>>();
+      mapOfSupportedTypes["Resource"] = new SupportedResources();
+      mapOfSupportedTypes["Chit"] = new SupportedChits();
+
+      for (String type in mapOfSupportedTypes.getKeys()) {
+        HashMap<String, Copyable> map = new HashMap();
+        for (Copyable c in mapOfSupportedTypes[type]) {
+          map[Dartan.name(c)] = c;
+        }
+        mapOfMaps[type] = map;
+      }
+    }
+  }
+
+  static List<Copyable> fromDataList(List<JsonObject> dataList) {
+    List<Copyable> instantiated = new List();
+    for (JsonObject json in dataList) {
+      instantiated.add(new Jsonable.data(json));
+    }
+    return instantiated;
+  }
+  factory Resource.data(JsonObject json) {
+    ResourceData rd = json;
+    Resource r = new Resource.type(rd.type);
+    r.id = rd.id;
+    return r;
+  }
+  factory Resource.type(String type) => instanceOf("Resource", type);
+
+  factory Dice.data(JsonObject json) {
+    DiceData rd = json;
+    Dice r = new Dice.type(rd.type);
+    return r;
+  }
+  factory Dice.type(String type) => instanceOf("Dice", type);
+  static Copyable instanceOf(String interfaceName, String concreteName){
+    ensureMap();
+    return mapOfMaps[interfaceName][concreteName].copy();
+  }
+  static newChitByType(String type) => instanceOf("Chit", type);
+  factory DevelopmentCard.type(String type) => instanceOf("DevelopmentCard", type);
+  factory Port.type(String type) => instanceOf("Port", type);
+  factory Port.data(JsonObject json) {
+    Port p = new Port.type(json["type"]);
+    return p.copy(json);
+  }
+  factory Territory.type(String type) => instanceOf("Territory", type);
+  factory Territory.data(JsonObject json) {
+    Port p = new Port.type(json["type"]);
+    return p.copy(json);
+  }
+  factory TurnPhase.type(String type) => instanceOf("TurnPhase", type);
+  factory TurnPhase.data(JsonObject json) {
+    // TODO: implement
+  }
+
+  factory Oracle.data(JsonObject data) {
+    //Empty
+  }
+  /** Creates new list with data objects from a list of jsonables */
+  static List<JsonObject> toDataList(Iterable<Jsonable> jsonables) {
+    List<JsonObject> result = new List<JsonObject>();
+    for (Jsonable json in jsonables) {
+      result.add(json.data);
+    }
+    return result;
+  }
+  Dynamic copy([JsonObject data]) { throw new NotImplementedException();}
+  JsonObject get data() => null;
 }
 /** Mirror kitteh sees wall */
 interface Copyable {
-  Dynamic copy();
+  Dynamic copy([JsonObject data]);
 }
 
 interface EditorWidget<T> {
@@ -155,7 +235,6 @@ class SupportedVariouss extends ImmutableL<Testable> {
      //new Vertice(new Cell(0,0),
      ]);
 }
-
 void main() {
   new Dartan();
 }

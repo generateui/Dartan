@@ -1,3 +1,15 @@
+/** Raw data for a board */
+interface BoardData extends JsonObject {
+  String type;
+  String name;
+  int id;
+  List tiles;
+  List tilesBag;
+  List portsBag;
+  List chitsBag;
+  List territories;
+  Map edgePieces;
+}
 /**
   Keeps track of tiles
 
@@ -10,33 +22,34 @@
     -Columns (editor)
     -TileChanged (editor)
 */
-class Board implements Observable, Hashable {
+class Board implements Observable, Hashable, Jsonable, Identifyable {
+  ObservableHelper observable;
   int columns = -1;
   int rows = -1;
   String name;
+  int id;
+
+  // Keep track of graphs
   HashMap<Cell, Tile> _tilesByCell;
   HashSet<Vertice> _vertices;
   HashSet<Edge> _edges;
-  ObservableHelper observable;
   HashSet<Vertice> _forbiddenVertices; // List of forbidden vertices, updated on town add/remove
 
-  ListenableList<Territory> territories;
+  // Keep track of pieces
+  HashMap<Vertice, List<VerticePiece>> verticePieces; // Keep 'em in a list, multiple pieces per vertice possible
+  HashMap<Edge, EdgePiece> edgePieces;
 
   HashSet<Vertice> get vertices() => _vertices;
   HashSet<Edge> get edges() => _edges;
   Set<Tile> get tiles() => _tilesByCell.getValues();
-  HashMap<Vertice, List<VerticePiece>> verticePieces; // Keep 'em in a list, multiple pieces per vertice possible
-  HashMap<Edge, EdgePiece> edgePieces;
 
   ListenableList<Tile> tilesBag;
   ListenableList<Chit> chitsBag;
   ListenableList<Port> portsBag;
-  make(Random random) {
+  ListenableList<Territory> territories;
 
-  }
-  setStartingState() {
-
-  }
+  make(Random random) {  }
+  setStartingState() {  }
 
   init() {
     _vertices = new HashSet<Vertice>();
@@ -51,6 +64,12 @@ class Board implements Observable, Hashable {
     portsBag = new ListenableList<Port>();
   }
 
+  Board.data(JsonObject json) {
+    BoardData data = json;
+    id = data.id;
+    name = data.name;
+    chitsBag = Oracle.fromDataList(data.chitsBag);
+  }
   Board([this.columns, this.rows]) {
     init();
 
@@ -61,7 +80,21 @@ class Board implements Observable, Hashable {
       }
     }
   }
-
+  Board copy([JsonObject data]) => data==null ? new Board() :  new Board.data(data);
+  JsonObject get data() {
+    BoardData data = new JsonObject();
+    data.name = name;
+    data.id = id;
+    data.type = Dartan.name(this);
+    data.tiles = Oracle.toDataList(_tilesByCell.getValues());
+    data.chitsBag = Oracle.toDataList(chitsBag);
+    data.tilesBag = Oracle.toDataList(tilesBag);
+    data.portsBag = Oracle.toDataList(portsBag);
+    data.territories = Oracle.toDataList(territories);
+    return data;
+  }
+  Board.name(String name) {
+  }
   // Observable
   void onSetted(String property, PropertyChanged handler) {
     observable.addListener(property, handler);
@@ -69,7 +102,6 @@ class Board implements Observable, Hashable {
   void offSetted(String property, PropertyChanged handler) {
     observable.removeListener(property, handler);
   }
-
   /** Fills this instance with a grid of specified number of rows and columns */
   void from2DMatrix(int totalCols, int totalRows) {
     for (int column = 0; column < totalCols; column++)
@@ -79,14 +111,12 @@ class Board implements Observable, Hashable {
         addTile(s);
       }
   }
-
   /** Adds target [Tile] t and its edges + vertices */
   void addTile(Tile t) {
     _tilesByCell[t.cell] = t;
     _addVertices(t.cell);
     _addEdges(t.cell);
   }
-
   /** Rerplace with newtile is cell occupied, or adds newTile if cell is free */
   void changeTile(Tile newTile) {
     Cell oldCell = newTile.cell;
@@ -98,7 +128,7 @@ class Board implements Observable, Hashable {
       observable.fire("changeTile", old, newTile);
     }
   }
-
+  /** True when no tiles around target are 6/8 (red) */
   bool noRedChitsAround(Tile tile) {
     for (Cell c in tile.cell.cells) {
       Tile withChit = _tilesByCell[c];
@@ -112,7 +142,6 @@ class Board implements Observable, Hashable {
   void _addEdges(Cell c) {
     _edges.addAll(c.edges);
   }
-
   void _addVertices(Cell c) {
     _vertices.addAll(c.vertices);
   }
@@ -132,7 +161,7 @@ class Board implements Observable, Hashable {
   Set<Vertice> townPossibilities() {
     return null;
   }
-
+  /** True when threither vertice allows building landpieces on it */
   bool landBuildable(Vertice vertice) =>
       _tilesByCell[vertice.c1].canBuildOnLand ||
       _tilesByCell[vertice.c2].canBuildOnLand ||
@@ -152,6 +181,10 @@ class Board implements Observable, Hashable {
     cellWithinBounds(vertice.c2) &&
     cellWithinBounds(vertice.c3);
 
+  bool hasCell(Cell c) => _tilesByCell.containsKey(c);
+  bool hasEdge(Edge e) => _edges.contains(e);
+  bool hasVertice(Vertice v) => _vertices.contains(v);
+
   /** Returns tile at specified row+column coordinates */
   Tile getAt(int row, int column) {
     if (row < 0 || column < 0 || row >= rows || column >=columns) {
@@ -167,7 +200,10 @@ class Board implements Observable, Hashable {
     new BoardTest().test();
   }
 }
-/** Standard 4p board */
+/** Standard 4p board
+
+TODO: refactor into smaller pieces
+*/
 class Standard4p extends Board {
   Territory mainIsland;
   List<List<int>> randomFields = const [const[2, 3, 4], const[1, 2, 3, 4], const[1, 2, 3, 4, 5], const[1, 2, 3, 4], const[2, 3, 4]];

@@ -1,9 +1,19 @@
+interface LongestRoadData extends JsonObject {
+  int playerId;
+  List edgesOfRoute;
+}
 /** Represents the 2 points of the longest road */
-class LongestRoad implements VictoryPointItem, PlayerPiece, Observable {
+class LongestRoad implements VictoryPointItem, PlayerPiece, Observable, Jsonable {
   Player /* on */ _player;
+  int playerId;
   ObservableHelper observable;
   LongestRoute route;
   int get points() => 2;
+  LongestRoad.data(JsonObject json) {
+    LongestRoadData data = json;
+    playerId = data.playerId;
+    // TODO: longest route data edgesOfRoute
+  }
   LongestRoad() {
     observable = new ObservableHelper();
   }
@@ -15,17 +25,26 @@ class LongestRoad implements VictoryPointItem, PlayerPiece, Observable {
       observable.fire("player", oldPlayer, p);
     }
   }
+  JsonObject get data() {
+    LongestRoadData data = new JsonObject();
+    data.playerId = playerId;
+    return data;
+  }
   addToPlayer(Player p) {
     p.victoryPoints.add(this);
   }
   removeFromPlayer(Player p) {
     p.victoryPoints.remove(this);
   }
-  /** Observable */
+  // Observable
   void onSetted(String property, PropertyChanged handler) {
     observable.addListener(property, handler);
   }
   void offSetted(String property, PropertyChanged handler) {
     observable.removeListener(property, handler);
   }
+  // Copyable
+  LongestRoad copy([JsonObject data]) =>
+      data == null ? new LongestRoad() : new LongestRoad.data(data);
+
 }

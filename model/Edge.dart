@@ -1,4 +1,4 @@
-interface EdgeData {
+interface EdgeData extends JsonObject{
   CellData c1;
   CellData c2;
 }
@@ -18,7 +18,7 @@ class EdgePosition {
   static int Deg3000 = 5;
 }
 /** A side of an hexagon, defined by 2 [Cell]s or 2 [Vertice]s */
-class Edge implements Hashable {
+class Edge implements Hashable, Jsonable {
   Cell c1; // On instantiation, c1 is guaranteed to be on top row, or leftmost if c1 and c2 on the same row */
   Cell c2;
   Vertice v1, v2;
@@ -29,19 +29,22 @@ class Edge implements Hashable {
   List<Cell> _neighbourCells; // TODO impl
   List<Edge> _neighbourEdges; // TODO impl
 
-  Edge.data(EdgeData data) {
-    if (data.c1 != null && data.c2 != null) {
-      c1 = new Cell.data(data.c1);
-      c2 = new Cell.data(data.c2);
-      _calculateVertices();
-    } else {
-      throw new Exception();
-    }
+  Edge.data(JsonObject json) {
+    EdgeData data = json;
+    c1 = new Cell.data(data.c1);
+    c2 = new Cell.data(data.c2);
+    _calculateVertices();
   }
 
   Edge(this.c1, this.c2) { _calculateVertices(); }
   Edge.fromVertices(this.v1, this.v2) { _calculateCells(); }
 
+  JsonObject get data() {
+    EdgeData data = new JsonObject();
+    data.c1 = c1.data;
+    data.c2 = c2.data;
+    return data;
+  }
   int hashCode() => c1.hashCode() * c2.hashCode();
 
   String toString() => "c1: {$c1}, c2: ${c2}, hash: ${hashCode()}";
@@ -129,4 +132,7 @@ class Edge implements Hashable {
     }
     return _direction;
   }
+  // Copyable
+  copy([JsonObject data]) =>
+      data == null ? new Edge(c1, c2) : new Edge.data(data);
 }

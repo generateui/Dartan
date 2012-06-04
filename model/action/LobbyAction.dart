@@ -17,38 +17,42 @@ class AbstractLobbyAction implements LobbyAction {
   bool get isLobby() => true;
   bool get isTrade() => this is TradeAction;
 
-  prepare(Lobby lobby) { }
+  prepare(Lobby lobby) {
+    user = byId(userId, lobby.users);
+  }
   update(Lobby lobby) { }
   int hashCode() {
     if (id==null)
       id = Dartan.generateHashCode(this);
     return id;
   }
-  Action copy() => new AbstractLobbyAction();
+  Action copy([JsonObject data]) => new AbstractLobbyAction();
   test() {}
   String toText() => Dartan.name(this);
+  JsonObject get data() {
+    /* not implemented */
+  }
 }
-interface SayLobbyData {
+interface SayLobbyData extends JsonObject {
   int id;
+  String type;
   String performedTime;
   int userId;
   String message;
 }
 class SayLobby extends AbstractLobbyAction {
-
-  SayLobbyData data;
+  String message;
   SayLobby() {
   }
   SayLobby.data(SayLobbyData d) {
-    data = d;
+    SayLobbyData data = d;
     id = d.id;
     userId = d.userId;
-    //performedTime = d.performedTime;
   }
   update(Lobby lobby) {
     lobby.chats.add(this);
   }
-  String toText() => "${user.name}: ${data.message}";
+  String toText() => "${user.name}: ${message}";
 }
 /** A user just logged in */
 class JoinLobby extends AbstractLobbyAction {
@@ -71,30 +75,49 @@ interface LeaveLobbyData {
 /** A user starts a new game */
 class NewGame extends AbstractLobbyAction {
   String name;
-  String board;
-  GameData game;
+  String boardName;
+  Game game;
+  GameData createdGame;
+
+  NewGame();
+  NewGame.data(JsonObject json) {
+    NewGameData data = json;
+    name = data.name;
+    boardName = data.boardName;
+    id = data.id;
+    userId = data.userId;
+    createdGame = data.createdGame;
+  }
   prepare(Lobby lobby) {
-    //game = new Game();
+    super.prepare(lobby);
   }
   update(Lobby lobby) {
     lobby.games.add(game);
-    //game.host = user;
+  }
+  void performServer(ServerGame serverGame) {
+    game = new Game.data(createdGame);
+    Board board = new Board.name(boardName);
+    board.make(serverGame.random);
+    game.board = board;
+    game.host = user;
     game.users.add(user);
   }
   String toText() => "${user.name} created a new game: ${game.name}";
-//  String toJson() => JSON.stringify(toJsonObject());
-//  JsonObject toJsonObject() {
-//    NewGameData data = new JsonObject();
-//    data.userId = userId;
-//    data.gameData = gameData;
-//    return data;
-//  }
+  JsonObject get data() {
+    NewGameData data = new JsonObject();
+    data.userId = userId;
+    data.createdGame = createdGame;
+    data.type = Dartan.name(this);
+    return data;
+  }
 }
-interface NewGameData {
+interface NewGameData extends JsonObject {
+  String type;
+  int id;
   int userId;
   String name;
-  String board;
-//  GameData gameData;
+  String boardName;
+  GameData createdGame;
 }
 class JoinGame extends AbstractLobbyAction {
   int gameId;

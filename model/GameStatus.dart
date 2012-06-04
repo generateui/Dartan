@@ -8,6 +8,22 @@ interface GameStatus extends Hashable, Testable {
 class SupportedGameStatuses extends ImmutableL<GameStatus> {
   SupportedGameStatuses() : super([new AbstractGameStatus(), new Playing(), new WaitingForReplacingUser()]);
 }
+interface GameStatusData {
+  bool playing;
+  bool lobbying;
+}
+class AllStatuses implements GameStatus {
+  Playing playing;
+  Lobbying lobbying;
+  WaitingForReplacingUser waitingForReplacement;
+  GameStatus _current;
+  bool get blocks() => _current.blocks;
+  bool get waitsForPlayers() => _current.waitsForPlayers;
+  bool get isPlaying() => _current.isPlaying;
+  int hashCode() =>  _current.hashCode();
+  test() {}
+  String get description() => _current.description;
+}
 class AbstractGameStatus implements GameStatus {
   int id;
   bool get blocks() => false;

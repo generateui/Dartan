@@ -1,4 +1,4 @@
-interface Tile extends Copyable, Observable, Hashable, Testable  {
+interface Tile extends Copyable, Observable, Hashable, Testable, Jsonable  {
   String get color();
   Cell get cell();
   set cell(Cell c);
@@ -8,7 +8,6 @@ interface Tile extends Copyable, Observable, Hashable, Testable  {
   bool get isPartOfGame();
   bool get isRobberPlaceable();
   bool get isPiratePlaceable();
-  Tile copy();
   bool get producesResource();
   Resource resource();
 
@@ -32,11 +31,19 @@ class SupportedTiles extends ImmutableL<Tile> {
   SupportedTiles() : super([new AbstractTile(), new Sea(), new Desert(),
     new NoneTile(), new Field(), new Mountain(), new Forest(), new Hill(), new Pasture()]);
 }
-
+interface TileData extends JsonObject {
+  int id;
+  String type;
+  CellData cell;
+  PortData port;
+  ChitData chit;
+  int territoryId;
+}
 /** Abstract convenience implementation of a [Tile] */
 class AbstractTile implements Tile {
   ObservableHelper observable;
   int id;
+  int territoryId;
   Cell _cell;
   Port _port;
   Chit _chit;
@@ -81,8 +88,19 @@ class AbstractTile implements Tile {
     }
   }
 
+
   AbstractTile([this._cell]) {
     observable = new ObservableHelper();
+  }
+
+  // Territory is NOT serialized, instead should be set from boards using id
+  _initByData(JsonObject json) {
+    TileData data = json;
+    id = data.id;
+    cell = new Cell.data(data.cell);
+    port = new Port.data(data.port);
+    chit = new Chit.data(data.chit);
+//    territory = new Territory.data(data.territory);
   }
 
   bool get canBuildOnLand() => false;
@@ -90,10 +108,14 @@ class AbstractTile implements Tile {
   bool get isPartOfGame() => false;
   bool get isRobberPlaceable() => false;
   bool get isPiratePlaceable() => false;
-  Tile copy() => new AbstractTile(cell);
+  Tile copy([JsonObject data]) => new AbstractTile(cell);
   bool get producesResource() => false;
   Resource resource() => null;
   String get color() => "black";
+
+  JsonObject get data() {
+
+  }
 
   int hashCode() {
     if (id==null)
@@ -113,19 +135,19 @@ class AbstractTile implements Tile {
 class RandomTile extends AbstractTile {
   String get color() => "DarkGrey";
   RandomTile([Cell loc]) : super(loc);
-  Tile copy() => new RandomTile(cell);
+  Tile copy([JsonObject data]) => new RandomTile(cell);
   bool get canHaveChit() => true;
 }
 class Sea extends AbstractTile {
   Sea([Cell loc]) : super(loc);
-
+  Sea.data(JsonObject json) { _initByData(json); }
 
   bool get canBuildOnLand() => false;
   bool get canBuildOnSea() => false;
   bool get isPartOfGame() => true;
   bool get isRobberPlaceable() => false;
   bool get isPiratePlaceable() => true;
-  Tile copy() => new Sea(cell);
+  Tile copy([JsonObject data]) => new Sea(cell);
   bool get producesResource() => false;
   Resource resource() => null;
   bool get canHaveChit() => false;
@@ -144,7 +166,7 @@ class Desert extends AbstractTile {
   bool get canHaveChit() => false;
   bool get canHavePort() => false;
   String get color() => "lightyellow";
-  Tile copy() => new Desert(cell);
+  Tile copy([JsonObject data]) => new Desert(cell);
   Resource resource() => null;
 }
 /** Design-time placeholder for an empty [Tile] slot */
@@ -160,7 +182,7 @@ class NoneTile extends AbstractTile {
   bool get canHaveChit() => false;
   bool get canHavePort() => false;
   String get color() => "lightgrey";
-  Tile copy() => new NoneTile(cell);
+  Tile copy([JsonObject data]) => new NoneTile(cell);
   Resource resource() => null;
 }
 class Field extends AbstractTile {
@@ -175,7 +197,7 @@ class Field extends AbstractTile {
   bool get canHaveChit() => true;
   bool get canHavePort() => false;
   String get color() => "yellow";
-  Tile copy() => new Field(cell);
+  Tile copy([JsonObject data]) => new Field(cell);
   Resource resource() => new Wheat();
 }
 class Forest extends AbstractTile {
@@ -190,7 +212,7 @@ class Forest extends AbstractTile {
   bool get canHaveChit() => true;
   bool get canHavePort() => false;
   String get color() => "darkgreen";
-  Tile copy() => new Forest(cell);
+  Tile copy([JsonObject data]) => new Forest(cell);
   Resource resource() => new Timber();
 }
 class Mountain extends AbstractTile {
@@ -205,7 +227,7 @@ class Mountain extends AbstractTile {
   bool get canHaveChit() => true;
   bool get canHavePort() => false;
   String get color() => "purple";
-  Tile copy() => new Mountain(cell);
+  Tile copy([JsonObject data]) => new Mountain(cell);
   Resource resource() => new Ore();
 }
 class Pasture extends AbstractTile {
@@ -220,7 +242,7 @@ class Pasture extends AbstractTile {
   bool get canHaveChit() => true;
   bool get canHavePort() => false;
   String get color() => "lightgreen";
-  Tile copy() => new Pasture(cell);
+  Tile copy([JsonObject data]) => new Pasture(cell);
   Resource resource() => new Sheep();
 }
 class Hill extends AbstractTile {
@@ -235,6 +257,6 @@ class Hill extends AbstractTile {
   bool get canHaveChit() => true;
   bool get canHavePort() => false;
   String get color() => "red";
-  Tile copy() => new Hill(cell);
+  Tile copy([JsonObject data]) => new Hill(cell);
   Resource resource() => new Clay();
 }

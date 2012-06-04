@@ -3,7 +3,7 @@
     -When sending via server, action is wrapped in a [ViaServer] action
     -When server initiates something, action si wrapped in a [ServerAction]  */
 interface Action
-  extends Hashable, Copyable, Identifyable, Testable
+  extends Hashable, Copyable, Identifyable, Testable, Jsonable
   default ActionFactory {
 
   User user;
@@ -25,7 +25,7 @@ class ActionFactory {
   factory Action.name(String name, JsonObject json) {
     if (_actions.containsKey(name)) {
       Action action = _actions[name];
-      action.setJson(json);
+//      action.setJson(json);
       return action.copy();
     }
   }
@@ -47,13 +47,14 @@ class AbstractAction implements Action {
   bool get isTrade() => this is TradeAction;
 
   toText() => "AbstractAction";
-  Action copy() => new AbstractAction();
+  Action copy([JsonObject data]) => new AbstractAction();
   test() { }
   int hashCode() {
     if (id==null)
       id = Dartan.generateHashCode(this);
     return id;
   }
+  JsonObject get data() { throw new NotImplementedException(); }
 }
 /** An wrapped action from the client to the server */
 class ClientAction extends AbstractAction {

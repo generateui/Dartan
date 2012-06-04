@@ -1,7 +1,7 @@
-interface VerticeData {
-  Cell c1;
-  Cell c2;
-  Cell c3;
+interface VerticeData extends JsonObject{
+  CellData c1;
+  CellData c2;
+  CellData c3;
 }
 /**
  Position on hexagon
@@ -28,7 +28,7 @@ class VerticeType {
 }
 
 /** A vertice of a tile */
-class Vertice implements Hashable {
+class Vertice implements Hashable, Jsonable {
   Cell c1, c2, c3, _topMost;
 
   int _type = -1;
@@ -51,9 +51,16 @@ class Vertice implements Hashable {
   Vertice(this.c1, this.c2, this.c3){
     _swapCellsIfNecesary();
   }
-
+  Vertice.data(JsonObject json) {
+    VerticeData data = json;
+    c1 = new Cell.data(data.c1);
+    c2 = new Cell.data(data.c2);
+    c3 = new Cell.data(data.c3);
+    _swapCellsIfNecesary();
+  }
   Vertice.coords(c1row, c1col, c2row, c2col, c3row, c3col) :
     this(new Cell(c1row, c1col), new Cell(c2row, c2col), new Cell(c3row, c3col));
+
   Vertice.fromEdges(Edge e1, Edge e2) {
     List<Cell> allCells= new List<Cell>.from([e1.c1, e1.c2, e2.c1, e2.c2]);
 
@@ -68,6 +75,13 @@ class Vertice implements Hashable {
     c1 = allCells[0];
     c2 = allCells[1];
     c3 = allCells[2];
+  }
+  JsonObject get data() {
+    VerticeData data = new JsonObject();
+    data.c1 = c1.data;
+    data.c2 = c2.data;
+    data.c3 = c3.data;
+    return data;
   }
 
   /** Ensures c1 is always on highest (lowest in number) row and leftmost,
@@ -143,7 +157,7 @@ class Vertice implements Hashable {
   }
   /** Returns the type of the hex: one or two Hexes on the upper row */
   int get type() {
-    if (_type == -1) {
+    if (_type == -1) { // lazy init
       List<Cell> cells = new List<Cell>.from([c1, c2, c3]);
       int rmax = 220; //arbitrary high number
       for (Cell c in cells)
@@ -289,4 +303,7 @@ class Vertice implements Hashable {
     }
     return result;
   }
+  // Copyable
+  copy([JsonObject data]) =>
+      data == null ? new Vertice(c1, c2, c3) : new Vertice.data(data);
 }

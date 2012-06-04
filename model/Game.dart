@@ -1,32 +1,33 @@
 class SupportedGames extends ImmutableL<Game> {
   SupportedGames() : super([new Game()]);
 }
-interface GameData {
+interface GameData extends JsonObject {
   String startedDateTime;
   int userId;
-  Board board;
+  BoardData board;
   String name;
   int id;
-  List<User> users;
-  List<Player> players;
-  List<Resource> bank;
-  List<GameAction> actions;
-  List<SayGame> chats;
-  List<GameAction> queue;
-  List<DevelopmentCard> developmentCards;
+
+  List users;
+  List players;
+  List bank;
+  List actions;
+  List chats;
+  List queue;
+  List developmentCards;
 
   Robber robber;
   LongestRoad longestRoad;
   LargestArmy largestArmy;
-  AllPhases phases;
+  AllPhasesData phases;
   GameSettings settings;
-  GamePhase currentGamePhase;
-  TurnPhase currentTurnPhase;
+  int currentGamePhaseId;
+  int currentTurnPhaseId;
   GameStatus status;
   List<Turn> turns;
   Turn turn;
 }
-class Game implements Testable, Observable, Hashable, Identifyable {
+class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
   ObservableHelper observable;
   static User get serverUser() => new ServerUser();
 
@@ -61,6 +62,9 @@ class Game implements Testable, Observable, Hashable, Identifyable {
   ListenableList<Turn> turns;
   Turn /* on */ turn = null;  // init to null, non-null when first time in [TurnsGamePhase]
 
+  bool get atClient() => true;
+  bool get atServer() => false;
+
   _init() { // init to default settings
     observable = new ObservableHelper();
     users = users == null ?  new ListenableList<User>() : users;
@@ -73,24 +77,27 @@ class Game implements Testable, Observable, Hashable, Identifyable {
     queue = queue == null ? new ListenableList<Action>() : queue;
   }
   Game() { _init(); }
-  Game.data(GameData data) {
-    if (data != null) { // init by data
-      //implement
-      users = data.users == null ? null : new ListenableList<User>.from(data.users);
-      phases = data.phases == null ? null : new AllPhases(data.phases);
-      status = new Playing();
-      turns = new ListenableList<Turn>.from(data.turns);
-      players = new PlayerListMu();
-      observable = new ObservableHelper();
-      bank = new ResourceListMu();
-      actions = new ListenableList<GameAction>();
-      queue = new ListenableList<Action>();
+  Game.data(JsonObject json) {
+    GameData data = json;
+    if (data.users != null) {
+      for (JsonObject jsonUser in data.users) {
+        users.add(new User.data(jsonUser));
+      }
     }
+    users = data.users == null ? null : new ListenableList<User>.from(data.users);
+    phases = data.phases == null ? null : new AllPhases.data(data.phases);
+    status = new Playing();
+    turns = new ListenableList<Turn>.from(data.turns);
+    players = new PlayerListMu();
+    observable = new ObservableHelper();
+    bank = new ResourceListMu();
+    actions = new ListenableList<GameAction>();
+    queue = new ListenableList<Action>();
     _init();
   }
 
   start() {
-
+    phases.next(this);
   }
   prepareDevelopmentCards() {
 
@@ -113,7 +120,7 @@ class Game implements Testable, Observable, Hashable, Identifyable {
     action.perform(this);
     actions.add(action);
   }
-  /** Observable */
+  // Observable
   void onSetted(String property, PropertyChanged handler) {
     observable.addListener(property, handler);
   }
@@ -126,7 +133,20 @@ class Game implements Testable, Observable, Hashable, Identifyable {
       id = Dartan.generateHashCode(this);
     return id;
   }
-
+  // Copyable
+  Game copy([JsonObject data]) => data == null ? new Game() : new Game.data(data);
+  // Jsonable
+  JsonObject get data() {
+    GameData data = new JsonObject();
+    data.actions = Oracle.toDataList(actions);
+    data.bank = Oracle.toDataList(bank);
+    data.board = board.data;
+    data.chats = Oracle.toDataList(chats);
+    data.currentGamePhaseId = currentGamePhase.id;
+    data.currentTurnPhaseId = currentTurnPhase.id;
+    data.developmentCards = Oracle.toDataList(developmentCards);
+    return data;
+  }
   test() {
     new GameTest().test();
   }

@@ -1,5 +1,5 @@
 class BoardEditor extends View {
-  Element root;
+  Element element;
   DivElement buttonList;
   SVGElement boardRoot;
   SpanElement stateName;
@@ -7,10 +7,8 @@ class BoardEditor extends View {
   BoardVisual boardVisual;
   List<BoardState> boardStates;
 
-  BoardEditor([this.root]) {
-    if (root == null) {
-      root = new Element.tag("div");
-    }
+  BoardEditor() {
+    element = new Element.tag("div");
     div = document.query(id);
     board = new Board(7,7);
     boardVisual = new SvgBoard();
@@ -26,10 +24,10 @@ class BoardEditor extends View {
       });
       buttonList.elements.add(b);
     }
-    root.elements.add(stateName);
-    root.elements.add(buttonList);
-    root.elements.add(boardVisual.element);
-    div.elements.add(root);
+    element.elements.add(stateName);
+    element.elements.add(buttonList);
+    element.elements.add(boardVisual.element);
+    div.elements.add(element);
     boardVisual.hideAllEdges();
     boardVisual.hideAllVertices();
   }
