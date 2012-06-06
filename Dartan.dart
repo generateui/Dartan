@@ -57,10 +57,21 @@
 #source('ui/TileMeasurementInfo.dart');
 #source('ui/ResourcePicker.dart');
 #source('ui/ResourcesView.dart');
-#source('ui/Visual.dart');
 #source('ui/GameView.dart');
 #source('ui/LobbyView.dart');
 #source('ui/BoardViewer.dart');
+
+// Visual
+#source('ui/visual/BoardVisual.dart');
+#source('ui/visual/ChitVisual.dart');
+#source('ui/visual/EdgeVisual.dart');
+#source('ui/visual/VerticeVisual.dart');
+#source('ui/visual/TileVisual.dart');
+#source('ui/visual/PortPickerVisual.dart');
+#source('ui/visual/TerritoryVisual.dart');
+#source('ui/visual/PortVisual.dart');
+#source('ui/visual/TownVisual.dart');
+#source('ui/visual/Visual.dart');
 
 // Test
 #source('test/ResourcesTest.dart');
