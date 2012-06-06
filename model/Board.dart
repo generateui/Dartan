@@ -41,7 +41,7 @@ class Board implements Observable, Hashable, Jsonable, Identifyable, Testable {
 
   HashSet<Vertice> get vertices() => _vertices;
   HashSet<Edge> get edges() => _edges;
-  Set<Tile> get tiles() => new HashSet.from(_tilesByCell.getValues());
+  List<Tile> get tiles() => new List.from(_tilesByCell.getValues());
 
   ListenableList<Tile> tilesBag;
   ListenableList<Chit> chitsBag;
