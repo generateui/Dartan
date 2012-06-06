@@ -2,8 +2,9 @@ class SupportedGames extends ImmutableL<Game> {
   SupportedGames() : super([new Game()]);
 }
 interface GameData extends JsonObject {
+  String type;
   String startedDateTime;
-  int userId;
+  int hostUserId;
   BoardData board;
   String name;
   int id;
@@ -15,17 +16,18 @@ interface GameData extends JsonObject {
   List chats;
   List queue;
   List developmentCards;
+  List turns;
 
-  Robber robber;
-  LongestRoad longestRoad;
-  LargestArmy largestArmy;
+  RobberData robber;
+  LongestRoadData longestRoad;
+  LargestArmyData largestArmy;
   AllPhasesData phases;
-  GameSettings settings;
   int currentGamePhaseId;
   int currentTurnPhaseId;
+  int currentTurnId;
+
+  GameSettings settings;
   GameStatus status;
-  List<Turn> turns;
-  Turn turn;
 }
 class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
   ObservableHelper observable;
@@ -44,6 +46,7 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
   ListenableList<User> spectators;
   ListenableList<User> users;
   ListenableList<GameAction> actions;
+  ListenableList<Turn> turns;
   ListenableList<SayGame> chats;
   ListenableList<Action> queue;
   ListenableList<DevelopmentCard> developmentCards;
@@ -59,11 +62,10 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
   GamePhase /* on */ currentGamePhase;
   TurnPhase /* on */ currentTurnPhase;
   GameStatus /* on */ status;
-  ListenableList<Turn> turns;
   Turn /* on */ turn = null;  // init to null, non-null when first time in [TurnsGamePhase]
 
-  bool get atClient() => true;
-  bool get atServer() => false;
+  bool get atClient() => true;  // True when executing at client
+  bool get atServer() => false; // True when at Server
 
   _init() { // init to default settings
     observable = new ObservableHelper();
@@ -79,13 +81,8 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
   Game() { _init(); }
   Game.data(JsonObject json) {
     GameData data = json;
-    if (data.users != null) {
-      for (JsonObject jsonUser in data.users) {
-        users.add(new User.data(jsonUser));
-      }
-    }
-    users = data.users == null ? null : new ListenableList<User>.from(data.users);
-    phases = data.phases == null ? null : new AllPhases.data(data.phases);
+    users = llFrom(data.users);
+//    phases = data.phases == null ? null : new AllPhases.data(data.phases);
     status = new Playing();
     turns = new ListenableList<Turn>.from(data.turns);
     players = new PlayerListMu();
@@ -94,6 +91,20 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
     actions = new ListenableList<GameAction>();
     queue = new ListenableList<Action>();
     _init();
+  }
+
+  afterSerialization() {
+    // Tiles should get Territory from Id
+    for (Tile t in board.tiles) {
+      if (t.territoryId != null) {
+        t.territory = byId(t.territoryId, board.territories);
+      }
+    }
+    // Player should get User from userId
+    for (Player player in players) {
+      User u = byId(player.userId, users);
+      player.user = u;
+    }
   }
 
   start() {
@@ -138,15 +149,31 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
   // Jsonable
   JsonObject get data() {
     GameData data = new JsonObject();
-    data.actions = Oracle.toDataList(actions);
-    data.bank = Oracle.toDataList(bank);
-    data.board = board.data;
-    data.chats = Oracle.toDataList(chats);
-    data.currentGamePhaseId = currentGamePhase.id;
-    data.currentTurnPhaseId = currentTurnPhase.id;
-    data.developmentCards = Oracle.toDataList(developmentCards);
+    data.id = id;
+    data.type = Dartan.name(this);
+    data.name = name;
+    //data.startedDateTime = startedDateTime; DATETIME/conversion
+
+    data.actions =  nullOrDataListFrom(actions);
+    data.chats = nullOrDataListFrom(chats);
+    data.bank = nullOrDataListFrom(bank);
+    data.users = nullOrDataListFrom(users);
+    data.turns = nullOrDataListFrom(turns);
+    data.players = nullOrDataListFrom(players);
+    data.queue = nullOrDataListFrom(queue);
+    data.developmentCards = nullOrDataListFrom(developmentCards);
+
+    //data.status = status == null ? null : status.data;
+    data.board = nullOrDataFrom(board);
+    data.phases = nullOrDataFrom(phases);
+    data.currentGamePhaseId = currentGamePhase == null ? null : currentGamePhase.id;
+    data.currentTurnPhaseId = currentTurnPhase == null ? null : currentTurnPhase.id;
+    data.robber = nullOrDataFrom(robber);
+    data.longestRoad = nullOrDataFrom(longestRoad);
+    data.largestArmy = nullOrDataFrom(largestArmy);
     return data;
   }
+  bool equals(other) => other.id==id;
   test() {
     new GameTest().test();
   }

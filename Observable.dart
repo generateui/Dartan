@@ -30,7 +30,7 @@ class ListenableList<T> implements List<T>, Testable {
 //  add
 //}
 
-class SupportedListenableLists extends ImmutableL<Resource> {
+class SupportedListenableLists extends ImmutableL<ListenableList> {
   SupportedListenableLists() : super([new ListenableList<String>()]);
 }
 

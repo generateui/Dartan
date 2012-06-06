@@ -1,6 +1,7 @@
 interface EdgeData extends JsonObject{
   CellData c1;
   CellData c2;
+  String type;
 }
 /** Direction the edge is pointing towards from the left */
 class EdgeDirection {
@@ -18,7 +19,7 @@ class EdgePosition {
   static int Deg3000 = 5;
 }
 /** A side of an hexagon, defined by 2 [Cell]s or 2 [Vertice]s */
-class Edge implements Hashable, Jsonable {
+class Edge implements Hashable, Jsonable, Testable {
   Cell c1; // On instantiation, c1 is guaranteed to be on top row, or leftmost if c1 and c2 on the same row */
   Cell c2;
   Vertice v1, v2;
@@ -35,19 +36,19 @@ class Edge implements Hashable, Jsonable {
     c2 = new Cell.data(data.c2);
     _calculateVertices();
   }
-
-  Edge(this.c1, this.c2) { _calculateVertices(); }
+  Edge([this.c1, this.c2]) {_calculateVertices(); }
   Edge.fromVertices(this.v1, this.v2) { _calculateCells(); }
 
   JsonObject get data() {
     EdgeData data = new JsonObject();
     data.c1 = c1.data;
     data.c2 = c2.data;
+    data.type = Dartan.name(this);
     return data;
   }
   int hashCode() => c1.hashCode() * c2.hashCode();
 
-  String toString() => "c1: {$c1}, c2: ${c2}, hash: ${hashCode()}";
+  String toText() => "c1: {$c1}, c2: ${c2}, hash: ${hashCode()}";
 
   bool operator ==(other) {
     if (other === this)
@@ -58,6 +59,7 @@ class Edge implements Hashable, Jsonable {
   }
 
   Cell otherCell(Cell c) => c == c1 ? c2 : c1;
+
   Vertice otherVertice(Vertice v) => v == v1 ? v2 : v1;
 
   bool hasCell(Cell check) =>  c1 == check || c2 == check;
@@ -131,6 +133,10 @@ class Edge implements Hashable, Jsonable {
       }
     }
     return _direction;
+  }
+  // Testable
+  test() {
+    new EdgeTest().test();
   }
   // Copyable
   copy([JsonObject data]) =>

@@ -283,6 +283,7 @@ class ChitVisual extends AbstractVisual {
 class PortVisual extends AbstractVisual {
   SVGPolygonElement portElement;
   Port _port;
+  Port get port() => _port;
   set port(Port p) {
     _port = p;
     updatePort();
@@ -292,25 +293,24 @@ class PortVisual extends AbstractVisual {
     svg = portElement;
   }
   void updatePort() {
-    if (portElement == null && _port !=null)
-      createPort();
     if (_port == null) {
       portElement.style.setProperty("display", "none");
     } else {
       portElement.style.setProperty("display", "block");
       portElement.attributes["fill"] = _port.color;
+      Point2D center = board2d.xyCellCenter(port.seaCell);
+      List<Vertice> vertices = port.seaCell.fromDirection(port.edgeDirection);
+      Point2D p1 = board2d.xyVertice(vertices[0]);
+      Point2D p2 = board2d.xyVertice(vertices[1]);
+      portElement.attributes =  {
+        "points": "${center.x}, ${center.y} ${p1.x}, ${p1.y} ${p2.x}, ${p2.y} ${center.x}, ${center.y}",
+        "fill": _port.color
+      };
     }
   }
 
   void createPort() {
-    Point2D center = board2d.xyCellCenter(port.seaCell);
-    List<Vertice> vertices = port.seaCell.fromDirection(port.edgeDirection);
-    Point2D p1 = board2d.xyVertice(vertices[0]);
-    Point2D p2 = board2d.xyVertice(vertices[1]);
-    portElement.attributes =  {
-      "points": "${center.x}, ${center.y} ${p1.x}, ${p1.y} ${p2.x}, ${p2.y} ${center.x}, ${center.y}",
-      "fill": _port.color
-    };
+
   }
 }
 class TownVisual extends AbstractVisual {
@@ -318,7 +318,7 @@ class TownVisual extends AbstractVisual {
 }
 /** Tile on a canvas */
 class TileVisual extends AbstractVisual {
-  SVGPathElement p;
+  SVGPolygonElement p;
   SVGGElement group;
   Tile tile;
   ChitVisual chit;
@@ -329,25 +329,32 @@ class TileVisual extends AbstractVisual {
 
     createTileVisual();
 
-    chit = new ChitVisual.svg(board2d);
-    group.elements.add(chit.svg);
-    tile.onSetted("chit", (Chit old, Chit newChit) {
-      chit.setChit(tile.chit, tile.cell);
-    });
-    if (tile.hasChit) {
-      chit.setChit(tile.chit, tile.cell);
+    if (tile.canHaveChit) {
+      chit = new ChitVisual.svg(board2d);
+      group.elements.add(chit.svg);
+      tile.onSetted("chit", _chitChange);
+      if (tile.hasChit) {
+        _chitChange(null, tile.chit);
+      }
     }
-
-    port = new PortVisual.svg(board2d);
-    group.elements.add(port.svg);
-    tile.onSetted("port", (Port old, Port newPort) {
-      port.port = newPort;
-    });
-    if (tile.hasPort) {
-      port.port = tile.port;
+    if (tile.canHavePort) {
+      port = new PortVisual.svg(board2d);
+      group.elements.add(port.svg);
+      tile.onSetted("port", _portChange);
+      if (tile.hasPort) {
+        _portChange(null, tile.port);
+      }
     }
-
+    if (tile.canHaveTerritory) {
+      // TODO: implement
+    }
     svg = group;
+  }
+  _chitChange(Chit old, Chit newChit) {
+    chit.setChit(tile.chit, tile.cell);
+  }
+  _portChange(Port old, Port newPort) {
+    port.port = newPort;
   }
   createTileVisual() {
     p = new SVGElement.tag("polygon");
@@ -367,6 +374,17 @@ class TileVisual extends AbstractVisual {
        """
      };
     group.elements.add(p);
+  }
+  remove() {
+    tile.offSetted("port", _portChange);
+    tile.offSetted("chit", _chitChange);
+    if (port != null) {
+      port.svg.remove();
+    }
+    if (chit != null) {
+      chit.svg.remove();
+    }
+    group.remove();
   }
 }
 
@@ -451,17 +469,19 @@ class PortPickerVisual extends AbstractVisual {
 /** Renders a board onto a SVG surface */
 class SvgBoard implements BoardVisual {
   Element element;
+  SVGElement svg;
+
   Board2D board2d;
   Board _board;
   BoardState _boardState;
-  SVGElement svg;
   SVGGElement vertices, edges, tiles; // G element to group them
-  HashMap<Vertice, SVGElement> _elementsByVertice;
-  HashMap<Edge, SVGElement> _elementsByEdge;
-  HashMap<Tile, SVGElement> _elementsByTile;
+  HashMap<Vertice, VerticeVisual> _elementsByVertice;
+  HashMap<Edge, EdgeVisual> _elementsByEdge;
+  HashMap<Tile, TileVisual> _elementsByTile;
   ObservableHelper observable;
   Visual _currentVisual;
   PortPickerVisual portPicker;
+
   Board /* on */ get board() => _board;
   set /* on */ board(Board b) {
     Board old = _board;
@@ -474,9 +494,9 @@ class SvgBoard implements BoardVisual {
     observable.fire("board", old, _board);
   }
   clear() {
-    _elementsByEdge.getValues().forEach((Element e) => e.remove());
-    _elementsByVertice.getValues().forEach((Element e) => e.remove());
-    _elementsByTile.getValues().forEach((Element e) => e.remove());
+    _elementsByEdge.getValues().forEach((e) => e.svg.remove());
+    _elementsByVertice.getValues().forEach((e) => e.svg.remove());
+    _elementsByTile.getValues().forEach((e) => e.remove());
     _elementsByEdge.clear();
     _elementsByTile.clear();
     _elementsByVertice.clear();
@@ -522,9 +542,9 @@ class SvgBoard implements BoardVisual {
   SvgBoard() {
     svg = new SVGElement.tag("svg");
     element = svg;
-    _elementsByEdge = new HashMap<Edge, SVGElement>();
-    _elementsByTile = new HashMap<Tile, SVGElement>();
-    _elementsByVertice = new HashMap<Vertice, SVGElement>();
+    _elementsByEdge = new HashMap<Edge, EdgeVisual>();
+    _elementsByTile = new HashMap<Tile, TileVisual>();
+    _elementsByVertice = new HashMap<Vertice, VerticeVisual>();
     observable = new ObservableHelper();
     boardState = new SelectOnHover();
     boardState.boardVisual = this;
@@ -546,20 +566,20 @@ class SvgBoard implements BoardVisual {
   createElements() {
     for (Tile t in board.tiles) {
       TileVisual visual = new TileVisual.svg(board2d, t);
-      _elementsByTile[t] = visual.toSvg();
-      tiles.elements.add(visual.toSvg());
+      _elementsByTile[t] = visual;
+      tiles.elements.add(visual.svg);
       _addEventHandlers(visual);
     }
     for (Vertice v in board.vertices) {
       VerticeVisual visual = new VerticeVisual.svg(board2d, v);
-      _elementsByVertice[v] = visual.toSvg();
-      vertices.elements.add(visual.toSvg());
+      _elementsByVertice[v] = visual;
+      vertices.elements.add(visual.svg);
       _addEventHandlers(visual);
     }
     for (Edge e in board.edges) {
       EdgeVisual visual = new EdgeVisual.svg(board2d, e);
-      _elementsByEdge[e] = visual.toSvg();
-      edges.elements.add(visual.toSvg());
+      _elementsByEdge[e] = visual;
+      edges.elements.add(visual.svg);
       _addEventHandlers(visual);
     }
   }
@@ -570,7 +590,7 @@ class SvgBoard implements BoardVisual {
     }
     TileVisual visual = new TileVisual.svg(board2d, newTile);
     tiles.elements.add(visual.toSvg());
-    _elementsByTile[newTile] = visual.toSvg();
+    _elementsByTile[newTile] = visual;
     _addEventHandlers(visual);
   }
   _addEventHandlers(Visual v) {

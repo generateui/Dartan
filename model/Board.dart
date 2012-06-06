@@ -22,7 +22,7 @@ interface BoardData extends JsonObject {
     -Columns (editor)
     -TileChanged (editor)
 */
-class Board implements Observable, Hashable, Jsonable, Identifyable {
+class Board implements Observable, Hashable, Jsonable, Identifyable, Testable {
   ObservableHelper observable;
   int columns = -1;
   int rows = -1;
@@ -41,7 +41,7 @@ class Board implements Observable, Hashable, Jsonable, Identifyable {
 
   HashSet<Vertice> get vertices() => _vertices;
   HashSet<Edge> get edges() => _edges;
-  Set<Tile> get tiles() => _tilesByCell.getValues();
+  Set<Tile> get tiles() => new HashSet.from(_tilesByCell.getValues());
 
   ListenableList<Tile> tilesBag;
   ListenableList<Chit> chitsBag;
@@ -52,26 +52,29 @@ class Board implements Observable, Hashable, Jsonable, Identifyable {
   setStartingState() {  }
 
   init() {
-    _vertices = new HashSet<Vertice>();
     _tilesByCell = new HashMap<Cell, Tile>();
+    _vertices = new HashSet<Vertice>();
     _edges = new HashSet<Edge>();
     _forbiddenVertices = new HashSet<Vertice>();
     observable = new ObservableHelper();
-    territories = new ListenableList<Territory>();
-
-    tilesBag = new ListenableList<Tile>();
-    chitsBag = new ListenableList<Chit>();
-    portsBag = new ListenableList<Port>();
   }
 
   Board.data(JsonObject json) {
     BoardData data = json;
     id = data.id;
     name = data.name;
-    chitsBag = Oracle.fromDataList(data.chitsBag);
+    chitsBag = llFrom(chitsBag);
+    portsBag = llFrom(portsBag);
+    tilesBag = llFrom(tilesBag);
+    territories = llFrom(territories);
   }
   Board([this.columns, this.rows]) {
     init();
+
+    tilesBag = new ListenableList<Tile>();
+    chitsBag = new ListenableList<Chit>();
+    portsBag = new ListenableList<Port>();
+    territories = new ListenableList<Territory>();
 
     if (columns != null && rows != null) {
       name = "Unnamed ${columns}x${rows}";
@@ -80,7 +83,7 @@ class Board implements Observable, Hashable, Jsonable, Identifyable {
       }
     }
   }
-  Board copy([JsonObject data]) => data==null ? new Board() :  new Board.data(data);
+  Board copy([JsonObject data]) => data == null ? new Board() :  new Board.data(data);
   JsonObject get data() {
     BoardData data = new JsonObject();
     data.name = name;
@@ -92,15 +95,6 @@ class Board implements Observable, Hashable, Jsonable, Identifyable {
     data.portsBag = Oracle.toDataList(portsBag);
     data.territories = Oracle.toDataList(territories);
     return data;
-  }
-  Board.name(String name) {
-  }
-  // Observable
-  void onSetted(String property, PropertyChanged handler) {
-    observable.addListener(property, handler);
-  }
-  void offSetted(String property, PropertyChanged handler) {
-    observable.removeListener(property, handler);
   }
   /** Fills this instance with a grid of specified number of rows and columns */
   void from2DMatrix(int totalCols, int totalRows) {
@@ -167,6 +161,7 @@ class Board implements Observable, Hashable, Jsonable, Identifyable {
       _tilesByCell[vertice.c2].canBuildOnLand ||
       _tilesByCell[vertice.c3].canBuildOnLand;
 
+  /** This method assumes a grid system */
   bool cellWithinBounds(Cell cell) =>
     cell.row < rows && cell.row > -1 &&
     cell.column < columns && cell.column > -1;
@@ -193,9 +188,18 @@ class Board implements Observable, Hashable, Jsonable, Identifyable {
     Cell c = new Cell(row, column);
     return _tilesByCell[c];
   }
+  // Hashable
   int hashCode() {
     return name.hashCode();
   }
+  // Observable
+  void onSetted(String property, PropertyChanged handler) {
+    observable.addListener(property, handler);
+  }
+  void offSetted(String property, PropertyChanged handler) {
+    observable.removeListener(property, handler);
+  }
+  bool equals(other) => other.name == name;
   void test() {
     new BoardTest().test();
   }
@@ -217,13 +221,18 @@ class Standard4p extends Board {
     makeSeaSurrounding();
     makeRandomPorts();
   }
-
-  addPortAt(int row, int col, int direction) {
-    Cell first = new Cell(row, col);
-    Tile st = _tilesByCell[first];
-    st.port = new RandomPort(first, direction);
+  makeRaandomFields() {
+    for (int r = 0; r < randomFields.length; r++) {
+      for (int c = 0; c < randomFields[r].length; c++) {
+        int row = r + 1; // offset for first row of sea
+        int col = randomFields[r][c];
+        RandomTile tile = new RandomTile(new Cell(row, col));
+        tile.chit = new RandomChit();
+        tile.territory = mainIsland;
+        this.changeTile(tile);
+      }
+    }
   }
-
   makeRandomPorts() {
     addPortAt(0,1,EdgePosition.Deg120180);
     addPortAt(0,3,EdgePosition.Deg120180);
@@ -235,7 +244,6 @@ class Standard4p extends Board {
     addPortAt(6,1,EdgePosition.Deg060);
     addPortAt(6,3,EdgePosition.Deg3000);
   }
-
   makeSeaSurrounding() {
     // Add sea around 5 rows
     this.addTile(new Sea(new Cell(0, 1))); // First row with sea
@@ -297,18 +305,7 @@ class Standard4p extends Board {
     tilesBag.clear();
     tilesBag.addAll(newTiles);
   }
-  makeRaandomFields() {
-    for (int r = 0; r < randomFields.length; r++) {
-      for (int c = 0; c < randomFields[r].length; c++) {
-        int row = r + 1; // offset for first row of sea
-        int col = randomFields[r][c];
-        RandomTile tile = new RandomTile(new Cell(row, col));
-        tile.chit = new RandomChit();
-        tile.territory = mainIsland;
-        this.changeTile(tile);
-      }
-    }
-  }
+
   make(Random random) {
     replaceRandomTiles(random);
     placeChits(random);
@@ -326,21 +323,25 @@ class Standard4p extends Board {
       portsBag.removeRange(intPick, 1);
     }
   }
-
+  addPortAt(int row, int col, int direction) {
+    Cell first = new Cell(row, col);
+    Tile st = _tilesByCell[first];
+    st.port = new RandomPort(first, direction);
+  }
   placeChits(Random random) {
     newChitsBag();
     List<Tile> randomChitTiles = new List<Tile>();
-        for (Tile t in tiles) {
-          if (t.hasChit && t.chit is RandomChit) {
-            randomChitTiles.add(t);
-          }
-        }
+    for (Tile t in tiles) {
+      if (t.hasChit && t.chit is RandomChit) {
+        randomChitTiles.add(t);
+      }
+    }
 
     List<Chit> hotChits = chitsBag.filter((Chit c) => c.isRed);
     List<Tile> tilesWithHotChit = new List<Tile>();
 
     // First place 4 red chits
-    while (hotChits.length > 0) {
+    while (!hotChits.isEmpty()) {
       int intPick = random.intFromZero(hotChits.length - 1);
       Chit t = hotChits[intPick];
 
@@ -353,12 +354,15 @@ class Standard4p extends Board {
       }
     }
 
-    chitsBag = new List.from(chitsBag.filter((Chit c) => not(c.isRed)));
-    print("jeuj");
-    for (Tile t in randomChitTiles) {
-      int intChitPick = random.intFromZero(chitsBag.length-1);
-      t.chit = chitsBag[intChitPick];
-      chitsBag.removeRange(intChitPick, 1);
+    bool twins = true;
+    while (twins) {
+      List<Chit> chitsBagCopy = new List.from(chitsBag.filter((Chit c) => not(c.isRed)));
+      for (Tile t in randomChitTiles) {
+        int intChitPick = random.intFromZero(chitsBagCopy.length-1);
+        t.chit = chitsBagCopy[intChitPick];
+        chitsBagCopy.removeRange(intChitPick, 1);
+      }
+      twins = false; // TODO: check for twin numbers
     }
   }
   bool not(bool b) => !b;

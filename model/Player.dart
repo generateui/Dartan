@@ -1,13 +1,15 @@
 interface PlayerData extends JsonObject{
   int id;
   String type;
-  UserData user;
+  int userId;
   String color;
   List resources;
   List ports;
+
   List roads;
   List towns;
   List cities;
+
   List edgePieces;
   List verticePieces;
   List victoryPoints;
@@ -18,14 +20,16 @@ interface PlayerData extends JsonObject{
 }
 /** A [Player] *has* a user, because players never leave
 the game, but users do leave the game */
-class Player implements Hashable, Identifyable, Observable {
+class Player implements Hashable, Identifyable, Observable, Jsonable {
   static List<String> allColors = const ["green", "blue", "white", "orange"];
   User /* on */ _user;
   int id;
+  int userId;
   String color;
   ObservableHelper observable;
+
   ResourceListMu resources;
-  PortList ports;
+  PortListMu ports;
   ListenableList<Road> roads;
   ListenableList<Town> towns;
   ListenableList<City> cities;
@@ -36,6 +40,7 @@ class Player implements Hashable, Identifyable, Observable {
   ListenableList<Knight> knights;
   ListenableList<DevelopmentCard> playedDevelopmentCards;
   Stock stock;
+
   /* A user can change because users may leave or join, but players stay */
   set /* on */ user(User u) {
     if (user != u) {
@@ -47,36 +52,51 @@ class Player implements Hashable, Identifyable, Observable {
   User /* on */ get user() => _user;
   init() {
     observable = new ObservableHelper();
-    ports = new PortListMu();
-    stock = new Stock();
-    roads = new ListenableList<Road>();
-    edgePieces = new ListenableList<EdgePiece>();
-    victoryPoints= new ListenableList<VictoryPointItem>();
-    towns = new ListenableList<Town>();
-    producers = new ListenableList<Producer>();
-    verticePieces = new ListenableList<VerticePiece>();
-    cities = new ListenableList<City>();
-    knights = new ListenableList<Knight>();
-    playedDevelopmentCards = new ListenableList<DevelopmentCard>();
   }
   Player.data(JsonObject json) {
     init();
 
     PlayerData data = json;
     id = data.id;
+    userId = data.userId;
     color = data.color;
 
-    data.resources.forEach((d) { resources.add(new Resource.data(d)); });
-    data.roads.forEach((p) { roads.add(new Road.data(p)); });
-    data.towns.forEach((p) { towns.add(new Town.data(p)); });
-    data.cities.forEach((p) { cities.add(new City.data(p)); });
+    data.resources.forEach((d) { resources.add(new Jsonable.data(d)); });
+    ports = new PortListMu.from(listFrom(data.ports));
+
+    roads = llFrom(data.roads);
+    towns = llFrom(data.towns);
+    cities = llFrom(data.cities);
+
+    edgePieces = llFrom(data.edgePieces);
+    verticePieces = llFrom(data.verticePieces);
+    victoryPoints = llFrom(data.victoryPoints);
+    knights = llFrom(data.knights);
+    playedDevelopmentCards = llFrom(data.playedDevelopmentCards);
+    producers = llFrom(data.producers);
+    ports = llFrom(data.ports);
     stock = new Stock.data(data.stock);
-    data.knights.forEach((p) { knights.add(new Knight.data(p)); });
   }
   Player(this._user) {
     init();
 
     id = user.id;
+
+    resources = new ResourceListMu();
+    ports = new PortListMu();
+
+    roads = new ListenableList<Road>();
+    cities = new ListenableList<City>();
+    towns = new ListenableList<Town>();
+
+    edgePieces = new ListenableList<EdgePiece>();
+    verticePieces = new ListenableList<VerticePiece>();
+    victoryPoints= new ListenableList<VictoryPointItem>();
+    knights = new ListenableList<Knight>();
+    playedDevelopmentCards = new ListenableList<DevelopmentCard>();
+    ports = new PortListMu();
+    producers = new ListenableList<Producer>();
+    stock = new Stock();
   }
   int totalPoints() {
     int total = 0;
@@ -90,17 +110,37 @@ class Player implements Hashable, Identifyable, Observable {
     return false;
   }
 
+  String toText() => "${id}, ${_user.name}, ${color}";
+  // Hashable
   int hashCode() {
     if (id==null)
       id = Dartan.generateHashCode(this);
     return id;
   }
+  // Jsonable
   JsonObject get data() {
     PlayerData data = new JsonObject();
     data.id = id;
-    return data;
+    data.userId = user == null ? userId == null? null : userId : user.id;
+    data.type = Dartan.name(this);
+    data.color = color;
+
+    data.resources = Oracle.toDataList(resources);
+    data.ports = Oracle.toDataList(ports);
+
+    data.roads = Oracle.toDataList(roads);
+    data.cities = Oracle.toDataList(cities);
+    data.towns = Oracle.toDataList(towns);
+
+    data.edgePieces = nullOrDataListFrom(edgePieces);
+    data.verticePieces = nullOrDataListFrom(verticePieces);
+    data.victoryPoints = nullOrDataListFrom(victoryPoints);
+    data.knights = nullOrDataListFrom(knights);
+    data.playedDevelopmentCards = nullOrDataListFrom(playedDevelopmentCards);
+    data.producers =  nullOrDataListFrom(producers);
+    data.stock = stock.data;
+        return data;
   }
-  String toText() => "${id}, ${_user.name}, ${color}";
   // Observable
   void onSetted(String property, PropertyChanged handler) {
     observable.addListener(property, handler);
@@ -108,6 +148,9 @@ class Player implements Hashable, Identifyable, Observable {
   void offSetted(String property, PropertyChanged handler) {
     observable.removeListener(property, handler);
   }
+  // Copyable
+  Player copy([JsonObject data]) =>
+      data == null ? new Player(user) : new Player.data(data);
 }
 interface UserData extends JsonObject {
   int id;

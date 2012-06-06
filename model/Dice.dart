@@ -1,8 +1,6 @@
 /** Anything which produces a dice roll */
 interface Dice extends Testable default Oracle {
   DiceRoll roll();
-  Dice.data(JsonObject json);
-  Dice.type(String type);
 }
 interface DiceData extends JsonObject {
   String type;
@@ -14,13 +12,12 @@ interface DiceRollData extends JsonObject {
   int dice1;
   int dice2;
 }
+/** A rolled dice */
 class DiceRoll implements Jsonable {
-  int dice1;
-  int dice2;
+  int dice1, dice2;
 
-  int total() => dice1 + dice2;
   DiceRoll(this.dice1, this.dice2);
-  DiceRoll.fromTotal(int total) {
+  DiceRoll.fromTotal(int total) { // Using this forgets dice configuration (!)
     if (total > 6) {
       dice1 = 6;
       dice2 = total - 6;
@@ -34,6 +31,10 @@ class DiceRoll implements Jsonable {
     dice1=data.dice1;
     dice2=data.dice2;
   }
+
+  int total() => dice1 + dice2;
+
+  // Jsonable
   JsonObject get data() {
     DiceRollData d = new JsonObject();
     d.dice1 = dice1;
@@ -47,6 +48,7 @@ class DiceRoll implements Jsonable {
 /** Produces a random roll each time this dice is rolled */
 class RandomDice implements Dice, Jsonable {
   Random random;
+  RandomDice.data(JsonObject data);
   RandomDice([this.random]) {
     if (random == null) {
       random = new ClientRandom();
@@ -60,7 +62,10 @@ class RandomDice implements Dice, Jsonable {
   }
   // Copyable
   copy([JsonObject data]) =>
-      data == null ? new RandomDice() : new Dice.data(data);
+      data == null ? new RandomDice() : new RandomDice.data(data);
+
+  bool equals(other) => other is RandomDice;
+
   test() {
     RandomDice dice = new RandomDice(new ClientRandom());
     HashMap<int, int> rolls = new HashMap<int, int>();
@@ -83,8 +88,7 @@ class StackDice implements Dice, Jsonable {
   int reshuffleTreshold;
   int rollCount = 0;
   Random random;
-  StackDice.data(JsonObject json) {
-  }
+  StackDice.data(JsonObject json);
   StackDice([this.random]) {
     if (random == null)
       random = new ClientRandom();
@@ -120,6 +124,8 @@ class StackDice implements Dice, Jsonable {
   // Copyable
   copy([JsonObject data]) =>
       data == null ? new StackDice() : new StackDice.data(data);
+  bool equals(other) => other is StackDice;
+
   test() {
     StackDice dice = new StackDice();
     dice.reshuffleTreshold = 0;
@@ -147,6 +153,7 @@ class StackDice implements Dice, Jsonable {
 class PredictableDice implements Dice {
   List<int> rolls; // the rolls to produce [DiceRoll]s from
   Iterator<int> rollsIterator;
+  PredictableDice.data(JsonObject json);
   PredictableDice([this.rolls]) {
     if (rolls == null)
       rolls = new List<int>();
@@ -168,4 +175,5 @@ class PredictableDice implements Dice {
   predict(int predictedRoll) {
     rolls.add(predictedRoll);
   }
+  bool equals(other) => other is PredictableDice;
 }

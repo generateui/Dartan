@@ -1,3 +1,13 @@
+/** Allow classes to be (de)serialized from/to json
+interface Jsonable
+  extends Copyable
+  default Oracle {
+
+  Jsonable.data(JsonObject json);
+  Jsonable.type(String type);
+  JsonObject get data();
+}
+*/
 ///JsonObject allows .property name access to JSON by using
 ///noSuchMethod.
 class JsonObject extends Object implements Map {
@@ -207,5 +217,22 @@ class JsonObject extends Object implements Map {
     }
 
   }
-
+  bool equals(other) {
+    if (other.length != length) { // Fail when different sizes of maps
+      return false;
+    }
+    forEach((key, value) {
+      var otherValue = other[key];
+//      if (otherValue is List) {
+//        List l = otherValue;
+//        l.forEach((t) {
+//          if (!l.equals)
+//        });
+//      }
+      if (!value.equals(otherValue)) {
+        return false;
+      }
+    });
+    return true;
+  }
 }

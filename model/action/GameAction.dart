@@ -12,8 +12,18 @@ interface GameAction extends Action {
   allowedGamePhase(GamePhase gamePhase);
 }
 class SupportedGameActions extends ImmutableL<GameAction> {
-  SupportedGameActions() : super([new AbstractGameAction(), new RollDice(), new StartGame()]);
+  SupportedGameActions() : super([
+    new AbstractGameAction(),
+    new RollDice(),
+    new StartGame(),
+    new TradeBank(), // Trading
+    new TradeOffer(),
+    new RejectOffer(),
+    new CounterOffer(),
+    new AcceptOffer()
+  ]);
 }
+/** Generalized interface for data needed on all actions */
 interface GameActionData extends JsonObject {
   String type;
   int id;
@@ -32,13 +42,21 @@ class AbstractGameAction implements GameAction {
   Date  performedTime;
   GamePhase gamePhase;
   TurnPhase turnPhase;
+
   AbstractGameAction();
+  AbstractGameAction.data(JsonObject json) {
+    GameActionData data = json;
+    id = data.id;
+    userId = data.userId;
+    playerId = data.playerId;
+    gameId = data.gameId;
+  }
 
   bool get isServer() => this is ServerAction;
   bool get inGame() => false;
   bool get isGame() => true;
   bool get isLobby() => this is LobbyAction;
-  bool get isTrade() => this is TradeAction;
+  bool get isTrade() => false;
   bool get mutatesGame() => false;
 
   bool allowedTurnPhase(TurnPhase tp) => false;
@@ -52,13 +70,6 @@ class AbstractGameAction implements GameAction {
     Expect.isNotNull(gamePhase);
     Expect.isNotNull(turnPhase);
     return true;
-  }
-  initByData(JsonObject json) {
-    GameActionData data = json;
-    id = data.id;
-    playerId = data.playerId;
-    gameId = data.gameId;
-    userId = data.userId;
   }
   prepare(Game game) {
     user = game.userById(userId);
@@ -84,8 +95,10 @@ class AbstractGameAction implements GameAction {
     data.id = id;
     data.playerId = playerId;
     data.userId = userId;
+    data.gameId = gameId;
     return data;
   }
+  bool equals(other) => other.id == id;
 
   test() {}
 }
@@ -94,9 +107,9 @@ interface SayGameData extends GameActionData{
 }
 class SayGame extends AbstractGameAction {
   String message;
+
   SayGame();
-  SayGame.data(JsonObject json) {
-    initByData(json);
+  SayGame.data(JsonObject json): super.data(json) {
     SayGameData data = json;
     message = data.message;
   }
@@ -123,10 +136,9 @@ class StartGame extends AbstractGameAction {
   bool allowedTurnPhase(TurnPhase tp) => false;
 
   StartGame();
-  StartGame.data(JsonObject json) {
-    initByData(json);
+  StartGame.data(JsonObject json) : super.data(json) {
     StartGameData data=json;
-    newGame = new Game.data(data.newGame);
+    newGame = data.newGame == null ? null :new Game.data(data.newGame);
   }
   perform(Game game) {
     game.start();
@@ -140,9 +152,10 @@ class StartGame extends AbstractGameAction {
   // Jsonable
   JsonObject get data() {
     StartGameData data = super.data;
-    data.newGame = newGame.data;
+    data.newGame = nullOrDataFrom(newGame);
     return data;
   }
+  String toText() => "${user.name} started game ${newGame.name}";
 }
 interface RollDiceData extends GameActionData {
   DiceRollData rolledDice;
@@ -155,12 +168,9 @@ class RollDice extends AbstractGameAction {
   bool allowedTurnPhase(TurnPhase tp) => tp.isBeforeDiceRoll;
 
   RollDice();
-  RollDice.data(JsonObject json) {
+  RollDice.data(JsonObject json) : super.data(json) {
     RollDiceData data = json;
-    id = data.id;
-    userId = data.userId;
-    playerId = data.playerId;
-    rolledDice = new DiceRoll.data(data.rolledDice);
+    rolledDice = data.rolledDice == null ? null : new DiceRoll.data(data.rolledDice);
   }
 
   perform(Game game) {
@@ -182,7 +192,7 @@ class RollDice extends AbstractGameAction {
   // Jsonable
   JsonObject get data() {
     RollDiceData data = super.data;
-    data.rolledDice = rolledDice.data;
+    data.rolledDice = nullOrDataFrom(rolledDice);
     return data;
   }
   // Copyable

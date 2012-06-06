@@ -6,34 +6,62 @@ class SupportedLobbyActions extends ImmutableL<LobbyAction> {
   SupportedLobbyActions() : super([new AbstractLobbyAction(), new JoinLobby(),
     new NewGame(), new JoinLobby(), new LeaveLobby()]);
 }
+interface LobbyActionData extends JsonObject {
+  String type;
+  int id;
+  int userId;
+  String performedTime;
+}
+/** Abstract convenience implementation for LobbyActions */
 class AbstractLobbyAction implements LobbyAction {
   int id;
   Date performedTime;
   int userId;
   User user;
 
+  AbstractLobbyAction();
+  AbstractLobbyAction.data(JsonObject json) {
+    LobbyActionData data = json;
+    id = data.id;
+    performedTime = data.performedTime == null ?
+        null : new Date.fromString(data.performedTime);
+    userId = data.userId;
+  }
+
   bool get isServer() => this is ServerAction;
   bool get isGame() => this is GameAction;
   bool get isLobby() => true;
-  bool get isTrade() => this is TradeAction;
+  bool get isTrade() => false;
 
   prepare(Lobby lobby) {
     user = byId(userId, lobby.users);
   }
   update(Lobby lobby) { }
+
+  // Hashable
   int hashCode() {
     if (id==null)
       id = Dartan.generateHashCode(this);
     return id;
   }
-  Action copy([JsonObject data]) => new AbstractLobbyAction();
+  // Copyable
+  Action copy([JsonObject data]) => data == null ?
+      new AbstractLobbyAction() : new AbstractLobbyAction.data(data);
+  // Testable
   test() {}
   String toText() => Dartan.name(this);
+  bool equals(other) => other.id == id;
+  // Jsonable
   JsonObject get data() {
-    /* not implemented */
+    LobbyActionData data = new JsonObject();
+    data.type = Dartan.name(this);
+    data.id = id;
+    data.userId = userId;
+    data.performedTime = performedTime == null ? null : performedTime.toString();
+    return data;
   }
 }
-interface SayLobbyData extends JsonObject {
+interface SayLobbyData extends LobbyActionData {
   int id;
   String type;
   String performedTime;
@@ -44,13 +72,17 @@ class SayLobby extends AbstractLobbyAction {
   String message;
   SayLobby() {
   }
-  SayLobby.data(SayLobbyData d) {
-    SayLobbyData data = d;
-    id = d.id;
-    userId = d.userId;
+  SayLobby.data(SayLobbyData json) : super.data(json) {
+    SayLobbyData data = json;
+    message = data.message;
   }
   update(Lobby lobby) {
     lobby.chats.add(this);
+  }
+  JsonObject get data() {
+    SayLobbyData data = super.data;
+    data.message = message;
+    return data;
   }
   String toText() => "${user.name}: ${message}";
 }
@@ -69,8 +101,7 @@ class LeaveLobby extends AbstractLobbyAction {
   }
   String toText() => "${user.name} left";
 }
-interface LeaveLobbyData {
-  int userId;
+interface LeaveLobbyData extends LobbyActionData{
 }
 /** A user starts a new game */
 class NewGame extends AbstractLobbyAction {
@@ -80,13 +111,11 @@ class NewGame extends AbstractLobbyAction {
   GameData createdGame;
 
   NewGame();
-  NewGame.data(JsonObject json) {
+  NewGame.data(JsonObject json) : super.data(json) {
     NewGameData data = json;
     name = data.name;
     boardName = data.boardName;
-    id = data.id;
-    userId = data.userId;
-    createdGame = data.createdGame;
+    //createdGame = data.createdGame;
   }
   prepare(Lobby lobby) {
     super.prepare(lobby);
@@ -96,22 +125,20 @@ class NewGame extends AbstractLobbyAction {
   }
   void performServer(ServerGame serverGame) {
     game = new Game.data(createdGame);
-    Board board = new Board.name(boardName);
-    board.make(serverGame.random);
-    game.board = board;
+    //Board board = new Board.name(boardName);
+//    board.make(serverGame.random);
+//    game.board = board;
     game.host = user;
     game.users.add(user);
   }
   String toText() => "${user.name} created a new game: ${game.name}";
   JsonObject get data() {
-    NewGameData data = new JsonObject();
-    data.userId = userId;
-    data.createdGame = createdGame;
-    data.type = Dartan.name(this);
+    NewGameData data = super.data;
+    //data.createdGame = createdGame;
     return data;
   }
 }
-interface NewGameData extends JsonObject {
+interface NewGameData extends LobbyActionData {
   String type;
   int id;
   int userId;

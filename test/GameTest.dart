@@ -1,8 +1,10 @@
 typedef actAndExpect();
+
 class GameTest {
   Territory mainIsland;
   PredictableDice dice;
   List<Function> acts;
+  List<Act> bacts;
   void test() {
     Game game = new Game();
     dice = new PredictableDice();
@@ -37,7 +39,6 @@ class GameTest {
     setPlayersReadyToPlay();
     startGame();
     */
-
     acts.add(() {
       // Let the observer join
       JoinLobby spectatorJoin = new JoinLobby();
@@ -50,9 +51,10 @@ class GameTest {
       expectServer.hasActionAmount(1);
     });
 
-    for (actAndExpect f in acts) {
-      f();
-    }
+    acts.forEach( (f) { f(); });
+//    for (actAndExpect f in acts) {
+//      f();
+//    }
 
     // Join the first 2 players
     JoinLobby join = new JoinLobby();

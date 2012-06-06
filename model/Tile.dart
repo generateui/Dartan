@@ -1,4 +1,8 @@
-interface Tile extends Copyable, Observable, Hashable, Testable, Jsonable  {
+interface Tile
+  extends Copyable, Observable, Hashable, Testable, Jsonable, Identifyable
+  default Oracle {
+
+  int territoryId;
   String get color();
   Cell get cell();
   set cell(Cell c);
@@ -9,6 +13,7 @@ interface Tile extends Copyable, Observable, Hashable, Testable, Jsonable  {
   bool get isRobberPlaceable();
   bool get isPiratePlaceable();
   bool get producesResource();
+  bool get isRandom(); // Instance acts as a placeholder for random other tile?
   Resource resource();
 
   bool get canHaveTerritory();
@@ -88,23 +93,22 @@ class AbstractTile implements Tile {
     }
   }
 
-
   AbstractTile([this._cell]) {
     observable = new ObservableHelper();
   }
 
-  // Territory is NOT serialized, instead should be set from boards using id
   _initByData(JsonObject json) {
     TileData data = json;
     id = data.id;
-    cell = new Cell.data(data.cell);
-    port = new Port.data(data.port);
-    chit = new Chit.data(data.chit);
-//    territory = new Territory.data(data.territory);
+    cell = data.cell == null ? null : new Jsonable.data(data.cell);
+    port = data.port == null ? null : new Jsonable.data(data.port);
+    chit = data.chit == null ? null : new Jsonable.data(data.chit);
+    territoryId = data.territoryId;
   }
 
   bool get canBuildOnLand() => false;
   bool get canBuildOnSea() => false;
+  bool get isRandom() => false;
   bool get isPartOfGame() => false;
   bool get isRobberPlaceable() => false;
   bool get isPiratePlaceable() => false;
@@ -112,22 +116,33 @@ class AbstractTile implements Tile {
   bool get producesResource() => false;
   Resource resource() => null;
   String get color() => "black";
+  bool equals(other) => other.id == id;
 
   JsonObject get data() {
-
+    TileData data = new JsonObject();
+    data.id=id;
+    data.type = Dartan.name(this);
+    data.cell = nullOrDataFrom(cell);
+    data.chit = nullOrDataFrom(chit);
+    data.port = nullOrDataFrom(port);
+    data.territoryId = territory == null ? null : territory.id;
+    return data;
   }
 
+  // Hashable
   int hashCode() {
     if (id==null)
       id = Dartan.generateHashCode(this);
     return id;
   }
+  // Observable
   void onSetted(String property, PropertyChanged handler) {
     observable.addListener(property, handler);
   }
   void offSetted(String property, PropertyChanged handler) {
     observable.removeListener(property, handler);
   }
+  // Testable
   test() {
 
   }
@@ -135,8 +150,10 @@ class AbstractTile implements Tile {
 class RandomTile extends AbstractTile {
   String get color() => "DarkGrey";
   RandomTile([Cell loc]) : super(loc);
+  RandomTile.data(JsonObject json) { _initByData(json); }
   Tile copy([JsonObject data]) => new RandomTile(cell);
   bool get canHaveChit() => true;
+  bool get isRandom() => true;
 }
 class Sea extends AbstractTile {
   Sea([Cell loc]) : super(loc);
@@ -147,15 +164,16 @@ class Sea extends AbstractTile {
   bool get isPartOfGame() => true;
   bool get isRobberPlaceable() => false;
   bool get isPiratePlaceable() => true;
-  Tile copy([JsonObject data]) => new Sea(cell);
   bool get producesResource() => false;
   Resource resource() => null;
   bool get canHaveChit() => false;
   bool get canHavePort() => true;
+  Tile copy([JsonObject data]) => data == null ? new Sea(cell) : new Sea.data(data);
   String get color() => "blue";
 }
 class Desert extends AbstractTile {
   Desert([Cell loc]) : super(loc);
+  Desert.data(JsonObject json) { _initByData(json); }
 
   bool get canBuildOnLand() => false;
   bool get canBuildOnSea() => false;
@@ -166,12 +184,13 @@ class Desert extends AbstractTile {
   bool get canHaveChit() => false;
   bool get canHavePort() => false;
   String get color() => "lightyellow";
-  Tile copy([JsonObject data]) => new Desert(cell);
+  Tile copy([JsonObject data]) => data == null ? new Desert(cell) : new Desert.data(data);
   Resource resource() => null;
 }
 /** Design-time placeholder for an empty [Tile] slot */
 class NoneTile extends AbstractTile {
   NoneTile([Cell loc]) : super(loc);
+  NoneTile.data(JsonObject data) { _initByData(data); }
 
   bool get canBuildOnLand() => false;
   bool get canBuildOnSea() => false;
@@ -182,11 +201,12 @@ class NoneTile extends AbstractTile {
   bool get canHaveChit() => false;
   bool get canHavePort() => false;
   String get color() => "lightgrey";
-  Tile copy([JsonObject data]) => new NoneTile(cell);
+  Tile copy([JsonObject data]) => data== null ? new NoneTile(cell) : new NoneTile.data(data);
   Resource resource() => null;
 }
 class Field extends AbstractTile {
   Field([Cell loc]) : super(loc);
+  Field.data(JsonObject data) { _initByData(data); }
 
   bool get canBuildOnLand() => true;
   bool get canBuildOnSea() => false;
@@ -197,11 +217,12 @@ class Field extends AbstractTile {
   bool get canHaveChit() => true;
   bool get canHavePort() => false;
   String get color() => "yellow";
-  Tile copy([JsonObject data]) => new Field(cell);
+  Tile copy([JsonObject data]) => data== null ? new Field(cell) : new Field.data(data);
   Resource resource() => new Wheat();
 }
 class Forest extends AbstractTile {
   Forest([Cell loc]) : super(loc);
+  Forest.data(JsonObject data) { _initByData(data); }
 
   bool get canBuildOnLand() => true;
   bool get canBuildOnSea() => false;
@@ -212,11 +233,12 @@ class Forest extends AbstractTile {
   bool get canHaveChit() => true;
   bool get canHavePort() => false;
   String get color() => "darkgreen";
-  Tile copy([JsonObject data]) => new Forest(cell);
+  Tile copy([JsonObject data]) => data== null ? new Forest(cell) : new Forest.data(data);
   Resource resource() => new Timber();
 }
 class Mountain extends AbstractTile {
   Mountain([Cell loc]) : super(loc);
+  Mountain.data(JsonObject data) { _initByData(data); }
 
   bool get canBuildOnLand() => true;
   bool get canBuildOnSea() => false;
@@ -227,11 +249,12 @@ class Mountain extends AbstractTile {
   bool get canHaveChit() => true;
   bool get canHavePort() => false;
   String get color() => "purple";
-  Tile copy([JsonObject data]) => new Mountain(cell);
+  Tile copy([JsonObject data]) => data== null ? new Mountain(cell) : new Mountain.data(data);
   Resource resource() => new Ore();
 }
 class Pasture extends AbstractTile {
   Pasture([Cell loc]) : super(loc);
+  Pasture.data(JsonObject data) { _initByData(data); }
 
   bool get canBuildOnLand() => true;
   bool get canBuildOnSea() => false;
@@ -242,11 +265,12 @@ class Pasture extends AbstractTile {
   bool get canHaveChit() => true;
   bool get canHavePort() => false;
   String get color() => "lightgreen";
-  Tile copy([JsonObject data]) => new Pasture(cell);
+  Tile copy([JsonObject data]) => data== null ? new Pasture(cell) : new Pasture.data(data);
   Resource resource() => new Sheep();
 }
 class Hill extends AbstractTile {
   Hill([Cell loc]) : super(loc);
+  Hill.data(JsonObject data) { _initByData(data); }
 
   bool get canBuildOnLand() => true;
   bool get canBuildOnSea() => false;
@@ -257,6 +281,6 @@ class Hill extends AbstractTile {
   bool get canHaveChit() => true;
   bool get canHavePort() => false;
   String get color() => "red";
-  Tile copy([JsonObject data]) => new Hill(cell);
+  Tile copy([JsonObject data]) => data== null ? new Hill(cell) : new Hill.data(data);
   Resource resource() => new Clay();
 }

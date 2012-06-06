@@ -5,14 +5,16 @@ interface PortList extends Collection<Port>, Testable {
 }
 
 class PortListIm extends ListenableList<Port> {
-  
+
 }
 
 class PortListMu extends ListenableList<Port> implements PortList {
+  PortListMu();
+  PortListMu.from(Iterable<Port> ports) : super.from(ports);
   int amountGold(ResourceList resources) {
     return 0;
   }
-  Port bestPortForResource(Resource resource){ 
+  Port bestPortForResource(Resource resource){
     return null;
   }
   int amountNeededToTrade(Resource resource) {

@@ -4,6 +4,11 @@ class BoardViewer {
   DivElement listsDiv;
   BoardVisual _boardVisual;
   BoardVisual get boardVisual() => _boardVisual;
+  bool _show;
+  set showInfo(bool show) {
+    _show = show;
+//    listsDiv.style.visibility = show ? "visible" : "hidden";
+  }
 
   ListViewPerType chitsView;
   ListViewPerType portsView;
@@ -15,36 +20,54 @@ class BoardViewer {
     tilesView.list = b.tilesBag;
   }
   BoardViewer() {
-    element = new Element.html("<div class=row-fluid></div>");
-    Element boardElement = new Element.html("<div class=span6></div>");
-    Element listsDiv = new Element.html("<div class=span3></div>");
+    element = new Element.html("<div></div>"); // class=row-fluid></div>");
+//    Element boardElement = new Element.html("<div class=span6></div>");
+//    listsDiv = new Element.html("<div class=span3></div>");
 
     ButtonElement buttonRender = new Element.html("<button>Make</button>");
     ButtonElement buttonRandomTiles = new Element.html("<button>Start</button");
-    Random cr = new ClientRandom();
 
-    buttonRender.on.click.add((e) {
-      _boardVisual.board.make(cr);
-    });
-    buttonRandomTiles.on.click.add((e) {
-      _boardVisual.board.setStartingState();
-    });
-    listsDiv.elements.add(buttonRandomTiles);
-    listsDiv.elements.add(buttonRender);
+
+
+//    listsDiv.elements.add(buttonRandomTiles);
+//    listsDiv.elements.add(buttonRender);
 
     chitsView = new ListViewPerType("Chits");
-    listsDiv.elements.add(chitsView.element);
+//    listsDiv.elements.add(chitsView.element);
     portsView = new ListViewPerType("Ports");
-    listsDiv.elements.add(portsView.element);
+//    listsDiv.elements.add(portsView.element);
     tilesView = new ListViewPerType("Tiles");
-    listsDiv.elements.add(tilesView.element);
+//    listsDiv.elements.add(tilesView.element);
 
     _boardVisual = new SvgBoard();
     _boardVisual.hideAllEdges();
     _boardVisual.hideAllVertices();
-    boardElement.elements.add(_boardVisual.element);
-    element.elements.add(boardElement);
-    element.elements.add(listsDiv);
+//    boardElement.elements.add(_boardVisual.element);
+//    element.elements.add(boardElement);
+//    element.elements.add(listsDiv);
+    element.elements.add(_boardVisual.element);
+  }
+}
+/** Simple button bar to manipulte a target Board */
+class BoardActionBar {
+  Element element;
+  ButtonElement buttonRender ;
+  ButtonElement buttonRandomTiles;
+  Board board;
+
+  BoardActionBar() {
+    element = new Element.tag("div");
+    buttonRender = new Element.html("<button>Prepare for play...</button>");
+    buttonRandomTiles = new Element.html("<button>Design</button");
+    Random cr = new ClientRandom();
+    buttonRender.on.click.add((e) {
+      board.make(cr);
+    });
+    buttonRandomTiles.on.click.add((e) {
+      board.setStartingState();
+    });
+    element.elements.add(buttonRandomTiles);
+    element.elements.add(buttonRender);
   }
 }
 /** Displays a list of board and lets the user pick one */
@@ -52,14 +75,23 @@ class BoardsViewer {
   Element element;
   Map<Board, Element> elementsByBoard;
   Board current;
+  Element actions;
   Element currentLiElement;
+  Element h1Element;
+  DivElement jsonTextTelement;
   BoardViewer boardViewer;
+  BoardActionBar actionBar;
   BoardsViewer() {
     element = new Element.html("<div class=row-fluid></div>");
-    Element boardElement = new Element.html("<div class=span10></div>");
-    Element listDiv = new Element.html("<div class=span2></div>");
+    jsonTextTelement = new Element.html("<div></div>");
+    actions = new Element.html("<div></div>");
+    h1Element = new Element.html("<h2></h2>");
+    Element boardElement = new Element.html("<div class=span9></div>");
+    Element listDiv = new Element.html("<div class=span3></div>");
     UListElement listElement = new Element.html("<ul class=boardslist></ul>");
     boardViewer = new BoardViewer();
+    boardViewer.showInfo = false;
+    actionBar = new BoardActionBar();
     elementsByBoard = new HashMap<Board, Element>();
     List<Board> boards = new List<Board>();
     boards.add(new Standard4p());
@@ -67,17 +99,34 @@ class BoardsViewer {
     for (Board board in boards) {
       Element li = new Element.html("""<li class=boardsList id=${board.name}>${board.name}</li>""");
       li.on.click.add((Event e) {
-        board.setStartingState();
         changeBoard(board, li);
       });
       elementsByBoard[board] = li;
       listElement.elements.add(li);
     }
+    boardElement.elements.add(h1Element);
+    boardElement.elements.add(actionBar.element);
+//    boardElement.elements.add(actions);
     boardElement.elements.add(boardViewer.element);
+    boardElement.elements.add(jsonTextTelement);
     listDiv.elements.add(listElement);
     element.elements.add(listDiv);
     element.elements.add(boardElement);
     changeBoard(boards[0], elementsByBoard[boards[0]]); // First as selected
+  }
+  String toIconListByTypeAmount(List l) {
+    Map<String, int> map = new Map();
+    for(var i in l) {
+      if (map.containsKey(Dartan.name(i))) {
+        map[i] ++;
+      }
+    }
+    StringBuffer sb = new StringBuffer("<span>");
+    map.forEach((key, value) {
+      sb.add("${Dartan.smallIcon(key)} &#215; <strong>${value}<strong>, ");
+    });
+    sb.add("</span>");
+    return sb.toString();
   }
   changeBoard(Board b, Element li) {
     if (currentLiElement != null) {
@@ -86,8 +135,14 @@ class BoardsViewer {
     currentLiElement = li;
     li.classes.add("selected");
     boardViewer.board = b;
+    //print(b.data.toString());
+    //jsonTextTelement.innerHTML = JSON.stringify(b.data);
+    h1Element.innerHTML = b.name;
+    actionBar.board = b;
+    current = b;
   }
 }
+
 /** Displays amount of items per concrete type */
 class ListViewPerType {
   String title;

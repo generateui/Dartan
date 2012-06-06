@@ -16,8 +16,8 @@ class ClientRandom implements Random {
     double rndl = rnd * length.toDouble();
     return rndl.toInt();
   }
-  int intFromOne(int length) => (intFromZero(length) + 1) ; 
-  
+  int intFromOne(int length) => (intFromZero(length) + 1) ;
+
   test() {
     new RandomTest().test();
   }

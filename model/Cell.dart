@@ -1,31 +1,29 @@
 interface CellData extends JsonObject {
+  String type;
   int row;
   int column;
 }
 /** A location to put a tile
    also called coordinate, point, coord */
-class Cell implements Hashable, Testable, Jsonable, Copyable {
+class Cell implements Hashable, Testable, Jsonable, Copyable, Identifyable {
   int row, column;  // The meat of it all!
   List<Cell> _cells;
   List<Vertice> _vertices;
   List<Edge> _edges;
 
+  int get id() => hashCode();
+
   // TODO: delegate to hashmap lookup
-  Cell(this.row, this.column);
+  Cell([this.row, this.column]);
   Cell.data(JsonObject json) {
     CellData d = json;
     this.row = d.row;
     this.column = d.column;
   }
-  JsonObject get data() {
-    CellData d = new JsonObject();
-    d.row = row;
-    d.column = column;
-    return d;
-  }
 
   String toText() => "[${row}, ${column}]";
-  bool equals(Cell other) => row == other.row && column == other.column;
+  bool equals(other) => row == other.row && column == other.column;
+  Edge edgeByDegrees(int verticePosition) => new Edge(cells[verticePosition], this);
 
   bool operator ==(other) {
     if (other === this)
@@ -33,15 +31,6 @@ class Cell implements Hashable, Testable, Jsonable, Copyable {
     if (other == null)
       return false;
     return this.equals(other);
-  }
-  Edge edgeByDegrees(int verticePosition) => new Edge(cells[verticePosition], this);
-
-  int hashCode() {
-    int hash = 1;
-    hash = hash * 31 + row;
-    hash = hash * 31 + column;
-    hash = hash * 31;
-    return hash;
   }
 
   /** Returns a list containing 6 HexLocations starting with deg0 and ending with deg300 */
@@ -70,10 +59,6 @@ class Cell implements Hashable, Testable, Jsonable, Copyable {
     }
     return _vertices;
   }
-
-  void test() {
-    CellTest.test();
-  }
   /** Returns all 6 edges of this cell. */
   List<Edge> get edges() {
     if (_edges == null) { // lazy init
@@ -97,4 +82,24 @@ class Cell implements Hashable, Testable, Jsonable, Copyable {
   // Copyable
   copy([JsonObject data]) =>
       data == null ? new Cell(row, column) : new Cell.data(data);
+  // Hashable
+  int hashCode() {
+    int hash = 1;
+    hash = hash * 31 + row;
+    hash = hash * 31 + column;
+    hash = hash * 31;
+    return hash;
+  }
+  // Jsonable
+  JsonObject get data() {
+    CellData d = new JsonObject();
+    d.row = row;
+    d.column = column;
+    d.type = Dartan.name(this);
+    return d;
+  }
+  // Testable
+  void test() {
+    CellTest.test();
+  }
 }

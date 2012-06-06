@@ -7,6 +7,7 @@
 #source('Observable.dart');
 #source('Testable.dart');
 #source('JsonObject.dart');
+#source('Oracle.dart');
 
 // Model
 #source('model/Resource.dart');
@@ -74,6 +75,8 @@
 #source('test/TownTest.dart');
 #source('test/CityTest.dart');
 #source('test/RoadTest.dart');
+#source('test/JsonableTest.dart');
+#source('test/VerticeTest.dart');
 
 #resource('zettown.css');
 
@@ -86,106 +89,66 @@ GUID.
 interface Identifyable {
   int get id();
 }
-interface Jsonable extends Copyable default Oracle {
+/** Allow classes to be (de)serialized from/to json */
+interface Jsonable
+  extends Copyable
+  default Oracle {
+
   Jsonable.data(JsonObject json);
+  Jsonable.type(String type);
   JsonObject get data();
 }
-class JsonableFactory {
-  factory Jsonable.data(JsonObject json) { return null; }
+interface DefaultJsonableData extends JsonObject {
+  int id;
+  String type;
 }
-class Oracle implements Jsonable {
-  static Map<String, Map<String, Copyable>> mapOfMaps;
-  static Map<String, Iterable<Copyable>> mapOfSupportedTypes;
-  static ensureMap() {
-    if (mapOfMaps == null) {
-      mapOfMaps = new HashMap<String, Map<String, Copyable>>();
-      mapOfSupportedTypes = new HashMap<String, Collection<Copyable>>();
-      mapOfSupportedTypes["Resource"] = new SupportedResources();
-      mapOfSupportedTypes["Chit"] = new SupportedChits();
+/** Provides a default implementation for all interfaces.
+Not to be used for any purpose other then copy/pasting code and testing
+Jsonable interface test code.  */
+class DefaultJsonable
+  implements
+  Copyable,
+  Testable,
+  Identifyable,
+  Hashable,
+  Jsonable {
 
-      for (String type in mapOfSupportedTypes.getKeys()) {
-        HashMap<String, Copyable> map = new HashMap();
-        for (Copyable c in mapOfSupportedTypes[type]) {
-          map[Dartan.name(c)] = c;
-        }
-        mapOfMaps[type] = map;
-      }
-    }
+  int id = 0;
+  DefaultJsonable();
+  DefaultJsonable.data(JsonObject json) {
+    DefaultJsonableData data = json;
+    id = data.id;
   }
-
-  static List<Copyable> fromDataList(List<JsonObject> dataList) {
-    List<Copyable> instantiated = new List();
-    for (JsonObject json in dataList) {
-      instantiated.add(new Jsonable.data(json));
-    }
-    return instantiated;
+  JsonObject get data() {
+    DefaultJsonableData data = new JsonObject();
+    data.id = id;
+    data.type = Dartan.name(this);
+    return data;
   }
-  factory Resource.data(JsonObject json) {
-    ResourceData rd = json;
-    Resource r = new Resource.type(rd.type);
-    r.id = rd.id;
-    return r;
+  // Hashable
+  int hashCode() {
+    if (id==null)
+      id = Dartan.generateHashCode(this);
+    return id;
   }
-  factory Resource.type(String type) => instanceOf("Resource", type);
-
-  factory Dice.data(JsonObject json) {
-    DiceData rd = json;
-    Dice r = new Dice.type(rd.type);
-    return r;
+  DefaultJsonable copy([JsonObject data]) =>
+      data == null ? new DefaultJsonable() : new DefaultJsonable.data(data);
+  bool equals(other) => other.id == id;
+  test() {
+    new JsonableTest().test();
   }
-  factory Dice.type(String type) => instanceOf("Dice", type);
-  static Copyable instanceOf(String interfaceName, String concreteName){
-    ensureMap();
-    return mapOfMaps[interfaceName][concreteName].copy();
-  }
-  static newChitByType(String type) => instanceOf("Chit", type);
-  factory DevelopmentCard.type(String type) => instanceOf("DevelopmentCard", type);
-  factory Port.type(String type) => instanceOf("Port", type);
-  factory Port.data(JsonObject json) {
-    Port p = new Port.type(json["type"]);
-    return p.copy(json);
-  }
-  factory Territory.type(String type) => instanceOf("Territory", type);
-  factory Territory.data(JsonObject json) {
-    Port p = new Port.type(json["type"]);
-    return p.copy(json);
-  }
-  factory TurnPhase.type(String type) => instanceOf("TurnPhase", type);
-  factory TurnPhase.data(JsonObject json) {
-    // TODO: implement
-  }
-
-  factory Oracle.data(JsonObject data) {
-    //Empty
-  }
-  /** Creates new list with data objects from a list of jsonables */
-  static List<JsonObject> toDataList(Iterable<Jsonable> jsonables) {
-    List<JsonObject> result = new List<JsonObject>();
-    for (Jsonable json in jsonables) {
-      result.add(json.data);
-    }
-    return result;
-  }
-  Dynamic copy([JsonObject data]) { throw new NotImplementedException();}
-  JsonObject get data() => null;
 }
-/** Mirror kitteh sees wall */
+
+/** Mirror kitteh sees wall - No mirrors detected.
+Each object requires:
+- Object.data(JsonObject json) constructor
+- copy instance method defaulting on Object() or Object.data(json) e.g.
+  ObjectName copy([JsonObject data]) => data == null ?
+    new ObjectName() : new ObjectName.data(data);
+
+*/
 interface Copyable {
   Dynamic copy([JsonObject data]);
-}
-
-interface EditorWidget<T> {
-
-}
-interface TTest<T> {
-  test();
-}
-interface ViewWidget<T> {
-  T model;
-  Element text(T item); // ToString
-  Element html(T item);
-  Element icon(T item);
-  Element debug(T item); // a widget showing details of instance
 }
 /** I'd like to be able to declare immutable collection types, not
 necesarily instances with const. */
@@ -219,7 +182,6 @@ class AllSupportedLists extends ImmutableL<Iterable<Testable>> {
    new SupportedGameStatuses(),
    new SupportedDevelopmentCards(),
    new SupportedRandoms(),
-   new SupportedTradeActions(),
    new SupportedGameActions(),
    new SupportedLobbyActions(),
    new SupportedActions(),
@@ -231,14 +193,63 @@ class AllSupportedLists extends ImmutableL<Iterable<Testable>> {
 class SupportedVariouss extends ImmutableL<Testable> {
   SupportedVariouss() : super([
      new Cell(0,0),
+     new Edge(new Cell(0,0), new Cell(0,1)),
+     new Vertice(new Cell(0,0), new Cell(1,0), new Cell(1,1)),
      new Board(),
+     new DefaultJsonable()
      //new Vertice(new Cell(0,0),
      ]);
 }
 void main() {
   new Dartan();
 }
-
+bool valueEquals(Jsonable first, Jsonable second) {
+  if (first != null && second != null) {
+    return first.data.equals(second.data);
+  }
+  if (first == null && second == null) {
+    return false;
+  }
+}
+Jsonable fromData(JsonObject json) {
+  if (json == null) {
+    return null;
+  } else {
+    return new Jsonable.data(json);
+  }
+}
+ListenableList<Jsonable> llFrom(Iterable<Jsonable> jsonables) {
+  if (jsonables == null) {
+    return new ListenableList();
+  } else {
+    return new ListenableList.from(Oracle.toDataList(jsonables));
+  }
+}
+List<Jsonable> listFrom(Iterable<JsonObject> jsonObjects) {
+  if (jsonObjects == null) {
+    return new List();
+  } else {
+    List l = new List();
+    for (JsonObject json in jsonObjects) {
+      Jsonable newJsonable = new Jsonable.data(json);
+      l.add(newJsonable);
+    }
+    return l;
+  }
+}
+List<JsonObject> nullOrDataListFrom(Iterable<Jsonable> jsonables) {
+  if (jsonables == null) {
+    return null;
+  }
+  return Oracle.toDataList(jsonables);
+}
+JsonObject nullOrDataFrom(Jsonable json) {
+  if (json == null) {
+    return null;
+  }
+  return json.data;
+}
+bool isNullOrEmpty(List l) => l == null || l.isEmpty();
 List copiesOf(Copyable c, int amount) {
   var l = new List();
   for (int i=0; i<amount; i++) {
@@ -246,7 +257,7 @@ List copiesOf(Copyable c, int amount) {
   }
   return l;
 }
-Identifyable byId(int theid, List<Identifyable> withIds) =>
+Identifyable byId(int theid, Collection<Identifyable> withIds) =>
     withIds.filter((Identifyable hasId) => hasId.id == theid).iterator().next();
 
 class Dartan {
@@ -256,7 +267,6 @@ class Dartan {
   Dartan() {
     viewRouter = new ViewRouter();
   }
-
 
   /* ಠ_ಠ */
   static String name(obj) {
@@ -268,9 +278,7 @@ class Dartan {
     }
   }
   /** Free random hashcodes for all! */
-  static int generateHashCode(var obj) {
-    return (Math.random()* 10000000).toInt();
-  }
+  static int generateHashCode(var obj) => (Math.random()* 10000000).toInt();
   static String supName(var obj) {
     String temp = Dartan.name(obj).substring(9);
     temp = temp.substring(0,temp.length - 1);
@@ -298,7 +306,7 @@ class Dartan {
   }
 
   static String smallIcon(var obj) {
-    String n = name(obj);
+    String n = obj is String ? obj : name(obj);
     if (n.startsWith("Abstract")) {
       return "<img src=\"img/icon16/Abstract.png\">";
     }

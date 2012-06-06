@@ -7,20 +7,24 @@ interface GamePhase extends Hashable, Testable, Jsonable, Identifyable {
   bool get isTurns();
   bool get isEnded();
 }
+interface GamePhaseData extends JsonObject {
+  String type;
+  int id;
+}
 class SupportedGamePhases extends ImmutableL<GamePhase> {
   SupportedGamePhases() : super([
     new AbstractGamePhase(), new LobbyPhase(), new DetermineFirstPlayerGamePhase(),
-    new EndedGamePhase(), new TurnsGamePhase(), new InitialPlacementGamePhase()]);
+    new EndedGamePhase(), new TurnsGamePhase(), new InitialPlacementGamePhase(), new AllPhases()]);
 }
 /** Abstract convenience implementation of a [GamePhase] */
 class AbstractGamePhase implements GamePhase {
   int id;
-  int hashCode() {
-    if (id == null) {
-      id = Dartan.generateHashCode(this);
-    }
-    return id;
+  AbstractGamePhase();
+  AbstractGamePhase.data(JsonObject json) {
+    GamePhaseData data=json;
+    id = data.id;
   }
+
   start(Game game) { }
   end(Game game) { }
   bool get isLobby() => false;
@@ -28,8 +32,25 @@ class AbstractGamePhase implements GamePhase {
   bool get isInitialPlacement() => false;
   bool get isTurns() => false;
   bool get isEnded() => false;
-  JsonObject get data() { throw new NotImplementedException(); }
-  Dynamic copy([JsonObject data]) { throw new NotImplementedException(); }
+  bool equals(other) => other.id==id;
+
+  // Jsonable
+  JsonObject get data() {
+    GamePhaseData data = new JsonObject();
+    data.id=id;
+    data.type = Dartan.name(this);
+    return data;
+  }
+  // Hashable
+  int hashCode() {
+    if (id == null) {
+      id = Dartan.generateHashCode(this);
+    }
+    return id;
+  }
+  // Copyable
+  Dynamic copy([JsonObject data]) => data == null ?
+      new AbstractGamePhase() : new AbstractGamePhase.data(data);
   test() { }
 }
 interface LobbyPhaseData extends JsonObject {
@@ -41,9 +62,8 @@ interface LobbyPhaseData extends JsonObject {
 class LobbyPhase extends AbstractGamePhase {
   bool get isLobby() => true;
   ListenableList<User> readyUsers;
-  LobbyPhase.data(JsonObject json) {
+  LobbyPhase.data(JsonObject json) : super.data(json) {
     LobbyPhaseData data = json;
-    id = data.id;
     /* TODO: set users using IDs from game instance */
   }
   LobbyPhase() : super() {
@@ -51,6 +71,12 @@ class LobbyPhase extends AbstractGamePhase {
   }
   unreadyAllExceptHost(User host) {
     readyUsers.filter((User u) => u.id == host.id);
+  }
+  JsonObject get data() {
+    LobbyPhaseData data = new JsonObject();
+    data.id = id;
+    data.type = Dartan.name(this);
+    return data;
   }
   // Copyable
   copy([JsonObject data]) =>
@@ -72,9 +98,9 @@ class DetermineFirstPlayerGamePhase extends AbstractGamePhase {
     currentRound = new HashMap<Player, DiceRoll>();
     rolls.add(currentRound);
   }
-  DetermineFirstPlayerGamePhase.data(JsonObject json) {
+  DetermineFirstPlayerGamePhase.data(JsonObject json) : super.data(json) {
     DetermineFirstPlayerGamePhaseData data=json;
-    id = data.id;
+    id = data.id == null ? null : data.id;
     /* TODO set maps */
   }
   registerRoll(Game game, Player player, DiceRoll roll) {
@@ -82,6 +108,12 @@ class DetermineFirstPlayerGamePhase extends AbstractGamePhase {
     if (currentRound.length == game.players.length) {
       //
     }
+  }
+  JsonObject get data() {
+    DetermineFirstPlayerGamePhaseData data = new JsonObject();
+    data.id = id;
+    data.type = Dartan.name(this);
+    return data;
   }
   // Copyable
   copy([JsonObject data]) =>
@@ -102,12 +134,20 @@ class EndedGamePhase extends AbstractGamePhase {
   bool get isEnded() => true;
 
   EndedGamePhase();
-  EndedGamePhase.data(JsonObject json) {
+  EndedGamePhase.data(JsonObject json)  : super.data(json) {
     EndedGamePhaseData data = json;
-    id = data.id;
     winnerUserId = data.winnerUserId;
     winnerPlayerId = data.winnerPlayerId;
     _won = data.won;
+  }
+  JsonObject get data() {
+    EndedGamePhaseData data = new JsonObject();
+    data.id = id;
+    data.type = Dartan.name(this);
+    data.won = _won;
+    data.winnerUserId = winnerUserId;
+    data.winnerPlayerId = winnerPlayerId;
+    return data;
   }
   // Copyable
   copy([JsonObject data]) =>
@@ -116,17 +156,22 @@ class EndedGamePhase extends AbstractGamePhase {
 interface TurnsGamePhaseData extends JsonObject {
   String type;
   int id;
-  TurnPhaseData turnPhase;
+//  TurnPhaseData turnPhase;
 }
 class TurnsGamePhase extends AbstractGamePhase {
   TurnsGamePhase();
-  TurnsGamePhase.data(JsonObject json) {
+  TurnsGamePhase.data(JsonObject json)  : super.data(json) {
     TurnsGamePhaseData data = json;
-    id = data.id;
-    turnPhase = new TurnPhase.data(data.turnPhase);
+//    turnPhase = new TurnPhase.data(data.turnPhase);
   }
   TurnPhase turnPhase;
   bool get isTurns() => true;
+  JsonObject get data() {
+    TurnsGamePhaseData data = new JsonObject();
+    data.id = id;
+    data.type = Dartan.name(this);
+    return data;
+  }
   // Copyable
   copy([JsonObject data]) =>
       data == null ? new TurnsGamePhase() : new TurnsGamePhase.data(data);
@@ -141,12 +186,18 @@ class InitialPlacementGamePhase  extends AbstractGamePhase {
   InitialPlacementGamePhase();
   InitialPlacementGamePhase.data(JsonObject json) {
     InitialPlacementGamePhaseData data = json;
-    id = data.id;
+    id = data.id == null ? null :data.id;
     // TODO: make lists
   }
   List<GameAction> firstRound;
   List<GameAction> secondRound;
   bool get isInitialPlacement() => true;
+  JsonObject get data() {
+    InitialPlacementGamePhaseData data = new JsonObject();
+    data.id = id;
+    data.type = Dartan.name(this);
+    return data;
+  }
   // Copyable
   copy([JsonObject data]) =>
       data == null ? new InitialPlacementGamePhase() : new InitialPlacementGamePhase.data(data);
@@ -174,14 +225,35 @@ class AllPhases extends AbstractGamePhase {
 
   AllPhases.data(JsonObject json) {
     AllPhasesData data = json;
-    lobby = new LobbyPhase.data(data.lobby);
+    lobby = data.lobby == null ? null : new LobbyPhase.data(data.lobby);
     determinFirstPlayer = new DetermineFirstPlayerGamePhase.data(data.determinFirstPlayer);
     initialPlacement = new InitialPlacementGamePhase.data(data.initialPlacement);
     turns = new TurnsGamePhase.data(data.turns);
     ended = new EndedGamePhase.data(data.ended);
+    ensureAllPhasesPresent();
+    addAllPhasesToList();
+    if (data.currentId == null) {
+      iterator = allPhases.iterator();
+      current = iterator.next();
+    } else {
+      setCurrent(data.currentId);
+      addAllPhasesToList();
+    }
   }
   AllPhases() : super() {
     observable = new ObservableHelper();
+    ensureAllPhasesPresent();
+    addAllPhasesToList();
+  }
+  ensureAllPhasesPresent() {
+    lobby = lobby== null ? new LobbyPhase() : lobby;
+    determinFirstPlayer = determinFirstPlayer== null ? new DetermineFirstPlayerGamePhase() : determinFirstPlayer;
+    initialPlacement = initialPlacement== null ? new InitialPlacementGamePhase() : initialPlacement;
+    turns = turns== null ? new TurnsGamePhase() : turns;
+    ended = ended== null ? new EndedGamePhase() : ended;
+  }
+
+  addAllPhasesToList() {
     allPhases = new List<GamePhase>();
     allPhases.add(lobby);
     allPhases.add(determinFirstPlayer);
@@ -189,6 +261,17 @@ class AllPhases extends AbstractGamePhase {
     allPhases.add(turns);
     allPhases.add(ended);
     iterator = allPhases.iterator();
+  }
+
+  setCurrent(int phaseId) {
+    iterator = allPhases.iterator();
+    bool notFound=true;
+    while (notFound && iterator.hasNext()) {
+      GamePhase nextPhase = iterator.next();
+      if (nextPhase.id == phaseId) {
+        notFound=false;
+      }
+    }
   }
 
   next(Game game) {
@@ -203,11 +286,13 @@ class AllPhases extends AbstractGamePhase {
   JsonObject get data() {
     AllPhasesData data = new JsonObject();
     data.type = Dartan.name(this);
-    data.lobby = lobby.data;
-    data.determinFirstPlayer = determinFirstPlayer.data;
-    data.ended = ended.data;
-    data.initialPlacement = initialPlacement.data;
-    data.turns = turns.data;
+
+    data.lobby = nullOrDataFrom(lobby);
+    data.determinFirstPlayer = nullOrDataFrom(determinFirstPlayer);
+    data.ended = nullOrDataFrom(ended);
+    data.initialPlacement = nullOrDataFrom(initialPlacement);
+    data.turns = nullOrDataFrom(turns);
+
     data.currentId = current == null ? null : current.id;
     return data;
   }

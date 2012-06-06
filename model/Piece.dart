@@ -14,12 +14,12 @@ interface PlayerPiece {
   removeFromPlayer(Player player);
 }
 /** A piece producing resources for the player */
-interface Producer {
+interface Producer extends Jsonable {
   ResourceList produce(Tile tile);
   Vertice get vertice();
 }
 /** Piece residing on an edge, e.g. a road, ship or bridge */
-interface EdgePiece {
+interface EdgePiece extends Jsonable {
   Edge edge;
 
   // Assuming the vertice is not occupied by (friendly/non-friendly) VerticePiece
@@ -28,14 +28,14 @@ interface EdgePiece {
   bool get connectsWithBridge();
 }
 /** Piece residing on a vertice, e.g. a town or city */
-interface VerticePiece {
+interface VerticePiece extends Jsonable {
   Vertice vertice;
 }
 /** Anything giving the player a point */
-interface VictoryPointItem {
+interface VictoryPointItem extends Jsonable {
   int get points();
 }
-interface RoadData extends JsonObject{
+interface RoadData extends JsonObject {
   int id;
   int playerId;
   String type;
@@ -46,6 +46,7 @@ class Road implements Piece, EdgePiece, PlayerPiece {
   int id;
   int playerId;
   Edge edge;
+
   ResourceList get cost() => new RoadCost();
   bool get isStock() => true;
   bool get affectsRoad() => true;
@@ -57,7 +58,7 @@ class Road implements Piece, EdgePiece, PlayerPiece {
     RoadData data = json;
     id = data.id;
     playerId = data.playerId;
-    edge = new Edge.data(data.edge);
+    edge = fromData(data.edge);
   }
   addToPlayer(Player p) {
     p.roads.add(this);
@@ -70,17 +71,13 @@ class Road implements Piece, EdgePiece, PlayerPiece {
     p.edgePieces.remove(this);
   }
   // Copyable
-  Road copy([JsonObject data]) {
-    Road roadCopy = new Road();
-    roadCopy.player = player;
-    return roadCopy;
-  }
+  Road copy([JsonObject data]) => data==null ? new Road() : new Road.data(data);
   // Jsonable
   JsonObject get data() {
     RoadData data = new JsonObject();
     data.id = id;
     data.type = Dartan.name(this);
-    data.edge = edge.data;
+    data.edge = nullOrDataFrom(edge);
     data.playerId = playerId;
     return data;
   }
@@ -90,6 +87,11 @@ class Road implements Piece, EdgePiece, PlayerPiece {
       id = Dartan.generateHashCode(this);
     return id;
   }
+  bool equals(other) =>
+      other.id == id &&
+      other.playerId == playerId &&
+      other.edge == edge;
+
   // Testable
   test() {
     new RoadTest().test();
@@ -117,7 +119,7 @@ class Town implements Piece, VerticePiece, Producer, VictoryPointItem, PlayerPie
     TownData data = json;
     id = data.id;
     playerId = data.playerId;
-    vertice = new Vertice.data(data.vertice);
+    vertice = fromData(data.vertice);
   }
 
   addToPlayer(Player p) {
@@ -137,19 +139,16 @@ class Town implements Piece, VerticePiece, Producer, VictoryPointItem, PlayerPie
   ResourceList produce(Tile tile) {
     // TODO: implement
   }
+  bool equals(other) => other.id == id;
   // Copyable
-  Town copy([JsonObject data]) {
-    Town townCopy = new Town();
-    townCopy.player = player;
-    return townCopy;
-  }
+  Town copy([JsonObject data]) => data==null ? new Town() : new Town.data(data);
   // Jsonable
   JsonObject get data() {
     TownData data = new JsonObject();
     data.id = id;
     data.playerId = playerId;
     data.type = Dartan.name(this);
-    data.vertice = vertice.data;
+    data.vertice = nullOrDataFrom(vertice);
     return data;
   }
   // Hashable
@@ -184,7 +183,7 @@ class City implements Piece, VerticePiece, Producer, VictoryPointItem, PlayerPie
     CityData data = json;
     id = data.id;
     playerId = data.playerId;
-    vertice = new Vertice.data(data.vertice);
+    vertice = fromData(data.vertice);
   }
   addToPlayer(Player p) {
     p.cities.add(this);
@@ -204,18 +203,15 @@ class City implements Piece, VerticePiece, Producer, VictoryPointItem, PlayerPie
     // TODO: implement
   }
   // Copyable
-  City copy([JsonObject data]) {
-    City cityCopy = new City();
-    cityCopy.player = player;
-    return cityCopy;
-  }
+  City copy([JsonObject data]) => data==null ? new City() : new City.data(data);
   // Jsonable
   JsonObject get data() {
     CityData data = new JsonObject();
     data.id = id;
+    data.playerId = playerId;
     data.type = Dartan.name(this);
     data.playerId = playerId;
-    data.vertice = vertice.data;
+    data.vertice = nullOrDataFrom(vertice);
     return data;
   }
   // Hashable
@@ -224,6 +220,11 @@ class City implements Piece, VerticePiece, Producer, VictoryPointItem, PlayerPie
       id = Dartan.generateHashCode(this);
     return id;
   }
+  bool equals(other) =>
+      other.id == id &&
+      other.playerId == playerId &&
+      other.vertice == vertice;
+
   test() {
     new CityTest().test();
   }

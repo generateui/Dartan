@@ -1,71 +1,81 @@
-interface Resource extends Hashable, Identifyable, Testable, Copyable, Jsonable
-default Oracle {
+interface Resource extends Hashable, Identifyable, Testable, Copyable, Jsonable {
   bool get isTradeable();
   set id(int id);
   String get color();
-  Resource.type(String type);
-  Resource.data(JsonObject data);
 }
-
+interface ResourceData extends JsonObject {
+  int id;
+  String type;
+}
 class SupportedResources extends ImmutableL<Resource> {
-  SupportedResources() : super([new AbstractResource(), new Wheat(), new Timber(), new Clay(), new Ore(), new Sheep()]);
+  SupportedResources() : super([
+    new AbstractResource(), new Wheat(), new Timber(),
+    new Clay(), new Ore(), new Sheep()
+  ]);
 }
 class AbstractResource implements Resource {
-  int _id;
+  int id;
   String get color() => "black";
   bool get isTradeable() => false;
-  int get id() => _id;
+
   int hashCode() {
-    if (_id == null)
-      _id = Dartan.generateHashCode(this);
-    return _id;
+    if (id == null)
+      id = Dartan.generateHashCode(this);
+    return id;
   }
 
-  AbstractResource([this._id]);
-  int test() { return 0; }
+  AbstractResource.data(JsonObject json) {
+    ResourceData data = json;
+    id = data.id;
+  }
+  AbstractResource([this.id]);
   AbstractResource copy([JsonObject data]) => new AbstractResource();
   _setFromData(JsonObject json) {
     ResourceData data = json;
     id = data.id;
   }
+  // Jsonable
   JsonObject get data() {
     ResourceData d = new JsonObject();
     d.id = id;
     d.type = Dartan.name(this);
     return d;
   }
-}
-interface ResourceData extends JsonObject {
-  int id;
-  String type;
+  bool equals(other) => id == other.id;
+  test() { }
 }
 class Timber extends AbstractResource {
   String get color() => "green";
   bool get isTradeable() => true;
   Timber([int id]): super(id);
-  Timber copy([JsonObject data]) => new Timber();
+  Timber.data(JsonObject data) : super.data(data);
+  Timber copy([JsonObject data]) => data ==null ? new Timber() : new Timber.data(data);
 }
 class Wheat extends AbstractResource {
   String get color() => "gold";
   bool get isTradeable() => true;
   Wheat([int id]): super(id);
-  Wheat copy([JsonObject data]) => new Wheat();
+  Wheat.data(JsonObject data) : super.data(data);
+  Wheat copy([JsonObject data]) => data ==null ? new Wheat() : new Wheat.data(data);
 }
 class Ore extends AbstractResource {
   String get color() => "purple";
   bool get isTradeable() => true;
   Ore([int id]): super(id);
-  Ore copy([JsonObject data]) => new Ore();
+  Ore.data(JsonObject data) : super.data(data);
+  Ore copy([JsonObject data]) => data ==null ? new Ore() : new Ore.data(data);
 }
 class Sheep extends AbstractResource {
   String get color() => "lightgreen";
   bool get isTradeable() => true;
   Sheep([int id]): super(id);
-  Sheep copy([JsonObject data]) => new Sheep();
+  Sheep.data(JsonObject data) : super.data(data);
+  Sheep copy([JsonObject data]) => data ==null ? new Sheep() : new Sheep.data(data);
 }
 class Clay extends AbstractResource {
   String get color() => "Red";
   bool get isTradeable() => true;
   Clay([int id]): super(id);
-  Clay copy([JsonObject data]) => new Clay();
+  Clay.data(JsonObject data) : super.data(data);
+  Clay copy([JsonObject data]) => data ==null ? new Clay() : new Clay.data(data);
 }

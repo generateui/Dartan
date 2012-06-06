@@ -1,6 +1,5 @@
 interface TurnPhase
-  extends Testable, Jsonable, Identifyable
-  default Oracle {
+  extends Testable, Jsonable, Identifyable {
 
   //TurnPhase processAction(GameAction action, Game game);
   //bool isAllowed(GameAction action);
@@ -8,8 +7,6 @@ interface TurnPhase
   bool get isDiceRoll();
   bool get isTrading();
   bool get isBuilding();
-  TurnPhase.data(JsonObject json);
-  TurnPhase.type(String type);
 }
 class SupportedTurnPhases extends ImmutableL<TurnPhase> {
   SupportedTurnPhases() : super([new AbstractTurnPhase(), new TradingTurnPhase(),
@@ -18,6 +15,10 @@ class SupportedTurnPhases extends ImmutableL<TurnPhase> {
 class AbstractTurnPhase implements TurnPhase {
   int id;
   AbstractTurnPhase();
+  AbstractTurnPhase.data(JsonObject json) {
+    TurnPhaseData data = json;
+    id = data.id;
+  }
   _initByData(JsonObject json) {
     TurnPhaseData data = json;
     id = data.id;
@@ -32,7 +33,9 @@ class AbstractTurnPhase implements TurnPhase {
     data.type = Dartan.name(this);
     return data;
   }
-  Dynamic copy([JsonObject data]) { throw new NotImplementedException();}
+  bool equals(other) => other.id==id;
+  Dynamic copy([JsonObject data]) =>
+      data == null ? new AbstractTurnPhase() : new AbstractTurnPhase.data(data);
   test() { }
 }
 interface TurnPhaseData extends JsonObject {
@@ -63,10 +66,10 @@ class AllTurnPhases {
   }
   AllTurnPhases.data(JsonObject json) {
     AllTurnPhasesData data = json;
-    beforeDiceRoll = new TurnPhase.data(data.beforeDiceRoll);
-    diceRoll = new TurnPhase.data(data.diceRoll);
-    trading = new TurnPhase.data(data.trading);
-    building = new TurnPhase.data(data.building);
+    beforeDiceRoll = new BeforeDiceRollTurnPhase.data(data.beforeDiceRoll);
+    diceRoll = new DiceRollTurnPhase.data(data.diceRoll);
+    trading = new TradingTurnPhase.data(data.trading);
+    building = new BuildingTurnPhase.data(data.building);
     initPhases();
   }
   initPhases() {

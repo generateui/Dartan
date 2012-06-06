@@ -19,11 +19,6 @@ class SupportedChits extends ImmutableL {
     new RandomChit()
   ]);
 }
-class ChitFactory {
-  static Map<int, Chit> chitsByNumber;
-  static Map<String, Chit> chitsByType;
-
-}
 /** Abstract convenience implementation of a [Chit] */
 class AbstractChit implements Chit {
   int _id;
@@ -37,8 +32,7 @@ class AbstractChit implements Chit {
     ChitData data = json;
     _id = data.id;
   }
-
-  test() {}
+  bool equals(other) => other.id==id;
   // Hashable
   int hashCode() {
     if (_id==null)
@@ -50,6 +44,7 @@ class AbstractChit implements Chit {
       ({"id": id, "type": Dartan.name(this)});
   // Copyable
   Chit copy([JsonObject data]) => new AbstractChit();
+  test() {}
 }
 interface ChitData extends JsonObject{
   int id;
@@ -68,7 +63,7 @@ class ChitImpl extends AbstractChit {
   bool get isRandom() => _isRandom;
 
   ChitImpl();
-  factory ChitImpl.type(String type) => Oracle.newChitByType(type);
+  factory ChitImpl.type(String type) => new Jsonable.type(type);
   factory ChitImpl.data(JsonObject json) {
     ChitData d = json;
     Chit c = new Chit.type(d.type);

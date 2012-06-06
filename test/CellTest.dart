@@ -13,13 +13,9 @@ class CellTest {
     Expect.isFalse(c1.equals(c2), "Different cells on equals");
     Expect.notEquals(c1.hashCode(), c2.hashCode(), "Different cells, different hashcode");
 
-    String json = JSON.stringify(c1.data);
-    JsonObject jsonNew = new JsonObject.fromJsonString(json);
-    CellData d = jsonNew;
-    Cell cNew = new Cell.data(jsonNew);
-
-    Expect.equals(c1.hashCode(), cNew.hashCode(), "equal hashes");
-    Expect.isTrue(c1.equals(cNew), "Should be equal instances");
-    Expect.isTrue(c1 == cNew, "Should be equal instances");
+    Cell jsonCopy = copyJsonable(c1);
+    Expect.equals(c1.hashCode(), jsonCopy.hashCode(), "equal hashes");
+    Expect.isTrue(c1.equals(jsonCopy), "Should be equal instances");
+    Expect.isTrue(c1 == jsonCopy, "Should be equal instances");
   }
 }

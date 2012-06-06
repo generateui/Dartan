@@ -2,6 +2,7 @@ interface VerticeData extends JsonObject{
   CellData c1;
   CellData c2;
   CellData c3;
+  String type;
 }
 /**
  Position on hexagon
@@ -28,7 +29,7 @@ class VerticeType {
 }
 
 /** A vertice of a tile */
-class Vertice implements Hashable, Jsonable {
+class Vertice implements Hashable, Jsonable, Testable {
   Cell c1, c2, c3, _topMost;
 
   int _type = -1;
@@ -38,7 +39,7 @@ class Vertice implements Hashable, Jsonable {
 
   int hashCode() => c1.hashCode() * c2.hashCode() * c3.hashCode();
   bool equals(o) => hashCode() == o.hashCode();
-  String toString() => "Vertice [cell1: ${c1.toString()}, cell2: ${c2.toString()}, cell3: ${c3.toString()}]\n";
+  String toText() => "Vertice [cell1: ${c1.toString()}, cell2: ${c2.toString()}, cell3: ${c3.toString()}]\n";
   bool hasCell(Cell c) => c1 == c || c2 == c || c3 == c;
 
   bool operator ==(other) {
@@ -81,7 +82,11 @@ class Vertice implements Hashable, Jsonable {
     data.c1 = c1.data;
     data.c2 = c2.data;
     data.c3 = c3.data;
+    data.type = Dartan.name(this);
     return data;
+  }
+  test() {
+    new VerticeTest().test();
   }
 
   /** Ensures c1 is always on highest (lowest in number) row and leftmost,

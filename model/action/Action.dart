@@ -44,7 +44,7 @@ class AbstractAction implements Action {
   bool get isServer() => this is ServerAction;
   bool get isGame() => this is GameAction;
   bool get isLobby() => this is LobbyAction;
-  bool get isTrade() => this is TradeAction;
+  bool get isTrade() => false;
 
   toText() => "AbstractAction";
   Action copy([JsonObject data]) => new AbstractAction();

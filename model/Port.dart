@@ -1,7 +1,8 @@
 interface Port
-  extends Hashable, Copyable, Identifyable, Testable, Jsonable
+  extends Hashable, Copyable, Identifyable, Testable, Jsonable, PlayerPiece
   default Oracle {
 
+  int playerId;
   Cell get seaCell();
   Cell get landCell();
   Resource get resource();
@@ -11,14 +12,14 @@ interface Port
   int get outAmount();
   int divide(ResourceList resources, String resourceType);
   bool canTrade(Resource resource);
+  bool get isRandom(); // is it a placeholder for a random port?
   String get color();
   bool get hasResource();
   setCellAndDirection(Cell seaCell, int direction);
-  Port.type(String type);
-  Port.data(JsonObject json);
 }
 interface PortData extends JsonObject {
   int id;
+  int playerId;
   String type;
   ResourceData resource;
   CellData seaCell;
@@ -29,14 +30,18 @@ class SupportedPorts extends ImmutableL<Port> {
   SupportedPorts() : super([
     new AbstractPort(),
     new FourToOnePort(),
-    new ThreeToOnePort()]);
+    new ThreeToOnePort(),
+    new TwoToOnePort()
+  ]);
 }
 class AbstractPort implements Port {
   int id;
+  int playerId;
   Cell _landCell;
   Cell _seaCell;
   Edge _edge;
   int _edgeDirection;
+
   Cell get landCell() => _landCell;
   Cell get seaCell() => _seaCell;
   Edge get edge() => _edge;
@@ -45,36 +50,47 @@ class AbstractPort implements Port {
   int get outAmount() => 0;
   String get color() => "black";
   Resource get resource() => null;
-  Port copy([JsonObject data]) => new AbstractPort();
   bool get hasResource() => false;
   bool get isRandom() => false;
+
   AbstractPort([this._seaCell, this._edgeDirection]) {
     if (_seaCell != null) {
       setCellAndDirection(_seaCell, _edgeDirection);
     }
   }
+  AbstractPort.data(JsonObject json) {
+    _setFromData(json);
+  }
   _setFromData(JsonObject json) {
     PortData data = json;
     id = data.id;
-    _seaCell = new Cell.data(data.seaCell);
+    _seaCell = fromData(data.seaCell);
     _edgeDirection = data.direction;
-    List<Vertice> vs = _seaCell.fromDirection(_edgeDirection);
-    _edge = new Edge.fromVertices(vs[0], vs[1]);
+    if (_seaCell != null && _edgeDirection != null) {
+      List<Vertice> vs = _seaCell.fromDirection(_edgeDirection);
+      _edge = new Edge.fromVertices(vs[0], vs[1]);
+    }
   }
-  setCellAndDirection(Cell seaCell, int direction) {
+  setCellAndDirection(Cell seaCell, int dir) {
     if (seaCell== null) {
       print ("whoops");
     }
     _seaCell=seaCell;
-    _landCell = _seaCell.cells[direction];
+    _landCell = _seaCell.cells[dir];
     _edge = new Edge(seaCell, landCell);
+    _edgeDirection = dir;
   }
+  addToPlayer(Player player) {
+    //player.ports.a
+  }
+  removeFromPlayer(Player player) {}
   int divide(ResourceList resources, String resourceType) {
     return (resources.ofType(resourceType).length / inAmount).toInt();
   }
   bool canTrade(Resource resource) {
     return false;
   }
+  bool equals(other) => other.id == id;
   int hashCode() {
     if (id== null)
       id = Dartan.generateHashCode(this);
@@ -84,12 +100,14 @@ class AbstractPort implements Port {
     PortData data = new JsonObject();
     data.isRandom = isRandom;
     data.direction = _edgeDirection;
-    data.seaCell = seaCell.data;
+    data.seaCell = nullOrDataFrom(seaCell);
     data.id = id;
-    data.resource = resource.data;
+    data.resource = nullOrDataFrom(resource);
     data.type = Dartan.name(this);
     return data;
   }
+  Port copy([JsonObject data]) =>
+      data==null ? new AbstractPort() : new AbstractPort.data(data);
   test() {
     PortTest.test();
   }
@@ -108,7 +126,7 @@ class ThreeToOnePort extends AbstractPort {
   ThreeToOnePort.data(JsonObject json) { _setFromData(json); }
   int get inAmount() => 3;
   int get outAmount() => 1;
-  String get color() => "blue";
+  String get color() => "black";
   ThreeToOnePort copy([JsonObject data]) => data == null ?
       new ThreeToOnePort() : new ThreeToOnePort.data(data);
 }
@@ -117,9 +135,12 @@ class TwoToOnePort extends AbstractPort {
   TwoToOnePort.data(JsonObject json) {
     PortData data = json;
     _setFromData(json);
-    resource = new Resource.data(data.resource);
+    resource = new Jsonable.data(data.resource);
   }
-  TwoToOnePort(this.resource, [Cell seaCell, int edgeDirection]): super(seaCell, edgeDirection);
+  TwoToOnePort([this.resource, Cell seaCell, int edgeDirection])
+     : super(seaCell, edgeDirection) {
+    resource = resource == null ? new Wheat() : resource;
+  }
   int get inAmount() => 2;
   int get outAmount() => 1;
   String get color() => resource.color;

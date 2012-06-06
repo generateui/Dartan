@@ -4,6 +4,7 @@ interface StockData extends JsonObject{
   List<CityData> cities;
   List<JsonObject> tokens;
 }
+/** What the player owns as pieces, but not yet is into play */
 class Stock {
   ListenableList<Road> roads;
   ListenableList<Town> towns;

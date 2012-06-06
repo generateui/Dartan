@@ -15,7 +15,9 @@ class LocalServer implements GameServer {
     serverGame  = new ServerGame(game);
   }
   send(Action action) {
-    serverGame.prepare(action);
-    serverGame.perform(action);
+    if (action is GameAction) {
+      serverGame.prepare(action);
+      serverGame.perform(action);
+    }
   }
 }

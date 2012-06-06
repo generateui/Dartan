@@ -9,11 +9,11 @@ interface ResourceList extends Collection<Resource>, Testable default ResourceLi
 
 class SupportedResourceLists extends ImmutableL<ResourceList> {
   SupportedResourceLists() : super([
-    new ResourceListIm(), 
-    new ResourceListMu(), 
-    new TownCost(), 
-    new RoadCost(), 
-    new CityCost(), 
+    new ResourceListIm(),
+    new ResourceListMu(),
+    new TownCost(),
+    new RoadCost(),
+    new CityCost(),
     new DevelopmentCardCost() ]);
 }
 
@@ -41,25 +41,25 @@ class MonopolyableResources extends ResourceListIm {
 /** Wraps mutable list */
 class ResourceListIm implements ResourceList {
   ResourceListMu wrapped;
-  
+
   ResourceListIm([List<Resource> other]) {
     if (other != null)
       wrapped = new ResourceListMu.from(other);
     else
       wrapped = new ResourceListMu();
   }
-  
+
   // ResourceList
-  int halfCount() { return wrapped.halfCount(); }
+  int halfCount() { return wrapped.halfCount().toInt(); }
   bool hasType(String type) { return wrapped.hasType(type); }
   ResourceList ofType(String type) { return wrapped.ofType(type); }
   Collection<String> types() { return wrapped.types(); }
   String toSummary() { return wrapped.toSummary(); }
   bool hasAtLeast(ResourceList toHave) { return wrapped.hasAtLeast(toHave); }
-  
+
   // Iterable<Resource>:
   Iterator<Resource> iterator() => wrapped.iterator();
-  
+
   // Collection<Resource>:
   Collection<Resource> filter(bool f(Resource element)) => wrapped.filter(f);
   Collection map(f(Resource element)) => wrapped.map(f);
@@ -68,7 +68,7 @@ class ResourceListIm implements ResourceList {
   void forEach(void f(Resource element)) { wrapped.forEach(f); }
   bool isEmpty() => wrapped.isEmpty();
   int get length() => wrapped.length;
-  
+
   test() {
     new ResourceListImTest().test();
   }
@@ -81,15 +81,15 @@ class ResourceListMu extends ListenableList<Resource> implements ResourceList {
     _res = new Map<String, List<Resource>>();
     for (Resource r in _internal)
       _add(r);
-  }    
-  
+  }
+
   ResourceListMu.from(Iterable<Resource> other) : super.from(other) {
     initr();
-  } 
-  
-  ResourceListMu() : 
+  }
+
+  ResourceListMu() :
     super() { initr(); }
-  
+
   num halfCount() {
     num temp = _internal.length;
     // Make number even
@@ -97,20 +97,20 @@ class ResourceListMu extends ListenableList<Resource> implements ResourceList {
       temp++;
     return temp / 2;
   }
-  
+
   String toSummary() {
     StringBuffer s = new StringBuffer();
-    for (String t in types()) 
-      if (hasType(t)) 
+    for (String t in types())
+      if (hasType(t))
         s.add("${ofType(t).length} ${t}, ");
 
     String tmp = s.toString();
-    if (tmp.length > 0) 
+    if (tmp.length > 0)
       return tmp.substring(0, tmp.length-2);
-    else 
+    else
       return "Empty";
   }
-  
+
   void _remove(Resource toRemove) {
     String name = Dartan.name(toRemove);
     if (hasType(name)) {
@@ -122,13 +122,13 @@ class ResourceListMu extends ListenableList<Resource> implements ResourceList {
     _remove(r);
     return super.remove(r);
   }
-  
+
   void _add(Resource r) {
     String n = Dartan.name(r);
     ensureType(n);
     _res[n].add(r);
   }
-  
+
   void add(Resource r) {
     _add(r);
     super.add(r);
@@ -150,7 +150,7 @@ class ResourceListMu extends ListenableList<Resource> implements ResourceList {
 
   /** True if this list has at least amount of resources contained in toHave, per Type */
   bool hasAtLeast(ResourceList toHave) {
-    for (String t in toHave.types()) { 
+    for (String t in toHave.types()) {
       if (hasType(t)) {
         if (ofType(t).length < toHave.ofType(t).length) {
           return false; // don't have enough of type t, bail
@@ -169,7 +169,7 @@ class ResourceListMu extends ListenableList<Resource> implements ResourceList {
     ensureType(type);
     return new ResourceListIm(_res[type]);
   }
-  
+
   test() {
     new ResourceListMuTest().test();
   }
