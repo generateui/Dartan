@@ -69,25 +69,28 @@ class Play extends View {
   show() {
     if (!rendered){
       div = document.query(id);
-      Lobby lobby = new Lobby();
-      LobbyView lobbyView = new LobbyView(lobby);
 
+      ScriptedGameTest sgt = new GameTest();
+      GameTester gt = new GameTester.manual(sgt);
+      LobbyView lobbyView = new LobbyView(sgt.clientLobby);
       div.elements.add(lobbyView.toElement());
 
-      User user = new ServerUser();
+      sgt.start();
 
-      JoinLobby join = new JoinLobby();
-      join.user = user;
-      lobby.performAction(join);
-
-      SayLobby say = new SayLobby();
-      say.message = "jeuj";
-      say.user = user;
-      lobby.performAction(say);
-
-      NewGame newGame = new NewGame();
-      newGame.user=user;
-      lobby.performAction(newGame);
+//      User user = new ServerUser();
+//
+//      JoinLobby join = new JoinLobby();
+//      join.user = user;
+//      lobby.performAction(join);
+//
+//      SayLobby say = new SayLobby();
+//      say.message = "jeuj";
+//      say.user = user;
+//      lobby.performAction(say);
+//
+//      NewGame newGame = new NewGame();
+//      newGame.user=user;
+//      lobby.performAction(newGame);
 
       rendered = true;
     }

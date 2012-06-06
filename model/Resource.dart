@@ -2,6 +2,7 @@ interface Resource extends Hashable, Identifyable, Testable, Copyable, Jsonable 
   bool get isTradeable();
   set id(int id);
   String get color();
+  bool equals(other);
 }
 interface ResourceData extends JsonObject {
   int id;

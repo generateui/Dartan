@@ -267,8 +267,15 @@ List copiesOf(Copyable c, int amount) {
   }
   return l;
 }
-Identifyable byId(int theid, Collection<Identifyable> withIds) =>
-    withIds.filter((Identifyable hasId) => hasId.id == theid).iterator().next();
+Identifyable byId(int theid, Collection<Identifyable> withIds) {
+  Collection<Identifyable> filtered = withIds.filter
+      ((Identifyable hasId) => hasId.id == theid);
+  if (filtered.iterator().hasNext()) {
+    return filtered.iterator().next();
+  } else {
+    return null;
+  }
+}
 
 class Dartan {
   static String check = "<span class=checkOk>&#10004</span>";

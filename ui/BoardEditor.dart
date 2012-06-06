@@ -19,7 +19,7 @@ class BoardEditor extends View {
     boardStates = new List.from([new NoState(), new ChangeTile(), new PickPort()]);
     for (BoardState s in boardStates) {
       ButtonElement b = new Element.html("<button>${Dartan.name(s)}</button>");
-      b.on.click.add((Event e) {
+      b.on.click.add((e) {
         setState(s);
       });
       buttonList.elements.add(b);

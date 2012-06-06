@@ -1,17 +1,27 @@
 typedef actAndExpect();
 
-class GameTest {
+interface ScriptedGameTest {
+  List<Function> get acts();
+  start();
+  Game game;
+  Lobby clientLobby;
+}
+
+class GameTest implements ScriptedGameTest {
   Territory mainIsland;
   PredictableDice dice;
   List<Function> acts;
-  List<Act> bacts;
-  void test() {
-    Game game = new Game();
+  Game game;
+  Lobby clientLobby;
+
+  GameTest() {
+    game = new Game();
     dice = new PredictableDice();
     acts = new List<actAndExpect>();
 
     game.board = createTestBoard();
     GameServer server = new LocalServer(game);
+    clientLobby = server.lobby;
     ExpectServer expectServer = new ExpectServer(server);
 
     User spectator = new User(0, "Whooptidoo", "whoop@tidoo.com");
@@ -42,7 +52,7 @@ class GameTest {
     acts.add(() {
       // Let the observer join
       JoinLobby spectatorJoin = new JoinLobby();
-      spectatorJoin.userId = spectator.id;
+      spectatorJoin.user = spectator;
       server.send(spectatorJoin);
 
       expectServer.hasUser(spectator);
@@ -51,40 +61,39 @@ class GameTest {
       expectServer.hasActionAmount(1);
     });
 
-    acts.forEach( (f) { f(); });
-//    for (actAndExpect f in acts) {
-//      f();
-//    }
+    acts.add(() {
+      // Join the first 2 players
+      JoinLobby join = new JoinLobby();
+      join.user = player1.user;
+      server.send(join);
+      JoinLobby join2 = new JoinLobby();
+      join2.user = player2.user;
+      server.send(join2);
 
-    // Join the first 2 players
-    JoinLobby join = new JoinLobby();
-    join.userId = player1.user.id;
-    server.send(join);
-    JoinLobby join2 = new JoinLobby();
-    join2.user.id = player2.user.id;
-    server.send(join2);
+      expectServer.hasUser(player1.user);
+      expectServer.hasUser(player2.user);
+      expectServer.hasUserAmount(3);
+      expectServer.hasAction(join);
+      expectServer.hasAction(join2);
+      expectServer.hasActionAmount(3);
+    });
 
-    expectServer.hasUser(player1.user);
-    expectServer.hasUser(player2.user);
-    expectServer.hasUserAmount(3);
-    expectServer.hasAction(join);
-    expectServer.hasAction(join2);
-    expectServer.hasActionAmount(2);
+    acts.add(() {
+      // Test joining & leaving
+      JoinLobby leaverJoin = new JoinLobby();
+      leaverJoin.user = leaver.user;
+      server.send(leaverJoin);
+      LeaveLobby leave = new LeaveLobby();
+      leave.user = leaver.user;
+      server.send(leave);
 
-    // Test joining & leaving
-    JoinLobby leaverJoin = new JoinLobby();
-    leaverJoin.userId = leaver.user.id;
-    server.send(leaverJoin);
-    LeaveLobby leave = new LeaveLobby();
-    leave.userId = leaver.user.id;
-    server.send(leave);
-
-    expectServer.hasNotUser(leaverUser);
-    expectServer.hasUserAmount(3);
-    expectServer.hasAction(leaverJoin);
-    expectServer.hasAction(leave);
-    expectServer.hasActionAmount(4);
-
+      expectServer.hasNotUser(leaverUser);
+      expectServer.hasUserAmount(3);
+      expectServer.hasAction(leaverJoin);
+      expectServer.hasAction(leave);
+      expectServer.hasActionAmount(5);
+    });
+/*
     // Join the last player
     JoinLobby join3 = new JoinLobby();
     join3.userId = player3.user.id;
@@ -167,6 +176,15 @@ class GameTest {
     StartGame start = new StartGame();
     start.userId = player1.user.id;
     server.send(start);
+    */
+  }
+
+  start() {
+    test();
+  }
+
+  void test() {
+
   }
   /** Create a test board */
   Board createTestBoard() {
@@ -308,10 +326,45 @@ class ExpectServer {
   hasActionAmount(int amount) {
     int actualAmount = server.lobby.actions.length;
     Expect.isTrue(actualAmount == amount,
-        "Expected ${amount} #users, ${actualAmount} present");
+        "Expected ${amount} #actions, ${actualAmount} present");
   }
   hasGame(Game game) {
     Expect.isNotNull(byId(game.id, server.lobby.games),
       "Expected ${game.toString()} to be in the lobby");
+  }
+}
+/** Takes a game, a list of acts (action with expectations after performing)
+and runs through all the acts consecutively. This can also be used for scripted
+game testing while watching. */
+class GameTester {
+  bool automated = true;
+  int delayInMilliseconds = 1000;
+  Iterator it;
+  List<Function> acts;
+  int tested = 0;
+  ScriptedGameTest _sgt;
+  int timeHandle = 0;
+
+  GameTester.manual(ScriptedGameTest sgt) {
+    automated = false;
+    _sgt = sgt;
+    it = _sgt.acts.iterator();
+    timeHandle = window.setTimeout(executeNext, delayInMilliseconds);
+  }
+  executeNext() {
+    if (it.hasNext()) {
+      Function f = it.next();
+      try {
+        f();
+        print("Performed act #${tested.toString()}. That went better then expected!");
+        timeHandle = window.setTimeout(executeNext, delayInMilliseconds);
+      } catch(Exception ex) {
+        window.clearTimeout(timeHandle);
+        print("failure at test #${tested.toString()}: ${ex.toString()}");
+      }
+      tested++;
+    } else {
+      window.clearTimeout(timeHandle);
+    }
   }
 }

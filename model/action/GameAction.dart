@@ -8,8 +8,8 @@ interface GameAction extends Action {
   void performServer(ServerGame serverGame); // prepare this
   void perform(Game game); // Mutate the game instance
   bool isValid();
-  allowedTurnPhase(TurnPhase turnPhase);
-  allowedGamePhase(GamePhase gamePhase);
+  bool allowedTurnPhase(TurnPhase turnPhase);
+  bool allowedGamePhase(GamePhase gamePhase);
 }
 class SupportedGameActions extends ImmutableL<GameAction> {
   SupportedGameActions() : super([
@@ -34,11 +34,11 @@ interface GameActionData extends JsonObject {
 /** Abstract conveniece implementation for a GameAction */
 class AbstractGameAction implements GameAction {
   int id;
+  int userId;
+  int playerId;
   int gameId;
   User _user;
   Player _player;
-  int playerId;
-  int userId;
   Date  performedTime;
   GamePhase gamePhase;
   TurnPhase turnPhase;
@@ -61,17 +61,20 @@ class AbstractGameAction implements GameAction {
 
   bool allowedTurnPhase(TurnPhase tp) => false;
   bool allowedGamePhase(GamePhase gp) => false;
+
   User get user() => _user;
   set user(User u) {
     _user = u;
     userId = u.id;
   }
+
   Player get player() => _player;
   set player(Player p) {
     _player = p;
     playerId = p.id;
     user = p.user;
   }
+
   bool isValid() {
     Expect.isNotNull(id);
     Expect.isNotNull(player);
@@ -93,13 +96,16 @@ class AbstractGameAction implements GameAction {
   perform(Game game) { }
   performServer(ServerGame serverGame) { }
 
+  toText() => "[${id}, ${Dartan.name(this)}, ${user.name}]";
+  // Hashable
   int hashCode() {
     if (id==null)
       id = Dartan.generateHashCode(this);
     return id;
   }
+  // Copyable
   Dynamic copy([JsonObject data]) => new AbstractGameAction();
-  toText() => "[${id}, ${Dartan.name(this)}, ${user.name}]";
+  // Jsonable
   JsonObject get data() {
     GameActionData data = new JsonObject();
     data.type = Dartan.name(this);
@@ -111,11 +117,13 @@ class AbstractGameAction implements GameAction {
   }
   bool equals(other) => other.id == id;
 
+  // Testable
   test() {}
 }
 interface SayGameData extends GameActionData {
   String message;
 }
+/** Chat while playing the game */
 class SayGame extends AbstractGameAction {
   String message;
 

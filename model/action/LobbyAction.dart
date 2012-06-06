@@ -22,7 +22,7 @@ class AbstractLobbyAction implements LobbyAction {
   int id;
   Date performedTime;
   int userId;
-  User user;
+  User _user;
 
   AbstractLobbyAction();
   AbstractLobbyAction.data(JsonObject json) {
@@ -42,6 +42,12 @@ class AbstractLobbyAction implements LobbyAction {
     user = byId(userId, lobby.users);
   }
   update(Lobby lobby) { }
+
+  User get user() => _user;
+  set user(User u) {
+    _user = u;
+    userId = u.id;
+  }
 
   // Hashable
   int hashCode() {
@@ -91,11 +97,29 @@ class SayLobby extends AbstractLobbyAction {
   }
   String toText() => "${user.name}: ${message}";
 }
+interface JoinLobbyData extends LobbyActionData {
+  UserData user;
+}
 /** A user just logged in */
 class JoinLobby extends AbstractLobbyAction {
+
+  JoinLobby();
+  JoinLobby.data(JsonObject json) : super.data(json) {
+    JoinLobbyData data = json;
+    user = new User.data(data.user);
+  }
+  prepare(Lobby lobby) {
+    /* explicit empty */
+  }
   update(Lobby lobby) {
     lobby.users.add(user);
   }
+  JsonObject get data() {
+    JoinLobbyData data = super.data;
+    data.user = nullOrDataFrom(user);
+    return data;
+  }
+
   String toText() => "${user.name} joins";
 }
 /** A user left the lobby */
