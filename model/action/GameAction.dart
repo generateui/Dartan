@@ -35,8 +35,8 @@ interface GameActionData extends JsonObject {
 class AbstractGameAction implements GameAction {
   int id;
   int gameId;
-  User user;
-  Player player;
+  User _user;
+  Player _player;
   int playerId;
   int userId;
   Date  performedTime;
@@ -61,6 +61,17 @@ class AbstractGameAction implements GameAction {
 
   bool allowedTurnPhase(TurnPhase tp) => false;
   bool allowedGamePhase(GamePhase gp) => false;
+  User get user() => _user;
+  set user(User u) {
+    _user = u;
+    userId = u.id;
+  }
+  Player get player() => _player;
+  set player(Player p) {
+    _player = p;
+    playerId = p.id;
+    user = p.user;
+  }
   bool isValid() {
     Expect.isNotNull(id);
     Expect.isNotNull(player);
@@ -90,7 +101,7 @@ class AbstractGameAction implements GameAction {
   Dynamic copy([JsonObject data]) => new AbstractGameAction();
   toText() => "[${id}, ${Dartan.name(this)}, ${user.name}]";
   JsonObject get data() {
-    RollDiceData data = new JsonObject();
+    GameActionData data = new JsonObject();
     data.type = Dartan.name(this);
     data.id = id;
     data.playerId = playerId;
@@ -102,7 +113,7 @@ class AbstractGameAction implements GameAction {
 
   test() {}
 }
-interface SayGameData extends GameActionData{
+interface SayGameData extends GameActionData {
   String message;
 }
 class SayGame extends AbstractGameAction {

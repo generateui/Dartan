@@ -3,8 +3,13 @@ interface LobbyAction extends Action {
   prepare(Lobby lobby);
 }
 class SupportedLobbyActions extends ImmutableL<LobbyAction> {
-  SupportedLobbyActions() : super([new AbstractLobbyAction(), new JoinLobby(),
-    new NewGame(), new JoinLobby(), new LeaveLobby()]);
+  SupportedLobbyActions() : super([
+    new AbstractLobbyAction(),
+    new JoinLobby(),
+    new NewGame(),
+    new JoinLobby(),
+    new LeaveLobby()
+  ]);
 }
 interface LobbyActionData extends JsonObject {
   String type;

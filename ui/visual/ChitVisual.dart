@@ -1,7 +1,7 @@
 class ChitVisual extends AbstractVisual {
   SVGGElement group;
   SVGCircleElement circle;
-  SVGGElement chanceGroup;
+  SVGGElement chanceGroup; // TODO: implement
   Chit _chit;
   Cell _cell;
   SVGTextElement text;
@@ -19,7 +19,7 @@ class ChitVisual extends AbstractVisual {
     circle = new SVGElement.tag("circle");
     group.elements.add(circle);
     group.elements.add(chanceGroup);
-    svg=group;
+    svg = group;
   }
   updateChit() {
     if (_chit == null) {
@@ -49,7 +49,7 @@ class ChitVisual extends AbstractVisual {
     if (text !=null) {
       text.remove();
     }
-    String strText = _chit is RandomChit ? "R" : _chit.number;
+    String strText = _chit is RandomChit ? "R" : _chit.number.toString();
 
     text = new SVGElement.svg("<text>$strText</text>");
     int size = 0;

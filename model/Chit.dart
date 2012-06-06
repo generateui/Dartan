@@ -11,6 +11,7 @@ interface Chit
   Chit.number(int n);
   Chit.type(String type);
   Chit.data(JsonObject data);
+  bool equals(other);
 }
 class SupportedChits extends ImmutableL {
   SupportedChits() : super([new AbstractChit(),
@@ -26,6 +27,9 @@ class AbstractChit implements Chit {
   int get chance() => 0;
   bool get isRed() => number == 6 || number == 8;
   int get id() => _id;
+  set id(int id) {
+    _id = id;
+  }
 
   AbstractChit();
   AbstractChit.data(JsonObject json) {
@@ -40,11 +44,20 @@ class AbstractChit implements Chit {
     return _id;
   }
   // Jsonable
-  JsonObject get data() => new JsonObject.fromMap
-      ({"id": id, "type": Dartan.name(this)});
+  JsonObject get data() {
+    ChitData data = new JsonObject();
+    data.id = id;
+    data.type = Dartan.name(this);
+    return data;
+  }
   // Copyable
   Chit copy([JsonObject data]) => new AbstractChit();
-  test() {}
+  test() {
+    Chit chit3 = new Chit3();
+    chit3.id = 1;
+    Chit jsonChit3 = new Jsonable.data(new JsonObject.fromMap({"id": 1, "type": "Chit3"}));
+    Expect.isTrue(chit3.equals(jsonChit3), "Expected equals chit after serialization");
+  }
 }
 interface ChitData extends JsonObject{
   int id;
@@ -92,6 +105,7 @@ at game initialization-time */
 class RandomChit extends AbstractChit {
   Chit copy([JsonObject data]) => new RandomChit();
 }
+/** Madness. Maybe switch to ChitImpl instead of all these things? */
 class Chit2 extends AbstractChit {
   Chit2();
   Chit2.data(JsonObject json) : super.data(json);
@@ -101,9 +115,12 @@ class Chit2 extends AbstractChit {
       data==null ? new Chit2() : new Chit2.data(data);
 }
 class Chit3 extends AbstractChit {
+  Chit3();
+  Chit3.data(JsonObject json) : super.data(json);
   int get number() => 3;
   int get chance() => 2;
-  Chit copy([JsonObject data]) => new Chit3();
+  Chit copy([JsonObject data]) => data == null ?
+      new Chit3() : new Chit3.data(data);
 }
 class Chit4 extends AbstractChit {
   int get number() => 4;

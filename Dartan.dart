@@ -45,7 +45,6 @@
 #source('model/LargestArmy.dart');
 #source('model/GameSetting.dart');
 
-
 // UI
 #source('ui/BoardState.dart');
 #source('ui/BoardEditor.dart');
