@@ -88,9 +88,9 @@ class Road implements Piece, EdgePiece, PlayerPiece {
     return id;
   }
   bool equals(other) =>
-      other.id == id &&
-      other.playerId == playerId &&
-      other.edge == edge;
+      id == other.id &&
+      playerId == other.playerId &&
+      edge == other.edge;
 
   // Testable
   test() {

@@ -98,6 +98,10 @@ GUID.
 */
 interface Identifyable {
   int get id();
+  set id(int i);
+}
+interface IdProvider {
+  identify(Identifyable withId);
 }
 /** Allow classes to be (de)serialized from/to json */
 interface Jsonable
@@ -106,6 +110,7 @@ interface Jsonable
 
   Jsonable.data(JsonObject json);
   Jsonable.type(String type);
+  Jsonable.string(String jsonString);
   JsonObject get data();
 }
 interface DefaultJsonableData extends JsonObject {
@@ -143,7 +148,7 @@ class DefaultJsonable
   }
   DefaultJsonable copy([JsonObject data]) =>
       data == null ? new DefaultJsonable() : new DefaultJsonable.data(data);
-  bool equals(other) => other.id == id;
+  bool equals(other) => id == other.id;
   test() {
     new JsonableTest().test();
   }
@@ -206,7 +211,8 @@ class SupportedVariouss extends ImmutableL<Testable> {
      new Edge(new Cell(0,0), new Cell(0,1)),
      new Vertice(new Cell(0,0), new Cell(1,0), new Cell(1,1)),
      new Board(),
-     new DefaultJsonable()
+     new DefaultJsonable(),
+     new User()
      //new Vertice(new Cell(0,0),
      ]);
 }
@@ -228,13 +234,15 @@ Jsonable fromData(JsonObject json) {
     return new Jsonable.data(json);
   }
 }
-ListenableList<Jsonable> llFrom(Iterable<Jsonable> jsonables) {
+/** returns a listenable list from a list of json objects */
+ListenableList<Jsonable> llFrom(Iterable<JsonObject> jsonables) {
   if (jsonables == null) {
     return new ListenableList();
   } else {
-    return new ListenableList.from(Oracle.toDataList(jsonables));
+    return new ListenableList.from(listFrom(jsonables));
   }
 }
+/** Returns a list from a list of json objects */
 List<Jsonable> listFrom(Iterable<JsonObject> jsonObjects) {
   if (jsonObjects == null) {
     return new List();
@@ -269,12 +277,18 @@ List copiesOf(Copyable c, int amount) {
 }
 Identifyable byId(int theid, Collection<Identifyable> withIds) {
   Collection<Identifyable> filtered = withIds.filter
-      ((Identifyable hasId) => hasId.id == theid);
+      ((Identifyable withId) => withId.id == theid);
   if (filtered.iterator().hasNext()) {
     return filtered.iterator().next();
   } else {
     return null;
   }
+}
+bool hasId(int id, Collection<Identifyable> withIds) {
+  if (id != null) {
+    return byId(id, withIds) != null;
+  }
+  return false;
 }
 
 class Dartan {
@@ -296,6 +310,7 @@ class Dartan {
   }
   /** Free random hashcodes for all! */
   static int generateHashCode(var obj) => (Math.random()* 10000000).toInt();
+
   static String supName(var obj) {
     String temp = Dartan.name(obj).substring(9);
     temp = temp.substring(0,temp.length - 1);

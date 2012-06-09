@@ -29,6 +29,7 @@ class AbstractDevelopmentCard implements DevelopmentCard {
   Turn turnPlayed;
   Turn turnBought;
   Player _player;
+
   AbstractDevelopmentCard([this.id]);
   AbstractDevelopmentCard.data(JsonObject json) {
     DevelopmentCardData data = json;
@@ -42,10 +43,12 @@ class AbstractDevelopmentCard implements DevelopmentCard {
   bool get keepInStock() => true;
   bool turnAllowed(TurnPhase turnPhase) => true;
   bool gameAllowed(GamePhase gamePhase) => true;
+
   Player get player() => _player;
   set player(Player p) {
     _player = p;
   }
+  // Hashable
   int hashCode() {
     if (id == null) {
       id = Dartan.generateHashCode(this);
@@ -53,8 +56,10 @@ class AbstractDevelopmentCard implements DevelopmentCard {
     return id;
   }
   bool equals(other) => other.id == id;
+  // Copyable
   DevelopmentCard copy([JsonObject data]) => data == null?
       new AbstractDevelopmentCard() : new AbstractDevelopmentCard.data(data);
+  // Jsonable
   JsonObject get data() {
     DevelopmentCardData data = new JsonObject();
     data.id=id;

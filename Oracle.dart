@@ -28,11 +28,9 @@ class Oracle {
       }
     }
   }
-  /** From a JsonObject containing a type attribute with the concrete class name */
-  factory Jsonable.data(JsonObject data) {
-    Jsonable fromType = new Jsonable.type(data["type"]);
-    return fromType.copy(data);
-  }
+
+  // TODO: add null checks
+
   /** From a concrete type string */
   factory Jsonable.type(String type) {
     ensureMap();
@@ -43,6 +41,21 @@ class Oracle {
       print (msg);
       throw new Exception(msg);
     }
+  }
+  /** From a JsonObject containing a type attribute with the concrete class name */
+  factory Jsonable.data(JsonObject data) {
+    Jsonable fromType = new Jsonable.type(data["type"]);
+    return fromType.copy(data);
+  }
+  factory Jsonable.string(String jsonString) {
+    Jsonable referenced;
+    try {
+      JsonObject parsed = new JsonObject.fromJsonString(jsonString);
+      referenced = new Jsonable.data(parsed);
+    } catch (Exception ex) {
+      print("fail: create Jsonable from ${jsonString}");
+    }
+    return referenced;
   }
 
   // TODO: cleanup

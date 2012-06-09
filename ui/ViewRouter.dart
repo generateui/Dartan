@@ -75,8 +75,6 @@ class Play extends View {
       LobbyView lobbyView = new LobbyView(sgt.clientLobby);
       div.elements.add(lobbyView.toElement());
 
-      sgt.start();
-
 //      User user = new ServerUser();
 //
 //      JoinLobby join = new JoinLobby();

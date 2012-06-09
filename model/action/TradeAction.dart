@@ -74,7 +74,7 @@ class TradeOffer extends AbstractGameAction {
       new TradeOffer() : new TradeOffer.data(data);
 }
 interface RejectOfferData extends GameActionData {
-  int offerId;
+  int offerId;// Of the rejected offer
 }
 class RejectOffer extends AbstractGameAction implements TradeResponse {
   TradeOffer offer;

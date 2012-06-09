@@ -1,4 +1,4 @@
-/** Allow classes to be (de)serialized from/to json
+/** Have a JsonObject. Cheers!
 interface Jsonable
   extends Copyable
   default Oracle {
@@ -130,18 +130,19 @@ class JsonObject extends Object implements Map {
       });
     }
     else if (data is Collection) {
+      List list = data;
       //iterate through each of the items
       //if any of them is a list, check to see if it contains a map
       for (int i = 0; i < data.length; i++) {
         //use the for loop so that we can index the item to replace it if req'd
-        var listItem = data[i];
+        var listItem = list[i];
         if (listItem is Collection) {
           //recurse
           _extractElements(listItem);
         }
         else if (listItem is Map) {
           //replace the existing Map with a JsonObject
-          data[i] = new JsonObject.fromMap(listItem);
+          list[i] = new JsonObject.fromMap(listItem);
         }
       }
     }

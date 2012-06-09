@@ -1,45 +1,152 @@
-typedef actAndExpect();
+/** Takes a game, a list of acts (action with expectations after performing)
+and runs through all the acts consecutively. This can also be used for scripted
+game testing while watching. */
+class GameTester {
+  bool automated = true;
+  int delayInMilliseconds = 250;
+  bool optimistic = true;
+  Iterator it;
+  List<Function> acts;
+  int tested = 0;
+  ScriptedGameTest _sgt;
+  int timeHandle = 0;
 
+  GameTester.manual(ScriptedGameTest sgt) {
+    automated = false;
+    _sgt = sgt;
+    it = _sgt.acts.iterator();
+    timeHandle = window.setTimeout(executeNext, delayInMilliseconds);
+  }
+  GameTester.auto(ScriptedGameTest sgt) {
+    automated = true;
+    _sgt = sgt;
+    it = _sgt.acts.iterator();
+    delayInMilliseconds = 0;
+    executeNext();
+  }
+  executeNext() {
+    if (it.hasNext()) {
+      Function f = it.next();
+      try {
+        f();
+        print("OK: Performed act #${tested.toString()}.");
+        timeHandle = window.setTimeout(executeNext, delayInMilliseconds);
+      } catch(Exception ex) {
+        if (!optimistic) {
+          window.clearTimeout(timeHandle); //just schedule next
+        }
+        print("Fail: test #${tested.toString()}: ${ex.toString()}");
+      }
+      tested++;
+    } else {
+      window.clearTimeout(timeHandle);
+      print("That went better then expected: all ${tested} passed");
+    }
+  }
+}
+
+/** This should be seperated to client/game, client/lobby and
+server/game & server/lobby. Preferably to a splitscreen view,
+where visually monitoring the server state and client state is possible */
 interface ScriptedGameTest {
   List<Function> get acts();
-  start();
   Game game;
   Lobby clientLobby;
 }
 
+/** Scripted play of a game where states after performing actions is
+    checked against a set of expectations
+
+    This script tests both the state at the server and that of the client.
+
+    Pseudo code for this script:
+    Create a server
+    Create a game
+    Join 3 players
+    Chat
+    Start game
+    Determine first player (host)
+    Setup 6 towns
+    Roll predictable dices
+
+    Let one player win using all commands
+    -trading
+    -build town, build city, development point, LA, LR
+    -move robber, rob player
+    -play RB, Mono, Invention, 3 knights
+    -loose cards
+    -win game
+*/
 class GameTest implements ScriptedGameTest {
+  List<Function> acts;
+
+  /// Direct references to ingame objects
   Territory mainIsland;
   PredictableDice dice;
-  List<Function> acts;
   Game game;
   Lobby clientLobby;
 
+  GameClient gameClient;
+  LocalServer server;
+
+  User user1, user2, user3;
+  User spectator;
+  User leaverUser;
+
+  Player player1, player2, player3;
+  Player leaver;
+
+  /// Testing object references
+  int currentActionId = 0;
+
+  ExpectServer expectServer;
+  ExpectGame expectClientGame;
+  ExpectGame expectServerGame;
+  ExpectLobby expectClientLobby;
+  ExpectLobby expectServerLobby;
+
   GameTest() {
+    /// Game references
     game = new Game();
     dice = new PredictableDice();
-    acts = new List<actAndExpect>();
+    acts = new List<Function>();
 
     game.board = createTestBoard();
-    GameServer server = new LocalServer(game);
+    server = new LocalServer(game);
+    gameClient = new GameClient();
+
+    spectator = new User(0, "Whooptidoo", "whoop@tidoo.com");
+    user1 = new User(1, "Piet", "piet@example.com");
+    user2 = new User(2, "Henk", "henk@example.com");
+    user3 = new User(3, "Truus", "truus@example.com");
+    leaverUser = new User(4, "SomeLeaver", "leaver@example.com");
+
+    player1 = new Player(user1);
+    player2 = new Player(user2);
+    player3 = new Player(user3);
+    leaver = new Player(leaverUser);
+
+    server.user = spectator;
+    gameClient.server = server;
+    gameClient.user = spectator;
+    server.gameClient = gameClient;
     clientLobby = server.lobby;
-    ExpectServer expectServer = new ExpectServer(server);
 
-    User spectator = new User(0, "Whooptidoo", "whoop@tidoo.com");
-    User user1 = new User(1, "Piet", "piet@example.com");
-    User user2 = new User(2, "Henk", "henk@example.com");
-    User user3 = new User(3, "Truus", "truus@example.com");
-    User leaverUser = new User(4, "SomeLeaver", "leaver@example.com");
+    /// Test object references
+    expectServer = new ExpectServer(server);
+    expectClientLobby = new ExpectLobby(gameClient.lobby);
+    expectServerLobby = new ExpectLobby(server.lobby);
 
-    Player player1 = new Player(user1);
-    Player player2 = new Player(user2);
-    Player player3 = new Player(user3);
-    Player leaver = new Player(leaverUser);
-
-    /*
+    /// Actual script
     joinSpectatorInLobby();
-    joinPlayer1InLobby();
-    joinPlayer2InLobby();
+    joinPlayer12InLobby();
+    joinAndLeavePlayerInLobby();
     joinPlayer3InLobby();
+    chatSomething();
+    chatABitMore();
+    openNewGame();
+    joinNewGame();
+    /* TODO
     joinAndLeavePlayerInLobby();
     makeNewGame();
     joinPlayer2InGame();
@@ -49,91 +156,152 @@ class GameTest implements ScriptedGameTest {
     setPlayersReadyToPlay();
     startGame();
     */
-    acts.add(() {
-      // Let the observer join
+  }
+  joinSpectatorInLobby() { acts.add(() {   // Compact DSL syntax!
       JoinLobby spectatorJoin = new JoinLobby();
       spectatorJoin.user = spectator;
-      server.send(spectatorJoin);
+      gameClient.send(spectatorJoin);
 
-      expectServer.hasUser(spectator);
-      expectServer.hasUserAmount(1);
-      expectServer.hasAction(spectatorJoin);
-      expectServer.hasActionAmount(1);
-    });
+      spectatorJoin.id = nextId();
+      expectClientLobby.hasUser(spectator);
+      expectClientLobby.hasUserAmount(1);
+      expectClientLobby.hasAction(spectatorJoin);
+      expectClientLobby.hasActionAmount(1);
 
-    acts.add(() {
-      // Join the first 2 players
+      expectServerLobby.hasUser(spectator);
+      expectServerLobby.hasUserAmount(1);
+      expectServerLobby.hasAction(spectatorJoin);
+      expectServerLobby.hasActionAmount(1);
+  });}
+  joinPlayer12InLobby() {  acts.add(() {
       JoinLobby join = new JoinLobby();
       join.user = player1.user;
-      server.send(join);
+      gameClient.send(join);
       JoinLobby join2 = new JoinLobby();
       join2.user = player2.user;
-      server.send(join2);
+      gameClient.send(join2);
 
+      join.id = nextId();
+      join2.id = nextId();
       expectServer.hasUser(player1.user);
       expectServer.hasUser(player2.user);
       expectServer.hasUserAmount(3);
       expectServer.hasAction(join);
       expectServer.hasAction(join2);
       expectServer.hasActionAmount(3);
-    });
-
-    acts.add(() {
-      // Test joining & leaving
+  });}
+  joinAndLeavePlayerInLobby() {  acts.add(() {
       JoinLobby leaverJoin = new JoinLobby();
       leaverJoin.user = leaver.user;
-      server.send(leaverJoin);
+      gameClient.send(leaverJoin);
       LeaveLobby leave = new LeaveLobby();
       leave.user = leaver.user;
-      server.send(leave);
+      gameClient.send(leave);
 
+      leaverJoin.id = nextId();
+      leave.id = nextId();;
+      //expectLobby.hasNotUser(leaverUser);
       expectServer.hasNotUser(leaverUser);
       expectServer.hasUserAmount(3);
       expectServer.hasAction(leaverJoin);
       expectServer.hasAction(leave);
-      expectServer.hasActionAmount(5);
+      expectServer.hasActionAmount(currentActionId);
+  });}
+  joinPlayer3InLobby() {  acts.add(() {
+      JoinLobby join3 = new JoinLobby();
+      join3.user = player3.user;
+      gameClient.send(join3);
+
+      join3.id = nextId();
+
+      expectServer.hasUser(player3.user);
+      expectServer.hasUserAmount(4);
+      expectServer.hasAction(join3);
+      expectServer.hasActionAmount(6);
     });
-/*
-    // Join the last player
-    JoinLobby join3 = new JoinLobby();
-    join3.userId = player3.user.id;
-    server.send(join3);
-
-    expectServer.hasUser(player3.user);
-    expectServer.hasUserAmount(4);
-    expectServer.hasAction(join3);
-    expectServer.hasActionAmount(5);
-
-    // Test a chat message
-    SayGame say = new SayGame();
+  }
+  chatSomething() { acts.add(() {
+    Say say = new Say.lobby();
     say.message = "Merp. gotta get another player";
-    say.userId = player1.user.id;
-    server.send(say);
+    say.user = player1.user;
+    gameClient.send(say);
+
+    say.id = nextId();
 
     expectServer.hasAction(say);
-    expectServer.hasActionAmount(6);
+    expectServer.hasActionAmount(7);
+  });}
+  chatABitMore() { acts.add(() {
+    Say say = new Say.lobby();
+    say.message = "Loei. Moei, koei!";
+    say.user = player2.user;
+    gameClient.send(say);
 
-    // Open a new game in the lobby
+    Say say2 = new Say.lobby();
+    say.message = "Gowaboei...";
+    say.user = player2.user;
+    gameClient.send(say);
+
+    Say say3 = new Say.lobby();
+    say.message = "Complatoei?";
+    say.user = player3.user;
+    gameClient.send(say);
+
+    say.id = nextId();
+    say2.id = nextId();
+    say3.id = nextId();
+
+    expectServer.hasActions([say, say2, say3]);
+    expectServer.hasActionAmount(10);
+  });}
+  openNewGame() { acts.add(() {
     NewGame newGame = new NewGame();
-    newGame.userId = player1.user.id;
-    server.send(newGame);
+    newGame.user = player1.user;
+    Game ng = new Game();
+    ng.name = "Lol";
+    ng.board = createTestBoard();
+    newGame.game = ng;
+    gameClient.send(newGame);
 
     game = newGame.game;
     ExpectGame expectGame = new ExpectGame(game);
 
-    expectServer.hasGame(newGame.game);
-    expectGame.hasUser(player1.user);
-    expectGame.hasUserAmount(2);
-    expectGame.hasHost(player1.user);
+    newGame.id = nextId();
+    expectServer.hasAction(newGame);
+    expectServer.hasActionAmount(11);
 
-    // Join a player in the new game
+    Expect.isFalse(gameClient.lobby.games.isEmpty(), "empty list of games in client-lobby");
+    Expect.isFalse(server.lobby.games.isEmpty(), "empty list of games in server-lobby");
+    Expect.isFalse(server.lobby.games[0] == null);
+  }); }
+  joinNewGame() { acts.add(() {
     JoinGame joinGame1 = new JoinGame();
-    joinGame1.userId = player2.user.id;
-    joinGame1.gameId = game.id;
-    server.send(joinGame1);
+    joinGame1.user = player2.user;
+    Game gameAtServer = server.lobby.games[0];
+    Game gameAtClient = gameClient.lobby.games[0];
+    joinGame1.game = server.lobby.games[0];
+    gameClient.send(joinGame1);
 
-    expectGame.hasUser(player2.user);
-    expectGame.hasUserAmount(2);
+    joinGame1.id = nextId();
+
+    expectClientGame = new ExpectGame(gameAtClient);
+    expectServerGame = new ExpectGame(gameAtServer);
+
+    expectClientGame.hasUser(player2.user);
+    expectClientGame.hasUserAmount(2);
+    expectServerGame.hasUser(player2.user);
+    expectServerGame.hasUserAmount(2);
+    expectServer.hasAction(joinGame1);
+    expectServer.hasActionAmount(12);
+  }); }
+
+/*  CP template:
+
+    methodName() { acts.add(() {
+
+    });
+
+    TODO:
 
     // Join another player
     JoinGame joinGame2 = new JoinGame();
@@ -177,15 +345,13 @@ class GameTest implements ScriptedGameTest {
     start.userId = player1.user.id;
     server.send(start);
     */
+
+  int nextId() => currentActionId++;
+
+  test() {
+    GameTester gt = new GameTester.auto(this);
   }
 
-  start() {
-    test();
-  }
-
-  void test() {
-
-  }
   /** Create a test board */
   Board createTestBoard() {
     // Create a test board
@@ -248,30 +414,6 @@ class GameTest implements ScriptedGameTest {
     }
     return board;
   }
-
-  /** Have an environment where every second, a command is played, so the user
-  an experience a test game as if he is spectating a game */
-  void runGame() {
-    /*
-    Create a server
-    Create a game
-    Join 3 players
-    Chat
-    Start game
-    Determine first player (host)
-    Setup 6 towns
-    Roll predictable dices
-
-    Let one player win using all commands
-    -trading
-    -build town, build city, development point, LA, LR
-    -move robber, rob player
-    -play RB, Mono, Invention, 3 knights
-    -loose cards
-    -win game
-    */
-  }
-
 }
 class ExpectGame {
   Game game;
@@ -302,8 +444,44 @@ class ExpectGame {
         "Expected ${amount} #spectators, got #${actualAmount}.");
   }
 }
+class ExpectLobby {
+  Lobby lobby;
+  ExpectLobby(this.lobby);
+
+  hasUser(User user) {
+    Expect.isNotNull(byId(user.id, lobby.users),
+      "Expected ${user.name} in the lobby");
+  }
+  hasNotUser(User user) {
+    Expect.isNull(byId(user.id, lobby.users),
+      "Not expected ${user.name} in the lobby");
+  }
+  hasUserAmount(int amount) {
+    int actualAmount = lobby.users.length;
+    Expect.isTrue(actualAmount == amount,
+        "Expected ${amount} #users, got ${actualAmount}");
+  }
+  hasGame(Game game) {
+    Expect.isNotNull(byId(game.id, lobby.games),
+      "Expected ${game.toString()} to be in the lobby");
+  }
+  hasActions(List<Action> actions) {
+    for (Action action in actions) {
+      hasAction(action);
+    }
+  }
+  hasActionAmount(int amount) {
+    int actualAmount = lobby.actions.length;
+    Expect.isTrue(actualAmount == amount,
+        "Expected ${amount} #actions, ${actualAmount} present");
+  }
+  hasAction(Action action) {
+    Expect.isNotNull(byId(action.id, lobby.actions),
+      "Expected ${action.toString()} to be in the log of actions for the lobby");
+  }
+}
 class ExpectServer {
-  GameServer server;
+  Server server;
   ExpectServer(this.server);
 
   hasUser(User user) {
@@ -319,6 +497,11 @@ class ExpectServer {
     Expect.isTrue(actualAmount == amount,
         "Expected ${amount} #users, got ${actualAmount}");
   }
+  hasActions(List<Action> actions) {
+    for (Action action in actions) {
+      hasAction(action);
+    }
+  }
   hasAction(Action action) {
     Expect.isNotNull(byId(action.id, server.lobby.actions),
       "Expected ${action.toString()} to be in the log of actions");
@@ -331,40 +514,5 @@ class ExpectServer {
   hasGame(Game game) {
     Expect.isNotNull(byId(game.id, server.lobby.games),
       "Expected ${game.toString()} to be in the lobby");
-  }
-}
-/** Takes a game, a list of acts (action with expectations after performing)
-and runs through all the acts consecutively. This can also be used for scripted
-game testing while watching. */
-class GameTester {
-  bool automated = true;
-  int delayInMilliseconds = 1000;
-  Iterator it;
-  List<Function> acts;
-  int tested = 0;
-  ScriptedGameTest _sgt;
-  int timeHandle = 0;
-
-  GameTester.manual(ScriptedGameTest sgt) {
-    automated = false;
-    _sgt = sgt;
-    it = _sgt.acts.iterator();
-    timeHandle = window.setTimeout(executeNext, delayInMilliseconds);
-  }
-  executeNext() {
-    if (it.hasNext()) {
-      Function f = it.next();
-      try {
-        f();
-        print("Performed act #${tested.toString()}. That went better then expected!");
-        timeHandle = window.setTimeout(executeNext, delayInMilliseconds);
-      } catch(Exception ex) {
-        window.clearTimeout(timeHandle);
-        print("failure at test #${tested.toString()}: ${ex.toString()}");
-      }
-      tested++;
-    } else {
-      window.clearTimeout(timeHandle);
-    }
   }
 }

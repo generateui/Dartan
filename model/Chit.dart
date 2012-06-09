@@ -39,7 +39,7 @@ class AbstractChit implements Chit {
   bool equals(other) => other.id==id;
   // Hashable
   int hashCode() {
-    if (_id==null)
+    if (_id == null)
       _id = Dartan.generateHashCode(this);
     return _id;
   }
@@ -51,7 +51,8 @@ class AbstractChit implements Chit {
     return data;
   }
   // Copyable
-  Chit copy([JsonObject data]) => new AbstractChit();
+  Chit copy([JsonObject data]) => data == null ?
+      new AbstractChit() : new AbstractChit.data(data);
   test() {
     Chit chit3 = new Chit3();
     chit3.id = 1;

@@ -1,25 +1,28 @@
 *, p {
-font-family: 'Andika', sans-serif;
-font-size: 13px;
+	font-family: 'Andika', sans-serif;
+	font-size: 13px;
 }
 
 body {
-margin: 1em;
-//background-color: rgba(255,0,0, 0.1);
+	margin: 1em;
+	//background-color: rgba(255,0,0, 0.1);
 }
  h2, h3 {
-font-family: 'Andika', sans-serif;
-font-weight: normal;
+	font-family: 'Andika', sans-serif;
+	font-weight: normal;
+}
+svg {
+	font-family: 'Ubuntu+Mono', sans-serif;
 }
 #boardEditor {
 	height: 100%;
 	width: 100%;
 }
 .checkOk {
-  color: green;
+ 	color: green;
 }
 polygon:hover {
-fill-opacity:0.5;
+	fill-opacity:0.5;
 }
 p.title {
 	margin: 0.5em;
@@ -93,8 +96,8 @@ li.action {
 	font-family: 'Ubuntu Mono', sans-serif;
 }
 .smallIconList {
- height: 20px; 
- display: table-row;
+	 height: 20px; 
+	 display: table-row;
 }
 .logo {
 	background-image: url(img/icon48/City.png);
@@ -119,7 +122,6 @@ h1 {
 .PickedResources {
 	height: 1em;
 	//display: inline-block;
-	
 }
 .PickedResource:hover {
 	outline: 2px Grey dotted;
@@ -144,12 +146,11 @@ h1 {
  }
  .nothingTested {
  	color:black;
- 	 	font-family: 'Ubuntu Mono', sans-serif;
+ 	font-family: 'Ubuntu Mono', sans-serif;
  }
  .number {
  	font-size: 1.2em;
   	font-family: 'Ubuntu Mono', sans-serif;
- 
  }
  .none {
    	 	font-family: 'Ubuntu Mono', sans-serif;

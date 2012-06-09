@@ -33,6 +33,9 @@ class Turn implements Identifyable, Hashable, Copyable, Jsonable {
     currentResponses = new ListenableList<TradeResponse>();
     responsesByOffer = new Map<TradeOffer, List<TradeResponse>>();
   }
+  Turn.next(Turn current) {
+    id = current.id++;
+  }
   Turn([this.humanIndex, this.player]) {
     init();
   }

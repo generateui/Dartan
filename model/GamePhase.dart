@@ -223,6 +223,11 @@ class AllPhases extends AbstractGamePhase {
   Iterator<GamePhase> iterator;
   ObservableHelper observable;
 
+  AllPhases() : super() {
+    observable = new ObservableHelper();
+    ensureAllPhasesPresent();
+    addAllPhasesToList();
+  }
   AllPhases.data(JsonObject json) {
     AllPhasesData data = json;
     lobby = data.lobby == null ? null : new LobbyPhase.data(data.lobby);
@@ -240,11 +245,7 @@ class AllPhases extends AbstractGamePhase {
       addAllPhasesToList();
     }
   }
-  AllPhases() : super() {
-    observable = new ObservableHelper();
-    ensureAllPhasesPresent();
-    addAllPhasesToList();
-  }
+
   ensureAllPhasesPresent() {
     lobby = lobby== null ? new LobbyPhase() : lobby;
     determinFirstPlayer = determinFirstPlayer== null ? new DetermineFirstPlayerGamePhase() : determinFirstPlayer;
@@ -262,7 +263,6 @@ class AllPhases extends AbstractGamePhase {
     allPhases.add(ended);
     iterator = allPhases.iterator();
   }
-
   setCurrent(int phaseId) {
     iterator = allPhases.iterator();
     bool notFound=true;

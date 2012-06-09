@@ -22,7 +22,9 @@ interface BoardData extends JsonObject {
     -Columns (editor)
     -TileChanged (editor)
 */
-class Board implements Observable, Hashable, Jsonable, Identifyable, Testable {
+class Board
+  implements Observable, Hashable, Jsonable, Identifyable, Testable {
+
   ObservableHelper observable;
   int columns = -1;
   int rows = -1;
@@ -59,14 +61,16 @@ class Board implements Observable, Hashable, Jsonable, Identifyable, Testable {
     observable = new ObservableHelper();
   }
 
+  Board.name() {
+  }
   Board.data(JsonObject json) {
     BoardData data = json;
     id = data.id;
     name = data.name;
-    chitsBag = llFrom(chitsBag);
-    portsBag = llFrom(portsBag);
-    tilesBag = llFrom(tilesBag);
-    territories = llFrom(territories);
+    chitsBag = llFrom(data.chitsBag);
+    portsBag = llFrom(data.portsBag);
+    tilesBag = llFrom(data.tilesBag);
+    territories = llFrom(data.territories);
   }
   Board([this.columns, this.rows]) {
     init();
@@ -110,6 +114,11 @@ class Board implements Observable, Hashable, Jsonable, Identifyable, Testable {
     _tilesByCell[t.cell] = t;
     _addVertices(t.cell);
     _addEdges(t.cell);
+  }
+  void addTiles(Iterable<Tile> tiles) {
+    for (Tile t in tiles) {
+      addTile(t);
+    }
   }
   /** Rerplace with newtile is cell occupied, or adds newTile if cell is free */
   void changeTile(Tile newTile) {
@@ -211,6 +220,25 @@ TODO: refactor into smaller pieces
 class Standard4p extends Board {
   Territory mainIsland;
   List<List<int>> randomFields = const [const[2, 3, 4], const[1, 2, 3, 4], const[1, 2, 3, 4, 5], const[1, 2, 3, 4], const[2, 3, 4]];
+  static List<Chit> randomChits = [
+    new Chit2(),
+    new Chit3(), new Chit3(),
+    new Chit4(), new Chit4(),
+    new Chit5(), new Chit5(),
+    new Chit6(), new Chit6(),
+    new Chit8(), new Chit8(),
+    new Chit9(), new Chit9(),
+    new Chit10(), new Chit10(),
+    new Chit11(), new Chit11(),
+    new Chit12()
+  ];
+  static List<Port> randomPorts = [
+    new TwoToOnePort(new Wheat()),
+    new TwoToOnePort(new Timber()),
+    new TwoToOnePort(new Clay()),
+    new TwoToOnePort(new Sheep()),
+    new TwoToOnePort(new Ore())
+  ];
 
   Standard4p() : super() {
     mainIsland = new MainIsland();
@@ -328,9 +356,18 @@ class Standard4p extends Board {
     Tile st = _tilesByCell[first];
     st.port = new RandomPort(first, direction);
   }
+  /** Replaces all tiles with random chits to chits from
+      1. A bag
+      2. A random chit from the available concrete chits, if fallbackRandom=true
+      3. Leave the R chit alone, change it on a game action
+  */
   placeChits(Random random) {
+    // 1. Create a new set of changes (Map<Cell, Chit>)
+    // 2. Verify set (if not: goto 1)
+    // 3. Place all changes into effect
     newChitsBag();
     List<Tile> randomChitTiles = new List<Tile>();
+    Map<Cell, Chit> changes = new HashMap<Cell, Chit>();
     for (Tile t in tiles) {
       if (t.hasChit && t.chit is RandomChit) {
         randomChitTiles.add(t);
@@ -340,7 +377,7 @@ class Standard4p extends Board {
     List<Chit> hotChits = chitsBag.filter((Chit c) => c.isRed);
     List<Tile> tilesWithHotChit = new List<Tile>();
 
-    // First place 4 red chits
+    // 1. First place 4 red chits
     while (!hotChits.isEmpty()) {
       int intPick = random.intFromZero(hotChits.length - 1);
       Chit t = hotChits[intPick];
@@ -354,6 +391,7 @@ class Standard4p extends Board {
       }
     }
 
+    // 2. Place other chits by chance
     bool twins = true;
     while (twins) {
       List<Chit> chitsBagCopy = new List.from(chitsBag.filter((Chit c) => not(c.isRed)));
@@ -372,7 +410,7 @@ class Standard4p extends Board {
     newTileBag();
     List<RandomTile> rts = new List<RandomTile>(); // randomtiles to replace
     for (Tile t in tiles)
-      if (t is RandomTile)
+      if (t.isRandom)
         rts.add(t);
 
     for (RandomTile rt in rts) {

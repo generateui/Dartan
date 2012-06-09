@@ -42,6 +42,7 @@ class Player implements Hashable, Identifyable, Observable, Jsonable {
   Stock stock;
 
   /* A user can change because users may leave or join, but players stay */
+  User /* on */ get user() => _user;
   set /* on */ user(User u) {
     if (user != u) {
       User old = user;
@@ -49,7 +50,6 @@ class Player implements Hashable, Identifyable, Observable, Jsonable {
       observable.fire("user", old, user);
     }
   }
-  User /* on */ get user() => _user;
   init() {
     observable = new ObservableHelper();
   }
@@ -159,7 +159,7 @@ interface UserData extends JsonObject {
   String type;
 }
 /** A person playing the game */
-class User implements Hashable, Identifyable, Jsonable {
+class User implements Hashable, Identifyable, Jsonable, Testable {
   int id;
   String name;
   String email;
@@ -189,9 +189,17 @@ class User implements Hashable, Identifyable, Jsonable {
       id = Dartan.generateHashCode(this);
     return id;
   }
+  bool equals(other) =>
+      id == other.id &&
+      name == other.name &&
+      email == other.email;
+
   // Copyable
   User copy([JsonObject data]) => data == null ? new User() : new User.data(data);
   String toText() => "[${id}, ${name}, ${email}]";
+  test() {
+
+  }
 }
 /** The server as a user */
 class ServerUser extends User {

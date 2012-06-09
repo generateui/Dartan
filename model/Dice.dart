@@ -6,7 +6,11 @@ interface DiceData extends JsonObject {
   String type;
 }
 class SupportedDices extends ImmutableL<Dice> {
-  SupportedDices() : super([new RandomDice(), new PredictableDice(), new StackDice()]);
+  SupportedDices() : super([
+    new RandomDice(),
+    new PredictableDice(),
+    new StackDice()
+  ]);
 }
 interface DiceRollData extends JsonObject {
   int dice1;

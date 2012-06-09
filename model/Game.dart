@@ -47,7 +47,7 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
   ListenableList<User> users;
   ListenableList<GameAction> actions;
   ListenableList<Turn> turns;
-  ListenableList<SayGame> chats;
+  ListenableList<Say> chats;
   ListenableList<Action> queue;
   ListenableList<DevelopmentCard> developmentCards;
 
@@ -69,6 +69,7 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
 
   _init() { // init to default settings
     observable = new ObservableHelper();
+    chats = new ListenableList<Say>();
     users = users == null ?  new ListenableList<User>() : users;
     phases = phases == null ? new AllPhases() : phases;
     status = status == null ? new Playing() : status;
@@ -81,10 +82,12 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
   Game() { _init(); }
   Game.data(JsonObject json) {
     GameData data = json;
+    id = data.id;
     users = llFrom(data.users);
+    //if (data.hostUserId != null) {_setHost(data.hostUserId); }
 //    phases = data.phases == null ? null : new AllPhases.data(data.phases);
     status = new Playing();
-    turns = new ListenableList<Turn>.from(data.turns);
+//    turns = new ListenableList<Turn>.from(data.turns);
     players = new PlayerListMu();
     observable = new ObservableHelper();
     bank = new ResourceListMu();
@@ -92,13 +95,26 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
     queue = new ListenableList<Action>();
     _init();
   }
+  _setHost(int hostId) {
+    if (hostId != null && hasUserId(hostId)) {
+      host = userById(hostId);
+    }
+  }
 
   afterSerialization() {
     // Tiles should get Territory from Id
-    for (Tile t in board.tiles) {
-      if (t.territoryId != null) {
-        t.territory = byId(t.territoryId, board.territories);
+    for (Tile t in board.tiles.filter((Tile tt) => tt.territoryId != null)) {
+      Territory terr = byId(t.territoryId, board.territories);
+      if (terr == null) {
+        print("nonexisting territory referenced");
+        continue;
       }
+      if (!t.canHaveTerritory) {
+        print("territoryId found, but tile cannot have a territory. Tile: ${t.data.toString()}");
+        continue;
+      }
+
+      t.territory = terr;
     }
     // Player should get User from userId
     for (Player player in players) {
@@ -116,6 +132,8 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
 
   User userById(int userId) => byId(userId, users);
   Player playerById(int playerId) => byId(playerId, players);
+  bool hasPlayerId(int pid) => byId(pid, players) != null;
+  bool hasUserId(int uid) => byId(uid, users) != null;
 
   nextTurn() {
     if (currentGamePhase.isTurns) {
@@ -145,7 +163,8 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
     return id;
   }
   // Copyable
-  Game copy([JsonObject data]) => data == null ? new Game() : new Game.data(data);
+  Game copy([JsonObject data]) => data == null ?
+      new Game() : new Game.data(data);
   // Jsonable
   JsonObject get data() {
     GameData data = new JsonObject();
@@ -154,28 +173,31 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
     data.name = name;
     //data.startedDateTime = startedDateTime; DATETIME/conversion
 
-    data.actions =  nullOrDataListFrom(actions);
-    data.chats = nullOrDataListFrom(chats);
-    data.bank = nullOrDataListFrom(bank);
+//    data.actions =  nullOrDataListFrom(actions);
+//    data.chats = nullOrDataListFrom(chats);
+//    data.bank = nullOrDataListFrom(bank);
     data.users = nullOrDataListFrom(users);
-    data.turns = nullOrDataListFrom(turns);
-    data.players = nullOrDataListFrom(players);
-    data.queue = nullOrDataListFrom(queue);
-    data.developmentCards = nullOrDataListFrom(developmentCards);
-
-    //data.status = status == null ? null : status.data;
-    data.board = nullOrDataFrom(board);
-    data.phases = nullOrDataFrom(phases);
-    data.currentGamePhaseId = currentGamePhase == null ? null : currentGamePhase.id;
-    data.currentTurnPhaseId = currentTurnPhase == null ? null : currentTurnPhase.id;
-    data.robber = nullOrDataFrom(robber);
-    data.longestRoad = nullOrDataFrom(longestRoad);
-    data.largestArmy = nullOrDataFrom(largestArmy);
+//    data.turns = nullOrDataListFrom(turns);
+//    data.players = nullOrDataListFrom(players);
+//    data.queue = nullOrDataListFrom(queue);
+//    data.developmentCards = nullOrDataListFrom(developmentCards);
+//
+//    //data.status = status == null ? null : status.data;
+//    data.board = nullOrDataFrom(board);
+//    data.phases = nullOrDataFrom(phases);
+//    data.currentGamePhaseId = currentGamePhase == null ? null : currentGamePhase.id;
+//    data.currentTurnPhaseId = currentTurnPhase == null ? null : currentTurnPhase.id;
+//    data.robber = nullOrDataFrom(robber);
+//    data.longestRoad = nullOrDataFrom(longestRoad);
+//    data.largestArmy = nullOrDataFrom(largestArmy);
     return data;
   }
   bool equals(other) => other.id==id;
   test() {
     new GameTest().test();
   }
+
+}
+class StandardGame extends Game {
 
 }

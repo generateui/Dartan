@@ -7,9 +7,18 @@ class SvgBoard implements BoardVisual {
   Board _board;
   BoardState _boardState;
   SVGGElement vertices, edges, tiles; // G element to group them
+
+  // Basically map all elements
+  // Should e.g. towns/cities in seperate lists or generic list?
+  HashMap<Piece, Visual> _elementsByPiece;
   HashMap<Vertice, VerticeVisual> _elementsByVertice;
   HashMap<Edge, EdgeVisual> _elementsByEdge;
   HashMap<Tile, TileVisual> _elementsByTile;
+
+  addPiece(Piece piece) {
+    _elementsByPiece = new HashMap<Piece, Visual>();
+  }
+
   ObservableHelper observable;
   Visual _currentVisual;
   PortPickerVisual portPicker;

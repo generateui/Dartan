@@ -12,8 +12,15 @@ Jsonable copyJsonable(Jsonable toCopy) {
   return newJsonable;
 }
 expectEqualCopy(Jsonable thing) {
-  Jsonable thingCopy = copyJsonable(thing);
+  Jsonable thingCopy;
+  try {
+    thingCopy = copyJsonable(thing);
+  } catch (Exception ex) {
+    Expect.fail("Failed copying a ${Dartan.name(thing)} because ${ex.toString()}");
+  }
+
   String concreteName = Dartan.name(thing);
+  Expect.isTrue(thingCopy != null, "Expected copied instance of ${concreteName}");
   Expect.isTrue(thing.equals(thingCopy), "Copying a ${concreteName} failed");
 }
 class JsonableTest {

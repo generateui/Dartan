@@ -9,13 +9,20 @@ interface Canvas {
   draw(CanvasRenderingContext ctx); // Delegated drawing function
 }
 /** Anything that needs to be drawn onto a surface, like a tile, chit et cetera */
-interface Visual extends Svg, Canvas{
+interface Visual extends Svg, Canvas default VisualFactory {
   show(); // render it
   hide(); // don't render it
   select(); // render as user selected
   deSelect(); // toggle off user selected
+  Visual.svg(String type);
 }
-
+class VisualFactory {
+  factory Visual.svg(String type) {
+    if (type=="Road") {
+      //return new RoadVisual.svg
+    }
+  }
+}
 /** Draw a board on a canvas */
 interface BoardVisual extends Observable, AsElement, Visual {
   showAllEdges();

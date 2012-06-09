@@ -2,17 +2,17 @@
 class GameView {
   User spectator; // person watching the game
   Player player;
-  
+
   // Objects
   Game game;
-  GameServer server;
+  Server server;
   Lobby lobby;
-  
+
   // Views
   //BoardView boardView;
-  
+
   Element root;
   GameView() {
-    
+
   }
 }

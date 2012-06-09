@@ -1,15 +1,27 @@
 /** Any action performed in a game */
 interface GameAction extends Action {
+  int gameId;
   Player player;
   int playerId;
   TurnPhase turnPhase;
   GamePhase gamePhase;
+
+  // In order of execution:
   void prepare(Game game); // ensure all instance references have been acquired from id's
   void performServer(ServerGame serverGame); // prepare this
   void perform(Game game); // Mutate the game instance
+
   bool isValid();
   bool allowedTurnPhase(TurnPhase turnPhase);
   bool allowedGamePhase(GamePhase gamePhase);
+}
+/** Generalized interface for data needed on all actions */
+interface GameActionData extends JsonObject {
+  String type;
+  int id;
+  int userId;
+  int gameId;
+  int playerId;
 }
 class SupportedGameActions extends ImmutableL<GameAction> {
   SupportedGameActions() : super([
@@ -22,14 +34,6 @@ class SupportedGameActions extends ImmutableL<GameAction> {
     new CounterOffer(),
     new AcceptOffer()
   ]);
-}
-/** Generalized interface for data needed on all actions */
-interface GameActionData extends JsonObject {
-  String type;
-  int id;
-  int userId;
-  int gameId;
-  int playerId;
 }
 /** Abstract conveniece implementation for a GameAction */
 class AbstractGameAction implements GameAction {
@@ -64,6 +68,9 @@ class AbstractGameAction implements GameAction {
 
   User get user() => _user;
   set user(User u) {
+    if (u != null) {
+
+    }
     _user = u;
     userId = u.id;
   }
@@ -119,31 +126,6 @@ class AbstractGameAction implements GameAction {
 
   // Testable
   test() {}
-}
-interface SayGameData extends GameActionData {
-  String message;
-}
-/** Chat while playing the game */
-class SayGame extends AbstractGameAction {
-  String message;
-
-  SayGame();
-  SayGame.data(JsonObject json): super.data(json) {
-    SayGameData data = json;
-    message = data.message;
-  }
-  perform(Game game) {
-    game.chats.add(this); // just add it to the chat history of the game
-  }
-  bool allowedGamePhase(GamePhase gp) => true; // chatting is always allowed
-  bool allowedTurnPhase(TurnPhase tp) => true;
-  String toText() => "${user.name}: ${message}";
-  // Jsonable
-  JsonObject get data() {
-    SayGameData data = super.data;
-    data.message = message;
-    return data;
-  }
 }
 interface StartGameData extends GameActionData {
   GameData newGame;

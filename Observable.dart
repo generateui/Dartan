@@ -13,22 +13,30 @@ typedef void PropertyChanged<T>(T oldValue, T newValue);
 
 /* Now if I could just...
 
-class ListenableList<T> implements List<T>, Testable {
-  List<T> _internal;
-  bool _fireIndividualItems = true;
+  class ListenableList<T> implements List<T>, Testable {
+    List<T> _internal;
+    bool _fireIndividualItems = true;
 
-  on Changed changed; // fired on *Removed, *Inserted, *Added
 
-  somewhere else...
-  someListenableList.on.changed((T t) {
-    print(t);
-  });
+
+                   past-tense event instance
+                   ↓
+
+    on Added added; // added.fire( { ... } );
+
+                        // default: lazy instance by VM
+
+    // calling event
+    var newItem = new Item();
+    added.fire(newItem);
+
+    somewhere else...
+    someListenableList.on.changed((T t) {
+      print(t);
+    });
+  }
 
 */
-
-//class ListenerList extends {
-//  add
-//}
 
 class SupportedListenableLists extends ImmutableL<ListenableList> {
   SupportedListenableLists() : super([new ListenableList<String>()]);
@@ -38,10 +46,6 @@ interface Observable {
   void onSetted(String property, PropertyChanged handler);
   void offSetted(String property, PropertyChanged handler);
 }
-
-////interface ObservableList<T> {
-////  void onAdded(Added
-//}
 
 /** Helper for Observable implementors */
 class ObservableHelper {

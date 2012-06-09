@@ -1,6 +1,7 @@
 interface LobbyAction extends Action {
   update(Lobby lobby);
-  prepare(Lobby lobby);
+  prepareLobby(Lobby lobby);
+  performAtLobbyServer(Lobby lobby);
 }
 class SupportedLobbyActions extends ImmutableL<LobbyAction> {
   SupportedLobbyActions() : super([
@@ -8,6 +9,7 @@ class SupportedLobbyActions extends ImmutableL<LobbyAction> {
     new JoinLobby(),
     new NewGame(),
     new JoinLobby(),
+    new JoinGame(),
     new LeaveLobby()
   ]);
 }
@@ -38,15 +40,19 @@ class AbstractLobbyAction implements LobbyAction {
   bool get isLobby() => true;
   bool get isTrade() => false;
 
-  prepare(Lobby lobby) {
+  prepareLobby(Lobby lobby) {
     user = byId(userId, lobby.users);
+  }
+  performAtLobbyServer(Lobby lobby) {
   }
   update(Lobby lobby) { }
 
   User get user() => _user;
   set user(User u) {
     _user = u;
-    userId = u.id;
+    if (u != null) {
+      userId = u.id;
+    }
   }
 
   // Hashable
@@ -72,31 +78,6 @@ class AbstractLobbyAction implements LobbyAction {
     return data;
   }
 }
-interface SayLobbyData extends LobbyActionData {
-  int id;
-  String type;
-  String performedTime;
-  int userId;
-  String message;
-}
-class SayLobby extends AbstractLobbyAction {
-  String message;
-  SayLobby() {
-  }
-  SayLobby.data(SayLobbyData json) : super.data(json) {
-    SayLobbyData data = json;
-    message = data.message;
-  }
-  update(Lobby lobby) {
-    lobby.chats.add(this);
-  }
-  JsonObject get data() {
-    SayLobbyData data = super.data;
-    data.message = message;
-    return data;
-  }
-  String toText() => "${user.name}: ${message}";
-}
 interface JoinLobbyData extends LobbyActionData {
   UserData user;
 }
@@ -106,9 +87,9 @@ class JoinLobby extends AbstractLobbyAction {
   JoinLobby();
   JoinLobby.data(JsonObject json) : super.data(json) {
     JoinLobbyData data = json;
-    user = new User.data(data.user);
+    user = data.user == null ? user : new User.data(data.user);
   }
-  prepare(Lobby lobby) {
+  prepareLobby(Lobby lobby) {
     /* explicit empty */
   }
   update(Lobby lobby) {
@@ -120,75 +101,92 @@ class JoinLobby extends AbstractLobbyAction {
     return data;
   }
 
+  JoinLobby copy([JsonObject data]) => data == null ?
+      new JoinLobby() : new JoinLobby.data(data);
   String toText() => "${user.name} joins";
 }
 /** A user left the lobby */
 class LeaveLobby extends AbstractLobbyAction {
 
+  LeaveLobby();
+  LeaveLobby.data(JsonObject data) : super.data(data);
+
   update(Lobby lobby) {
     lobby.users.remove(user);
   }
+  LeaveLobby copy([JsonObject data]) => data == null ?
+      new LeaveLobby() : new LeaveLobby.data(data);
   String toText() => "${user.name} left";
 }
 interface LeaveLobbyData extends LobbyActionData{
 }
+interface NewGameData extends LobbyActionData {
+  GameData game;
+}
 /** A user starts a new game */
 class NewGame extends AbstractLobbyAction {
-  String name;
-  String boardName;
   Game game;
-  GameData createdGame;
 
   NewGame();
   NewGame.data(JsonObject json) : super.data(json) {
     NewGameData data = json;
-    name = data.name;
-    boardName = data.boardName;
-    //createdGame = data.createdGame;
+    game = fromData(data.game);
   }
-  prepare(Lobby lobby) {
-    super.prepare(lobby);
+  prepareLobby(Lobby lobby) {
+    super.prepareLobby(lobby);
   }
   update(Lobby lobby) {
     lobby.games.add(game);
   }
-  void performServer(ServerGame serverGame) {
-    game = new Game.data(createdGame);
-    //Board board = new Board.name(boardName);
-//    board.make(serverGame.random);
-//    game.board = board;
+  performAtLobbyServer(Lobby lobby) {
+    if (game == null) {
+      game = new Game();
+      game.board = new Standard4p();
+      game.name = "waitwhat?";
+    }
     game.host = user;
     game.users.add(user);
+    lobby.identify(game);
   }
   String toText() => "${user.name} created a new game: ${game.name}";
   JsonObject get data() {
     NewGameData data = super.data;
-    //data.createdGame = createdGame;
+    data.game = nullOrDataFrom(game);
     return data;
   }
+  NewGame copy([JsonObject data])  => data == null ?
+      new NewGame() : new NewGame.data(data);
 }
-interface NewGameData extends LobbyActionData {
-  String type;
-  int id;
-  int userId;
-  String name;
-  String boardName;
-  GameData createdGame;
+interface JoinGameData extends JsonObject {
+  int gameId;
 }
 class JoinGame extends AbstractLobbyAction {
   int gameId;
-  Game _game;
-  prepare(Lobby lobby) {
-    _game = byId(gameId, lobby.games);
+  Game game;
+  JoinGame();
+  JoinGame.data(JsonObject json) : super.data(json){
+    JoinGameData data = json;
+    gameId = data.gameId;
+  }
+  prepareLobby(Lobby lobby) {
+    super.prepareLobby(lobby);
+    game = byId(gameId, lobby.games);
   }
   update(Lobby lobby) {
-    _game.users.add(user);
+    game.users.add(user);
   }
+  JsonObject get data() {
+    JoinGameData data = super.data;
+    data.gameId = game== null ? null : game.id;
+    return data;
+  }
+  JoinGame copy([JsonObject data])  => data == null ?
+      new JoinGame() : new JoinGame.data(data);
 }
 class SpectateGame extends AbstractLobbyAction {
   int gameId;
   Game _game;
-  prepare(Lobby lobby) {
+  prepareLobby(Lobby lobby) {
     _game = byId(gameId, lobby.games);
   }
   update(Lobby lobby) {

@@ -1,11 +1,12 @@
 /** A wrapped game instance with additional info like a
 developmentcard stack, dice, basically anything that needs
 randomization */
-class ServerGame {
+class ServerGame implements IdProvider {
   Game game; // Wrapped game
   List<DevelopmentCard> developmentCards; // Development cards in randomized order
   Random random; // Abstracted randomization generator
   Dice dice;
+  int _consecutiveId = 100;
   List<User> users;
   _init() {
     random = new ClientRandom();
@@ -16,6 +17,9 @@ class ServerGame {
   ServerGame(this.game) {
     _init();
   }
+  performServer(GameAction action) {
+    action.performServer(this);
+  }
   void perform(GameAction action) {
     action.performServer(this); // prepare the action
     action.performedTime = new Date.now();
@@ -25,8 +29,6 @@ class ServerGame {
     // Set appropriate user
     if (action.isServer) {
       action.user = Game.serverUser;
-    } else {
-      action.user = byId(action.userId, users);
     }
     action.prepare(game);
     // Set appropriate player if this action is performed in a game
@@ -34,19 +36,10 @@ class ServerGame {
       //action.player = game.players.filter((Player p) => p.id == action.playerId).iterator().next();
     //}
   }
-  void broadcast(Action action) {
+  prepareDevelopmentCards() {
 
   }
-  void toUser(Action a, User u) {
-
-  }
-  void login(User user) {
-    users.add(user);
-  }
-  sendError(User user) {
-
-  }
-  void prepareDevelopmentCards() {
-
+  identify(Identifyable withId) {
+    withId.id = _consecutiveId++;
   }
 }

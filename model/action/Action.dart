@@ -3,8 +3,7 @@
     -When sending via server, action is wrapped in a [ViaServer] action
     -When server initiates something, action si wrapped in a [ServerAction]  */
 interface Action
-  extends Hashable, Copyable, Identifyable, Testable, Jsonable
-  default ActionFactory {
+  extends Hashable, Copyable, Identifyable, Testable, Jsonable  {
 
   User user;
   int userId;
@@ -16,22 +15,14 @@ interface Action
   bool get isLobby();
   bool get isTrade();
 
-  Action.name(String name, JsonObject json);
-
   toText();
 }
-class ActionFactory {
-  static Map<String, Action> _actions;
-  factory Action.name(String name, JsonObject json) {
-    if (_actions.containsKey(name)) {
-      Action action = _actions[name];
-//      action.setJson(json);
-      return action.copy();
-    }
-  }
+interface ActionData extends JsonObject {
+  int userId;
+  String performedTime;
 }
 class SupportedActions extends ImmutableL {
-  SupportedActions() : super([new AbstractGameAction(), new SayGame()]);
+  SupportedActions() : super([new AbstractGameAction(), new Say()]);
 }
 /** Abstract convenience implementation of an [Action] */
 class AbstractAction implements Action {
@@ -40,12 +31,16 @@ class AbstractAction implements Action {
   int userId;
   Date performedTime;
 
-  /** Flags */
   bool get isServer() => this is ServerAction;
   bool get isGame() => this is GameAction;
   bool get isLobby() => this is LobbyAction;
   bool get isTrade() => false;
-
+  AbstractAction();
+  AbstractAction.data(JsonObject json) {
+    ActionData data = json;
+    userId = data.userId;
+    // performedTime = data.performedTime
+  }
   toText() => "AbstractAction";
   Action copy([JsonObject data]) => new AbstractAction();
   test() { }
@@ -54,7 +49,79 @@ class AbstractAction implements Action {
       id = Dartan.generateHashCode(this);
     return id;
   }
-  JsonObject get data() { throw new NotImplementedException(); }
+  JsonObject get data() {
+
+  }
+}
+interface ConnectData extends ActionData {
+  UserData connectedUser;
+}
+class Connect extends AbstractGameAction {
+  User connectedUser;
+
+  Connect();
+  Connect.data(JsonObject json) : super.data(json) {
+    ConnectData data = json;
+    connectedUser = new Jsonable.data(data.connectedUser);
+  }
+}
+interface SayData extends GameActionData {
+  String message;
+  bool isLobby;
+}
+/** Either a Lobby or Game chat */
+class Say
+  extends AbstractGameAction
+  implements LobbyAction, GameAction {
+
+  bool _isLobby = false;
+  String message;
+
+  bool get isServer() => false;
+  bool get isGame() => gameId != null;
+  bool get isLobby() => _isLobby;
+  bool get isTrade() => false;
+  bool isValid() => true;
+  bool allowedTurnPhase(TurnPhase tp) => true;
+  bool allowedGamePhase(GamePhase gp) => true;
+
+  Say();
+  Say.game(Game game) { gameId = game.id; }
+  Say.lobby() { _isLobby = true; }
+  Say.data(SayData json) : super.data(json) {
+    SayData data = json;
+    message = data.message;
+    _isLobby = data.isLobby;
+  }
+
+  // Lobbyaction
+  prepareLobby(Lobby lobby) {
+    if (isLobby) {
+      user = byId(userId, lobby.users);
+    }
+  }
+  performAtLobbyServer(lobby) {}
+  update(Lobby lobby) {
+    lobby.chats.add(this);
+  }
+  // GameAction
+  prepare(Game game) {
+    if (isGame) {
+      super.prepare(game); // AbstractGameAction
+    }
+  }
+  perform(Game game) {
+    game.chats.add(this);
+  }
+  // Jsonable
+  JsonObject get data() {
+    SayData data = super.data;
+    data.message = message;
+    data.isLobby = isLobby;
+    return data;
+  }
+  Say copy([JsonObject data]) => data ==  null ? new Say() : new Say.data(data);
+  String toText() => "${user.name}: ${message}";
 }
 /** An wrapped action from the client to the server */
 class ClientAction extends AbstractAction {
