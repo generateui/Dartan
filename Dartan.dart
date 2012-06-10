@@ -98,10 +98,31 @@ GUID.
 */
 interface Identifyable {
   int get id();
-  set id(int i);
+  set id(int id); // Throw IdAlreadySetException?
 }
 interface IdProvider {
   identify(Identifyable withId);
+}
+class IdProviderImpl implements IdProvider {
+  int current = 0;
+  bool increment = false;
+  bool isRandom = false;
+  Random random;
+  IdProviderImpl.increment() {
+    increment = true;
+  }
+  IdProviderImpl.random(Random r) {
+    random = r;
+  }
+  identify(Identifyable withId) {
+    if (increment) {
+      withId.id = current++;
+    } else if (isRandom) {
+      withId.id = (Math.random()* 10000000).toInt();
+    } else if(false) { // ?
+      // ??
+    }
+  }
 }
 /** Allow classes to be (de)serialized from/to json */
 interface Jsonable

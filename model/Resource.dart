@@ -1,3 +1,5 @@
+/** Any hand card resource a hexagon tile may produce during
+DiceRoll GamePhase */
 interface Resource extends Hashable, Identifyable, Testable, Copyable, Jsonable {
   bool get isTradeable();
   set id(int id);
@@ -10,8 +12,12 @@ interface ResourceData extends JsonObject {
 }
 class SupportedResources extends ImmutableL<Resource> {
   SupportedResources() : super([
-    new AbstractResource(), new Wheat(), new Timber(),
-    new Clay(), new Ore(), new Sheep()
+    new AbstractResource(),
+    new Wheat(),
+    new Timber(),
+    new Clay(),
+    new Ore(),
+    new Sheep()
   ]);
 }
 class AbstractResource implements Resource {
@@ -48,6 +54,7 @@ class AbstractResource implements Resource {
 class Timber extends AbstractResource {
   String get color() => "green";
   bool get isTradeable() => true;
+
   Timber([int id]): super(id);
   Timber.data(JsonObject data) : super.data(data);
   Timber copy([JsonObject data]) => data ==null ? new Timber() : new Timber.data(data);
@@ -55,6 +62,7 @@ class Timber extends AbstractResource {
 class Wheat extends AbstractResource {
   String get color() => "gold";
   bool get isTradeable() => true;
+
   Wheat([int id]): super(id);
   Wheat.data(JsonObject data) : super.data(data);
   Wheat copy([JsonObject data]) => data ==null ? new Wheat() : new Wheat.data(data);

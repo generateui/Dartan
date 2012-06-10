@@ -1,7 +1,11 @@
 /** Any user or server initiated action
     -When sending from client, action is wrapped in a [ClientAction]
     -When sending via server, action is wrapped in a [ViaServer] action
-    -When server initiates something, action si wrapped in a [ServerAction]  */
+    -When server initiates something, action si wrapped in a [ServerAction]
+
+    Actions are async. Within a session,
+
+    */
 interface Action
   extends Hashable, Copyable, Identifyable, Testable, Jsonable  {
 
@@ -18,6 +22,8 @@ interface Action
   toText();
 }
 interface ActionData extends JsonObject {
+  String type;
+  int id;
   int userId;
   String performedTime;
 }
@@ -35,23 +41,34 @@ class AbstractAction implements Action {
   bool get isGame() => this is GameAction;
   bool get isLobby() => this is LobbyAction;
   bool get isTrade() => false;
+
+  // Jsonable
   AbstractAction();
   AbstractAction.data(JsonObject json) {
     ActionData data = json;
     userId = data.userId;
-    // performedTime = data.performedTime
+    if (data.performedTime != null) {
+      performedTime = new Date.fromString(data.performedTime);
+    }
   }
-  toText() => "AbstractAction";
+  JsonObject get data()  {
+    ActionData data = new JsonObject();
+    data.id = id;
+    if (data.performedTime != null) {
+      data.performedTime = performedTime.toString();
+    }
+    return data;
+  }
   Action copy([JsonObject data]) => new AbstractAction();
-  test() { }
+
+  toText() => "AbstractAction id:${id}";
+
   int hashCode() {
     if (id==null)
       id = Dartan.generateHashCode(this);
     return id;
   }
-  JsonObject get data() {
-
-  }
+  test() { }
 }
 interface ConnectData extends ActionData {
   UserData connectedUser;

@@ -1,31 +1,31 @@
 /** User interaction with a board */
 interface BoardState {
   BoardVisual boardVisual; // The [BoardVisual] to interact with
-  
+
   start(); // set begin state
   end();   // set back to neutral state
-  
+
   mouseOver(Visual visual);
   mouseOut(Visual visual);
   click(Visual visual);
 }
 /** Abstract convenience implementation for [BoardState] implementors */
-class AbstractBoardState implements BoardState {  
+class AbstractBoardState implements BoardState {
   BoardVisual boardVisual;
   start() { }
-  end() { } 
+  end() { }
   mouseOver(Visual visual) { }
   mouseOut(Visual visual) { }
   click(Visual visual) { }
 }
 class NoState extends AbstractBoardState {
-  NoState();  
+  NoState();
 }
 class SelectOnHover extends AbstractBoardState {
-  mouseOver(Visual visual) { 
-    visual.select(); 
+  mouseOver(Visual visual) {
+    visual.select();
     boardVisual.currentVisual = visual;
-  } 
+  }
   mouseOut(Visual visual) { visual.deSelect(); }
 }
 /** Change a selected tile on a board */
@@ -73,14 +73,14 @@ class PickTown extends AbstractBoardState {
     if (secondTownOrCity) {
       _possibleVertices = boardVisual.board.secondTownPossibilities();
     }
-    if (!firstTown && !secondTownOrCity) { 
+    if (!firstTown && !secondTownOrCity) {
       _possibleVertices = boardVisual.board.townPossibilities();
     }
     boardVisual.showVertices(_possibleVertices);
   }
   end() {
     boardVisual.hideAllVertices();
-  } 
+  }
   mouseOver(Visual visual) {
     if (visual is VerticeVisual) {
       boardVisual.currentVisual = visual;
@@ -92,10 +92,10 @@ class PickTown extends AbstractBoardState {
       visual.deSelect();
     }
   }
-  click(Visual visual) { 
-    if (visual is VerticeVisual) { // should be only 
+  click(Visual visual) {
+    if (visual is VerticeVisual) { // should be only
       // Yey! user picked a town spot
-      // Spawn a new BuildTown command? 
+      // Spawn a new BuildTown command?
     }
   }
 }

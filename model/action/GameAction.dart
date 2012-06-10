@@ -1,8 +1,9 @@
 /** Any action performed in a game */
 interface GameAction extends Action {
   int gameId;
-  Player player;
   int playerId;
+
+  Player player;
   TurnPhase turnPhase;
   GamePhase gamePhase;
 
@@ -11,7 +12,7 @@ interface GameAction extends Action {
   void performServer(ServerGame serverGame); // prepare this
   void perform(Game game); // Mutate the game instance
 
-  bool isValid();
+  bool isValid(); // true when provided data makes sense
   bool allowedTurnPhase(TurnPhase turnPhase);
   bool allowedGamePhase(GamePhase gamePhase);
 }
@@ -173,6 +174,11 @@ class RollDice extends AbstractGameAction {
     RollDiceData data = json;
     rolledDice = data.rolledDice == null ? null : new DiceRoll.data(data.rolledDice);
   }
+  JsonObject get data() {
+    RollDiceData data = super.data;
+    data.rolledDice = nullOrDataFrom(rolledDice);
+    return data;
+  }
 
   perform(Game game) {
     if (game.currentGamePhase.isDetermineFirstPlayer) {
@@ -189,12 +195,6 @@ class RollDice extends AbstractGameAction {
   performServer(ServerGame serverGame) {
     super.performServer(serverGame);
     rolledDice = serverGame.dice.roll();
-  }
-  // Jsonable
-  JsonObject get data() {
-    RollDiceData data = super.data;
-    data.rolledDice = nullOrDataFrom(rolledDice);
-    return data;
   }
   // Copyable
   RollDice copy([JsonObject data]) =>

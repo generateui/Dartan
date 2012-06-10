@@ -1,16 +1,12 @@
 /** A simple class would work here, but the approach to have a defined
 implementation for a concept eventually creates an API */
 interface Chit
-  extends Hashable, Copyable, Testable, Identifyable, Jsonable
-  default ChitImpl {
+  extends Hashable, Copyable, Testable, Identifyable, Jsonable  {
 
   set id(int id);
   int get number();
   int get chance();
   bool get isRed(); // True on the best numbers
-  Chit.number(int n);
-  Chit.type(String type);
-  Chit.data(JsonObject data);
   bool equals(other);
 }
 class SupportedChits extends ImmutableL {
@@ -77,12 +73,6 @@ class ChitImpl extends AbstractChit {
   bool get isRandom() => _isRandom;
 
   ChitImpl();
-  factory ChitImpl.type(String type) => new Jsonable.type(type);
-  factory ChitImpl.data(JsonObject json) {
-    ChitData d = json;
-    Chit c = new Chit.type(d.type);
-    return c.copy(json);
-  }
   ChitImpl.number(int n) {
     List isOk = numbers.filter((e) => e == n);
     if (isOk.isEmpty()) {
@@ -93,13 +83,20 @@ class ChitImpl extends AbstractChit {
       _setChance();
     }
   }
+  ChitImpl.data(JsonObject json) {
+    ChitData d = json;
+    _number = d.number;
+    _isRandom = d.isRandom;
+    id = d.id;
+  }
+  Chit copy([JsonObject data]) => data == null ?
+      new ChitImpl() : new ChitImpl.data(data);
 
   _setChance() {
     int i = numbers.indexOf(_number);
     _chance = chances[i];
   }
-  Chit copy([JsonObject data]) => data == null ?
-       new ChitImpl() : new ChitImpl.data(data);
+
 }
 /** Design-time placeholder for a chit to be randomly exchanged for another
 at game initialization-time */

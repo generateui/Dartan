@@ -5,11 +5,11 @@ interface Tile
   int territoryId;
   String get color();
   Cell get cell();
-  set cell(Cell c);
+  set cell(Cell c); // this should be one-time mutable
 
-  bool get canBuildOnLand();
-  bool get canBuildOnSea();
-  bool get isPartOfGame();
+  bool get canBuildOnLand(); // town, road
+  bool get canBuildOnSea();  // ship, bridge
+  bool get isPartOfGame();   // NoneTile
   bool get isRobberPlaceable();
   bool get isPiratePlaceable();
   bool get producesResource();
