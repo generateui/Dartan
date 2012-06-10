@@ -6,6 +6,7 @@ interface LobbyAction extends Action {
 class SupportedLobbyActions extends ImmutableL<LobbyAction> {
   SupportedLobbyActions() : super([
     new AbstractLobbyAction(),
+    new SpectateGame(),
     new JoinLobby(),
     new NewGame(),
     new JoinLobby(),
@@ -183,14 +184,32 @@ class JoinGame extends AbstractLobbyAction {
   JoinGame copy([JsonObject data])  => data == null ?
       new JoinGame() : new JoinGame.data(data);
 }
-class SpectateGame extends AbstractLobbyAction {
+interface SpectateGameData extends LobbyActionData {
   int gameId;
-  Game _game;
+}
+class SpectateGame extends AbstractLobbyAction {
+  int _gameId;
+  Game game;
+
+  SpectateGame();
+  SpectateGame.data(JsonObject json) : super.data(json) {
+    SpectateGameData data = json;
+    _gameId = data.gameId;
+  }
+  JsonObject get data() {
+    SpectateGameData data = super.data;
+    data.gameId = game == null ? null : game.id;
+    return data;
+  }
+  SpectateGame copy([JsonObject data])  => data == null ?
+      new SpectateGame() : new SpectateGame.data(data);
   prepareLobby(Lobby lobby) {
-    _game = byId(gameId, lobby.games);
+    super.prepareLobby(lobby);
+    game = byId(_gameId, lobby.games);
   }
   update(Lobby lobby) {
-    _game.spectators.add(user);
+    game.spectators.add(user);
+    game.users.add(user);
   }
 }
 /** The host changed the settings in the lobby */

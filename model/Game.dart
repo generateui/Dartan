@@ -10,6 +10,7 @@ interface GameData extends JsonObject {
   int id;
 
   List users;
+  List spectators;
   List players;
   List bank;
   List actions;
@@ -84,6 +85,9 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
     GameData data = json;
     id = data.id;
     users = llFrom(data.users);
+    host = data.hostUserId != null && hasId(data.hostUserId, users) ?
+        byId(data.hostUserId, users) : null;
+    spectators = llFrom(data.spectators);
     //if (data.hostUserId != null) {_setHost(data.hostUserId); }
 //    phases = data.phases == null ? null : new AllPhases.data(data.phases);
     status = new Playing();
@@ -171,6 +175,8 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
     data.id = id;
     data.type = Dartan.name(this);
     data.name = name;
+    data.hostUserId = host == null ? null : host.id;
+    data.spectators = nullOrDataListFrom(spectators);
     //data.startedDateTime = startedDateTime; DATETIME/conversion
 
 //    data.actions =  nullOrDataListFrom(actions);

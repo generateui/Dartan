@@ -88,6 +88,8 @@ class GameTest implements ScriptedGameTest {
 
   GameClient gameClient;
   LocalServer server;
+  Game gameAtServer;
+  Game gameAtClient;
 
   User user1, user2, user3;
   User spectator;
@@ -146,6 +148,8 @@ class GameTest implements ScriptedGameTest {
     chatABitMore();
     openNewGame();
     joinNewGame();
+    joinAnotherPlayer();
+    joinSpectator();
     /* TODO
     joinAndLeavePlayerInLobby();
     makeNewGame();
@@ -165,13 +169,11 @@ class GameTest implements ScriptedGameTest {
       spectatorJoin.id = nextId();
       expectClientLobby.hasUser(spectator);
       expectClientLobby.hasUserAmount(1);
-      expectClientLobby.hasAction(spectatorJoin);
-      expectClientLobby.hasActionAmount(1);
+      expectClientLobby.actionIsPlayed(1, spectatorJoin);
 
       expectServerLobby.hasUser(spectator);
       expectServerLobby.hasUserAmount(1);
-      expectServerLobby.hasAction(spectatorJoin);
-      expectServerLobby.hasActionAmount(1);
+      expectServerLobby.actionIsPlayed(1, spectatorJoin);
   });}
   joinPlayer12InLobby() {  acts.add(() {
       JoinLobby join = new JoinLobby();
@@ -183,12 +185,16 @@ class GameTest implements ScriptedGameTest {
 
       join.id = nextId();
       join2.id = nextId();
-      expectServer.hasUser(player1.user);
-      expectServer.hasUser(player2.user);
-      expectServer.hasUserAmount(3);
-      expectServer.hasAction(join);
-      expectServer.hasAction(join2);
-      expectServer.hasActionAmount(3);
+
+      expectClientLobby.hasUser(player1.user);
+      expectClientLobby.hasUser(player2.user);
+      expectClientLobby.hasUserAmount(3);
+      expectClientLobby.actionsArePlayed(currentActionId, [join, join2]);
+
+      expectServerLobby.hasUser(player1.user);
+      expectServerLobby.hasUser(player2.user);
+      expectServerLobby.hasUserAmount(3);
+      expectServerLobby.actionsArePlayed(currentActionId, [join, join2]);
   });}
   joinAndLeavePlayerInLobby() {  acts.add(() {
       JoinLobby leaverJoin = new JoinLobby();
@@ -267,8 +273,25 @@ class GameTest implements ScriptedGameTest {
     ExpectGame expectGame = new ExpectGame(game);
 
     newGame.id = nextId();
-    expectServer.hasAction(newGame);
-    expectServer.hasActionAmount(11);
+
+    gameAtClient = gameClient.lobby.games[0];
+    gameAtServer = server.lobby.games[0];
+
+    expectClientGame = new ExpectGame(gameAtClient);
+    expectServerGame = new ExpectGame(gameAtServer);
+
+    Expect.isFalse(gameAtServer.id == null,
+        "Expected gama at server to have an id");
+    Expect.isTrue(gameAtClient.id == gameAtServer.id,
+        "Expected both games having equal id");
+
+    expectServerGame.hasUser(user1);
+    expectServerGame.hasHost(user1);
+    expectServerLobby.actionIsPlayed(11, newGame);
+
+    expectClientGame.hasUser(user1);
+    expectClientGame.hasHost(user1);
+    expectClientLobby.actionIsPlayed(11, newGame);
 
     Expect.isFalse(gameClient.lobby.games.isEmpty(), "empty list of games in client-lobby");
     Expect.isFalse(server.lobby.games.isEmpty(), "empty list of games in server-lobby");
@@ -277,15 +300,11 @@ class GameTest implements ScriptedGameTest {
   joinNewGame() { acts.add(() {
     JoinGame joinGame1 = new JoinGame();
     joinGame1.user = player2.user;
-    Game gameAtServer = server.lobby.games[0];
-    Game gameAtClient = gameClient.lobby.games[0];
-    joinGame1.game = server.lobby.games[0];
+    joinGame1.game = gameAtClient;
+    print(gameAtClient.id);
     gameClient.send(joinGame1);
 
     joinGame1.id = nextId();
-
-    expectClientGame = new ExpectGame(gameAtClient);
-    expectServerGame = new ExpectGame(gameAtServer);
 
     expectClientGame.hasUser(player2.user);
     expectClientGame.hasUserAmount(2);
@@ -294,7 +313,38 @@ class GameTest implements ScriptedGameTest {
     expectServer.hasAction(joinGame1);
     expectServer.hasActionAmount(12);
   }); }
+  joinAnotherPlayer() { acts.add(() {
+    JoinGame joinGame2 = new JoinGame();
+    joinGame2.user = user3;
+    joinGame2.game = gameAtClient;
+    gameClient.send(joinGame2);
 
+    joinGame2.id = nextId();
+
+    expectClientGame.hasUser(player3.user);
+    expectClientGame.hasUserAmount(3);
+    expectServerGame.hasUser(player3.user);
+    expectServerGame.hasUserAmount(3);
+
+    expectServerLobby.actionIsPlayed(13, joinGame2);
+    expectClientLobby.actionIsPlayed(13, joinGame2);
+  });}
+  joinSpectator() { acts.add(() {
+    SpectateGame spectateGame = new SpectateGame();
+    spectateGame.user = spectator;
+    spectateGame.game = gameAtClient;
+    gameClient.send(spectateGame);
+
+    spectateGame.id = nextId();
+
+    expectClientGame.hasUser(spectator);
+    expectClientGame.hasUserAmount(4);
+    expectServerGame.hasUser(spectator);
+    expectServerGame.hasUserAmount(4);
+
+    expectServerLobby.actionIsPlayed(14, spectateGame);
+    expectClientLobby.actionIsPlayed(14, spectateGame);
+  }); }
 /*  CP template:
 
     methodName() { acts.add(() {
@@ -304,21 +354,10 @@ class GameTest implements ScriptedGameTest {
     TODO:
 
     // Join another player
-    JoinGame joinGame2 = new JoinGame();
-    joinGame2.userId = player3.user.id;
-    joinGame2.gameId = game.id;
-    server.send(joinGame1);
 
-    expectGame.hasUser(player3.user);
-    expectGame.hasUserAmount(3);
 
     // ... And join the observer
-    SpectateGame spectateGame = new SpectateGame();
-    spectateGame.userId = spectator.id;
-    server.send(spectateGame);
 
-    expectGame.hasSpectator(spectator);
-    expectGame.hasSpectatorAmount(1);
 
     MaximumCardsInHandWhenSeven maxCardsInhand = new MaximumCardsInHandWhenSeven();
     maxCardsInhand.maxCards = 10;
@@ -431,7 +470,7 @@ class ExpectGame {
   hasHost(User host) {
     Expect.isNotNull(host);
     Expect.isNotNull(game.host, "Host of game is null, expected instance");
-    Expect.isTrue(game.host == host,
+    Expect.isTrue(game.host.equals(host),
         "Expected ${host.name} to be the host instead ${game.host.name} found as host");
   }
   hasSpectator(User spectator) {
@@ -448,6 +487,17 @@ class ExpectLobby {
   Lobby lobby;
   ExpectLobby(this.lobby);
 
+  actionIsPlayed(int withThisId, Action action) {
+    hasAction(action);
+    hasActionAmount(withThisId);
+  }
+
+  actionsArePlayed(int totalActionsPlayed, List<Action> actions) {
+    for (Action action in actions) {
+      hasAction(action);
+    }
+    hasActionAmount(totalActionsPlayed);
+  }
   hasUser(User user) {
     Expect.isNotNull(byId(user.id, lobby.users),
       "Expected ${user.name} in the lobby");

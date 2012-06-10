@@ -76,7 +76,8 @@ class Cell implements Hashable, Testable, Jsonable, Copyable, Identifyable {
     before = before == -1 ? 5 : before;
     List<Vertice> result = new List<Vertice>.from([
       new Vertice(this, cells[direction], cells[before]),
-      new Vertice(this, cells[direction], cells[after])]);
+      new Vertice(this, cells[direction], cells[after])
+    ]);
     return result;
   }
   // Copyable
