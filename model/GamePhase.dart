@@ -65,6 +65,7 @@ class LobbyPhase extends AbstractGamePhase {
   LobbyPhase.data(JsonObject json) : super.data(json) {
     LobbyPhaseData data = json;
     /* TODO: set users using IDs from game instance */
+    readyUsers = new ListenableList<User>();
   }
   LobbyPhase() : super() {
     readyUsers = new ListenableList<User>();

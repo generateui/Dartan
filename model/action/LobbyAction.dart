@@ -12,6 +12,7 @@ class SupportedLobbyActions extends ImmutableL<LobbyAction> {
     new JoinLobby(),
     new JoinGame(),
     new LeaveLobby(),
+    new LeaveGame(),
     new ChangeSettings()
   ]);
 }
@@ -268,6 +269,9 @@ class ReadyToStart extends AbstractLobbyAction {
     game.phases.lobby.readyUsers.add(user);
   }
 }
+interface LeaveGameData extends LobbyActionData {
+  int gameId;
+}
 /** A user leaves a game
 TODO: implement for both in the game and in the lobby */
 class LeaveGame extends AbstractLobbyAction {
@@ -275,9 +279,17 @@ class LeaveGame extends AbstractLobbyAction {
   Game game;
 
   LeaveGame();
-  LeaveGame.data(JsonObject data) : super.data(data);
+  LeaveGame.data(JsonObject json) : super.data(json) {
+    LeaveGameData data = json;
+    _gameId = data.gameId;
+  }
   LeaveGame copy([JsonObject data])  => data == null ?
-      new LeaveGame() : new LeaveGame.data(data);
+  new LeaveGame() : new LeaveGame.data(data);
+  JsonObject get data() {
+    LeaveGameData data = super.data;
+    data.gameId = game == null ? null : game.id;
+    return data;
+  }
 
   prepareLobby(Lobby lobby) {
     super.prepareLobby(lobby);
@@ -285,7 +297,8 @@ class LeaveGame extends AbstractLobbyAction {
   }
   update(Lobby lobby) {
     if (game.phases.isLobby) {
-      lobby.users.remove(user);
+      game.users.remove(user);
+      game.spectators.remove(user);
     }
   }
   String toText() => "${user.name} left the game [${game.name}]";

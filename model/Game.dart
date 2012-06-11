@@ -97,7 +97,7 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
         byId(data.hostUserId, users) : null;
     spectators = llFrom(data.spectators);
     //if (data.hostUserId != null) {_setHost(data.hostUserId); }
-//    phases = data.phases == null ? null : new AllPhases.data(data.phases);
+    phases = data.phases == null ? new AllPhases() : new AllPhases.data(data.phases);
     status = new Playing();
 //    turns = new ListenableList<Turn>.from(data.turns);
     players = new PlayerListMu();
@@ -198,7 +198,7 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
 //
 //    //data.status = status == null ? null : status.data;
 //    data.board = nullOrDataFrom(board);
-//    data.phases = nullOrDataFrom(phases);
+    data.phases = nullOrDataFrom(phases);
 //    data.currentGamePhaseId = currentGamePhase == null ? null : currentGamePhase.id;
 //    data.currentTurnPhaseId = currentTurnPhase == null ? null : currentTurnPhase.id;
 //    data.robber = nullOrDataFrom(robber);

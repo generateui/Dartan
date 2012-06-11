@@ -81,6 +81,8 @@ class GameTest implements ScriptedGameTest {
     joinAnotherPlayer();
     joinSpectator();
     changeSettings();
+    leaveGame();
+    spectateGameBack();
 
     /* TODO
     setPlayersReadyToPlay();
@@ -385,6 +387,34 @@ class GameTest implements ScriptedGameTest {
       "Expectsed equal settings");
     Expect.isTrue(gameAtServer.settings.equals(newSettings),
       "Expected equal settings");
+    expectServerLobby.actionIsPlayed(15, changeSettingz);
+    expectClientLobby.actionIsPlayed(15, changeSettingz);
+  }); }
+  leaveGame() { acts.add((){
+    var leave = new LeaveGame();
+    leave.user = spectator;
+    leave.game = gameAtClient;
+    gameClient.send(leave);
+
+    leave.id = nextId();
+
+    expectServerGame.hasUserAmount(3);
+    expectServerGame.hasSpectatorAmount(0);
+    expectServerLobby.actionIsPlayed(16, leave);
+    expectClientLobby.actionIsPlayed(16, leave);
+  }); }
+  spectateGameBack() { acts.add(() {
+    SpectateGame spectate2 = new SpectateGame();
+    spectate2.user = spectator;
+    spectate2.game = gameAtClient;
+    gameClient.send(spectate2);
+
+    spectate2.id = nextId();
+
+    expectServerGame.hasUser(spectator);
+    expectServerGame.hasSpectatorAmount(1);
+    expectServerLobby.actionIsPlayed(17, spectate2);
+    expectClientLobby.actionIsPlayed(17, spectate2);
   }); }
 /*  CP template:
 
