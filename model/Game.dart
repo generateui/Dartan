@@ -3,11 +3,12 @@ class SupportedGames extends ImmutableL<Game> {
 }
 interface GameData extends JsonObject {
   String type;
-  String startedDateTime;
-  int hostUserId;
-  BoardData board;
-  String name;
   int id;
+  int hostUserId;
+  String name;
+  String startedDateTime;
+
+  BoardData board;
 
   List users;
   List spectators;
@@ -59,7 +60,7 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
   LargestArmy largestArmy;
 
   AllPhases phases;
-  GameSettings settings;
+  GameSettings _settings;
   GamePhase /* on */ currentGamePhase;
   TurnPhase /* on */ currentTurnPhase;
   GameStatus /* on */ status;
@@ -67,6 +68,13 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
 
   bool get atClient() => true;  // True when executing at client
   bool get atServer() => false; // True when at Server
+
+  GameSettings get /* on */ settings() => _settings;
+  set /* on */ settings(GameSettings s) {
+    GameSettings old = _settings;
+    _settings = s;
+    observable.fire("settings", old, s);
+  }
 
   _init() { // init to default settings
     observable = new ObservableHelper();
@@ -200,6 +208,58 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
   }
   bool equals(other) => other.id==id;
   test() {
+    JsonObject jso;
+    jso = new JsonObject.fromMap({
+      "type": "Game",
+      "id": 1,
+      "hostUserId": 1,
+      "name": "yeygame",
+      "currentGamePhaseId": 1,
+      "currentTurnPhaseId": null,
+      "currentTurnId": null,
+      "users": [
+        { "id": 1, "type": "User", "name": "Hendrik" }
+      ],
+      "spectators": [
+        { "id": 2, "type": "User", "name": "kijker" }
+      ],
+      "players": [
+        { "id": 1, "userId": 1, "type": "Player" }
+      ],
+      "actions": [
+        {"type": "Say", "isLobby": true, "userId": 1, "id": 1}
+      ],
+      "chats": [
+        {"type": "Say", "isLobby": true, "userId": 1, "id": 1}
+      ],
+      "developmentCards": [
+        { "id": "1", "type": "Kinght", "playerId": 1 },
+        { "id": "2", "type": "VictoryPoint", "bonusName": "Market", "playerId": 1 }
+      ],
+      "turns": [],
+      "phases": {
+        "type": "AllGamePhases",
+        "currentId": 1, // DetermineFirstPlayer
+        "lobbyPhase": { "id": 10, "type": "LobbyPhase" },
+        "determinFirstPlayer": { "id": 11, "type": "DetermineFirstPlayerGamePhase" },
+        "initialPlacement": { "id": 12, "type": "InitialPlacementGamePhase" },
+        "turns": { "id": 13, "type": "TurnsGamePhase" },
+        "ended": { "id": 14, "type": "EndedGamePhase" }
+      },
+      "robber": { "id": 20, "cell": { "row": 0, "column": 0, "type": "Cell" } },
+      "longestRoad": { "id": 21, "edgesOfRoute": [] },
+      "largestArmy": { "id": 22, "playerId": 1, "knights": [] }
+    });
+
+    Game fromPlainJson = new Jsonable.data(jso);
+    Game check = new Game();
+    User u = new User(1, "Hendrik", "");
+    Player p = new Player(u);
+    check.users.add(u);
+    check.players.add(p);
+    check.name = "yeygame";
+    check.id = 1;
+    Expect.isTrue(check.equals(fromPlainJson), "Equal game instances");
     new GameTest().test();
   }
 

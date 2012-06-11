@@ -55,19 +55,9 @@ interface ScriptedGameTest {
 }
 
 /** Scripted play of a game where states after performing actions is
-    checked against a set of expectations
+    checked against a set of expectations.
 
     This script tests both the state at the server and that of the client.
-
-    Pseudo code for this script:
-    Create a server
-    Create a game
-    Join 3 players
-    Chat
-    Start game
-    Determine first player (host)
-    Setup 6 towns
-    Roll predictable dices
 
     Let one player win using all commands
     -trading
@@ -78,6 +68,52 @@ interface ScriptedGameTest {
     -win game
 */
 class GameTest implements ScriptedGameTest {
+  // Actual script. Placed on top of class (before var declr) for better readflow.
+  performScript() {
+    joinSpectatorInLobby();
+    joinPlayer12InLobby();
+    joinAndLeavePlayerInLobby();
+    joinPlayer3InLobby();
+    chatSomething();
+    chatABitMore();
+    openNewGame();
+    joinNewGame();
+    joinAnotherPlayer();
+    joinSpectator();
+
+    /* TODO
+    setPlayersReadyToPlay();
+    changeGameSettings();
+    againSetPlayersReadyToPlay();
+    startGame();
+    rollDice x3
+    switch player
+    place town-road x4
+    place town-road x4 backwards
+
+    // Actual gameplay
+    build towns, cities
+    buy devs
+    build roads
+    trade
+    play devs
+    get road
+    loose road to circular road
+    get road back
+    get army
+    loose army
+    get army back
+    get 19+ resources
+    roll 7
+    get port, trade bank
+
+
+    rollDice
+
+    */
+  }
+
+
   List<Function> acts;
 
   /// Direct references to ingame objects
@@ -139,27 +175,7 @@ class GameTest implements ScriptedGameTest {
     expectClientLobby = new ExpectLobby(gameClient.lobby);
     expectServerLobby = new ExpectLobby(server.lobby);
 
-    /// Actual script
-    joinSpectatorInLobby();
-    joinPlayer12InLobby();
-    joinAndLeavePlayerInLobby();
-    joinPlayer3InLobby();
-    chatSomething();
-    chatABitMore();
-    openNewGame();
-    joinNewGame();
-    joinAnotherPlayer();
-    joinSpectator();
-    /* TODO
-    joinAndLeavePlayerInLobby();
-    makeNewGame();
-    joinPlayer2InGame();
-    joinPlayer3InGame();
-    joinSpectatorInGame();
-    changeGameSettings();
-    setPlayersReadyToPlay();
-    startGame();
-    */
+    performScript();
   }
   joinSpectatorInLobby() { acts.add(() {   // Compact DSL syntax!
       JoinLobby spectatorJoin = new JoinLobby();
@@ -200,11 +216,14 @@ class GameTest implements ScriptedGameTest {
       JoinLobby leaverJoin = new JoinLobby();
       leaverJoin.user = leaver.user;
       gameClient.send(leaverJoin);
+
       LeaveLobby leave = new LeaveLobby();
       leave.user = leaver.user;
       gameClient.send(leave);
 
       leaverJoin.id = nextId();
+
+
       leave.id = nextId();;
       //expectLobby.hasNotUser(leaverUser);
       expectServer.hasNotUser(leaverUser);
@@ -226,17 +245,19 @@ class GameTest implements ScriptedGameTest {
       expectServer.hasActionAmount(6);
     });
   }
-  chatSomething() { acts.add(() {
-    Say say = new Say.lobby();
-    say.message = "Merp. gotta get another player";
-    say.user = player1.user;
-    gameClient.send(say);
+  chatSomething() {
+    acts.add(() {
+      Say say = new Say.lobby();
+      say.message = "Merp. gotta get another player";
+      say.user = player1.user;
+      gameClient.send(say);
 
-    say.id = nextId();
+      say.id = nextId();
 
-    expectServer.hasAction(say);
-    expectServer.hasActionAmount(7);
-  });}
+      expectServer.hasAction(say);
+      expectServer.hasActionAmount(7);
+    });
+  }
   chatABitMore() { acts.add(() {
     Say say = new Say.lobby();
     say.message = "Loei. Moei, koei!";
@@ -349,7 +370,7 @@ class GameTest implements ScriptedGameTest {
 
     methodName() { acts.add(() {
 
-    });
+    }); }
 
     TODO:
 

@@ -158,6 +158,7 @@ class NewGame extends AbstractLobbyAction {
   NewGame copy([JsonObject data])  => data == null ?
       new NewGame() : new NewGame.data(data);
 }
+
 interface JoinGameData extends JsonObject {
   int gameId;
 }
@@ -184,6 +185,7 @@ class JoinGame extends AbstractLobbyAction {
   JoinGame copy([JsonObject data])  => data == null ?
       new JoinGame() : new JoinGame.data(data);
 }
+
 interface SpectateGameData extends LobbyActionData {
   int gameId;
 }
@@ -203,6 +205,7 @@ class SpectateGame extends AbstractLobbyAction {
   }
   SpectateGame copy([JsonObject data])  => data == null ?
       new SpectateGame() : new SpectateGame.data(data);
+
   prepareLobby(Lobby lobby) {
     super.prepareLobby(lobby);
     game = byId(_gameId, lobby.games);
@@ -212,17 +215,42 @@ class SpectateGame extends AbstractLobbyAction {
     game.users.add(user);
   }
 }
+interface ChangeSettingsData extends LobbyActionData {
+  List settings;
+  int gameId;
+}
 /** The host changed the settings in the lobby */
 class ChangeSettings extends AbstractLobbyAction {
-  int gameId;
-  Game _game;
+  int _gameId;
+  Game game;
   List<GameSetting> settings;
+
+  ChangeSettings();
+  ChangeSettings.data(JsonObject json) : super.data(json) {
+    ChangeSettingsData data = json;
+    settings = listFrom(data.settings);
+    _gameId = data.gameId;
+  }
+  JsonObject get data() {
+    ChangeSettingsData data = super.data;
+    data.gameId = game == null ? null : game.id;
+    data.settings = nullOrDataListFrom(settings);
+    return data;
+  }
   update(Lobby lobby) {
     for (GameSetting setting in settings) {
-      setting.setSetting(_game.settings);
+      setting.setSetting(game.settings);
     }
-    _game.phases.lobby.unreadyAllExceptHost(_game.host);
+    game.phases.lobby.unreadyAllExceptHost(game.host);
 
+  }
+
+  ChangeSettings copy([JsonObject data])  => data == null ?
+      new ChangeSettings() : new ChangeSettings.data(data);
+
+  prepareLobby(Lobby lobby) {
+    super.prepareLobby(lobby);
+    game = byId(_gameId, lobby.games);
   }
 }
 /** A user signals he is ready to start the game */

@@ -29,7 +29,10 @@ class SupportedGameActions extends ImmutableL<GameAction> {
     new AbstractGameAction(),
     new RollDice(),
     new StartGame(),
-    new TradeBank(), // Trading
+
+    // Trading
+    new TradeBank(),
+    new Trade(),
     new TradeOffer(),
     new RejectOffer(),
     new CounterOffer(),
@@ -104,7 +107,7 @@ class AbstractGameAction implements GameAction {
   perform(Game game) { }
   performServer(ServerGame serverGame) { }
 
-  toText() => "[${id}, ${Dartan.name(this)}, ${user.name}]";
+  String toText() => "[${id}, ${Dartan.name(this)}, ${user.name}]";
   // Hashable
   int hashCode() {
     if (id==null)
@@ -157,6 +160,10 @@ class StartGame extends AbstractGameAction {
     data.newGame = nullOrDataFrom(newGame);
     return data;
   }
+  // Copyable
+  StartGame copy([JsonObject data]) =>
+      data == null ? new StartGame() : new StartGame.data(data);
+
   String toText() => "${user.name} started game ${newGame.name}";
 }
 interface RollDiceData extends GameActionData {

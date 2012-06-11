@@ -1,13 +1,16 @@
 /** A simple class would work here, but the approach to have a defined
 implementation for a concept eventually creates an API */
 interface Chit
-  extends Hashable, Copyable, Testable, Identifyable, Jsonable  {
+  extends Hashable, Copyable, Testable, Identifyable, Jsonable
+  default ChitImpl {
 
   set id(int id);
   int get number();
   int get chance();
   bool get isRed(); // True on the best numbers
   bool equals(other);
+  Chit.number(int number); // 2,3,4,5,6, 8,9,10,11,12
+  Chit.random();
 }
 class SupportedChits extends ImmutableL {
   SupportedChits() : super([new AbstractChit(),
@@ -88,6 +91,16 @@ class ChitImpl extends AbstractChit {
     _number = d.number;
     _isRandom = d.isRandom;
     id = d.id;
+  }
+  ChitImpl.random() {
+    _isRandom = true;
+  }
+  JsonObject get data() {
+    ChitData data = super.data;
+    data.isRandom = _isRandom;
+    data.number = _number;
+    _setChance();
+    return data;
   }
   Chit copy([JsonObject data]) => data == null ?
       new ChitImpl() : new ChitImpl.data(data);

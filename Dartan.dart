@@ -108,19 +108,23 @@ class IdProviderImpl implements IdProvider {
   bool increment = false;
   bool isRandom = false;
   Random random;
+
   IdProviderImpl.increment() {
     increment = true;
   }
   IdProviderImpl.random(Random r) {
+    isRandom = true;
     random = r;
   }
   identify(Identifyable withId) {
-    if (increment) {
-      withId.id = current++;
-    } else if (isRandom) {
-      withId.id = (Math.random()* 10000000).toInt();
-    } else if(false) { // ?
-      // ??
+    if (withId != null) {
+      if (increment) {
+        withId.id = current++;
+      } else if (isRandom) {
+        withId.id = (Math.random()* 10000000).toInt();
+      } else if(false) { // ?
+        // ??
+      }
     }
   }
 }

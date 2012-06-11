@@ -10,7 +10,9 @@ interface DevelopmentCard
   Turn turnPlayed;
 }
 class SupportedDevelopmentCards extends ImmutableL<DevelopmentCard> {
-  SupportedDevelopmentCards() : super([new AbstractDevelopmentCard(), new VictoryPoint(),
+  SupportedDevelopmentCards() : super([
+    new AbstractDevelopmentCard(),
+    new VictoryPoint(),
     new DummyDevelopmentCard()]);
 }
 interface DevelopmentCardData extends JsonObject {
@@ -98,9 +100,14 @@ class Invention extends AbstractDevelopmentCard {
 interface VictoryPointData extends DevelopmentCardData {
   String bonusName;
 }
-class VictoryPoint extends AbstractDevelopmentCard {
+class VictoryPoint extends AbstractDevelopmentCard implements VictoryPointItem {
+  static List<String> bonuses = const["Market", "University", "Town Hall"];
   String bonusName; // University, etc..
+
   VictoryPoint([int id, this.bonusName]): super(id);
+  VictoryPoint.market() : bonusName = bonuses[0];
+  VictoryPoint.university() : bonusName = bonuses[1];
+  VictoryPoint.townHall() : bonusName = bonuses[2];
   VictoryPoint.data(JsonObject json) : super.data(json) {
     VictoryPointData data = json;
     bonusName = data.bonusName;
@@ -112,6 +119,7 @@ class VictoryPoint extends AbstractDevelopmentCard {
   }
   bool get summoningSickness() => false;
   bool get onePerTurn() => false;
+  int get points() => 1;
   DevelopmentCard copy([JsonObject data]) => data == null ?
       new VictoryPoint() : new VictoryPoint.data(data);
 }

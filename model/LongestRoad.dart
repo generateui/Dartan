@@ -1,4 +1,5 @@
 interface LongestRoadData extends JsonObject {
+  String type;
   int playerId;
   List edgesOfRoute;
 }

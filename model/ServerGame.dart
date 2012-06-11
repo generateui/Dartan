@@ -3,20 +3,21 @@ developmentcard stack, dice, basically anything that needs
 randomization */
 class ServerGame implements IdProvider {
   Game game; // Wrapped game
-  List<DevelopmentCard> developmentCards; // Development cards in randomized order
   Random random; // Abstracted randomization generator
   Dice dice;
+  List<DevelopmentCard> developmentCards; // Development cards in randomized order
+  IdProvider pieceIdentifier;
+  //IdProvider pieceIdentifier;
   int _consecutiveId = 100;
   List<User> users;
-  _init() {
+
+  ServerGame(this.game) {
     random = new ClientRandom();
     dice = new RandomDice(random);
     users = new List<User>();
     developmentCards = new List<DevelopmentCard>();
   }
-  ServerGame(this.game) {
-    _init();
-  }
+
   performServer(GameAction action) {
     action.performServer(this);
   }
@@ -35,6 +36,20 @@ class ServerGame implements IdProvider {
     //if (action.isGame) {
       //action.player = game.players.filter((Player p) => p.id == action.playerId).iterator().next();
     //}
+  }
+  identifyAllPieces() {
+    for (Tile tile in game.board.tiles) {
+      pieceIdentifier.identify(tile);
+      if (tile.hasPort) {
+        pieceIdentifier.identify(tile.port);
+      }
+      if (tile.hasChit) {
+        pieceIdentifier.identify(tile.port);
+      }
+      if (tile.hasTerritory) {
+
+      }
+    }
   }
   prepareDevelopmentCards() {
 

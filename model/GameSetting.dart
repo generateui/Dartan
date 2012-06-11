@@ -1,86 +1,47 @@
-/** A setting represented as an object */
-interface GameSetting extends Observable {
-  bool isEnabled;
-  setSetting(GameSettings settings);
+interface GameSettingsData extends JsonObject {
+  String type;
+  bool withRobber = true;
+  int maxCardsOn7 = 7;
+  int maxTradesInTurn = 3;
+  int playerAmount = 3;
 }
-class SupportedSettings extends ImmutableL<GameSetting> {
-  SupportedSettings() : super([new WithRobber(), new MaximumCardsInHandWhenSeven(),
-    new MaximumTradesPerTurn()]);
-}
-
 /** All the possible settings of a game */
 class GameSettings {
-  WithRobber withRobber;
-  MaximumCardsInHandWhenSeven maximumCardsInHandWhenSeven;
-  MaximumTradesPerTurn maximumTradesPerTurn;
-  GameSettings() {
-    withRobber = new WithRobber();
-    maximumCardsInHandWhenSeven = new MaximumCardsInHandWhenSeven();
-    maximumTradesPerTurn = new MaximumTradesPerTurn();
+  bool withRobber = true; // use the robber in the game?
+  int maxCardsOn7 = 7;    // Max handcards to stay unaffected by robber 7 roll
+
+  /* Default should be copied from board setting.
+  Board are designed for _one_ amount of players, not a range.
+  This should get better game by having more tailored board designs */
+  int maxTradesInTurn = 3;
+
+  GameSettings();
+  GameSettings.data(JsonObject json) {
+    GameSettingsData data = json;
+
+    withRobber = data.withRobber;
+    maxCardsOn7 = data.maxCardsOn7;
+    maxTradesInTurn = data.maxTradesInTurn;
+    playerAmount = data.playerAmount;
   }
-}
-/** Abstract convenenience implementation of a Setting */
-class AbstractGameSetting implements GameSetting {
-  ObservableHelper observable;
-  bool _isEnabled;
-  bool get isEnabled() => _isEnabled;
-  set isEnabled(bool enabled) {
-    if (enabled != _isEnabled) {
-      bool oldEnabled = _isEnabled;
-      _isEnabled = enabled;
-      observable.fire("isEnabled", oldEnabled, enabled);
-    }
+  JsonObject get data() {
+    GameSettingsData data = new JsonObject();
+    data.type = Dartan.name(this);
+    data.withRobber = withRobber;
+    data.maxCardsOn7 = maxCardsOn7;
+    data.maxTradesInTurn = maxTradesInTurn;
+    data.playerAmount = playerAmount;
+    return data;
   }
-  AbstractGameSetting() : observable = new ObservableHelper();
-  // Observable
-  void onSetted(String property, PropertyChanged handler) {
-    observable.addListener(property, handler);
-  }
-  void offSetted(String property, PropertyChanged handler) {
-    observable.removeListener(property, handler);
-  }
-  setSetting(GameSettings settings) { /* empty */ }
-}
-/** The game will use the robber as playing item */
-class WithRobber extends AbstractGameSetting {
-  WithRobber() : super() {
-    _isEnabled = true;
-  }
-  setSetting(GameSettings settings) => settings.withRobber = this;
-}
-/** When 7 rolls, this amount of cards is allowed in the hand of a player */
-class MaximumCardsInHandWhenSeven extends AbstractGameSetting {
-  MaximumCardsInHandWhenSeven() : super() {
-    _isEnabled = true;
-  }
-  int _maxCards = 7;
-  int get maxCards() => _maxCards;
-  set maxCards(int newAmount) {
-    if (_maxCards != newAmount) {
-      int old = _maxCards;
-      _maxCards = newAmount;
-      observable.fire("maxCards", old, _maxCards);
-    }
-  }
-  setSettings(GameSettings settings) {
-    settings.maximumCardsInHandWhenSeven.maxCards = maxCards;
-  }
-}
-/** When not present, there is no maximum amount of trades per turn */
-class MaximumTradesPerTurn extends AbstractGameSetting {
-  MaximumTradesPerTurn() : super() {
-    _isEnabled = true;
-  }
-  int _maxTrades = 3;
-  int get maxTrades() => _maxTrades;
-  set maxTrades(int newAmount) {
-    if (_maxTrades != newAmount) {
-      int old = _maxTrades;
-      _maxTrades = newAmount;
-      observable.fire("maxTrades", old, newAmount);
-    }
-  }
-  setSettings(GameSettings settings) {
-    settings.maximumTradesPerTurn.maxTrades = maxTrades;
-  }
+  // Copyable
+  GameSettings copy([JsonObject data]) => data == null ?
+      new GameSettings() : new GameSettings.data(data);
+  // Testable
+  test() {}
+  String toText() => "Game Settings";
+
+  bool equals(other) =>
+      withRobber == other.withRobber &&
+      maxCardsOn7 == other.maxCardsOn7 &&
+      maxTradesInTurn == other.maxTradesInTurn;
 }

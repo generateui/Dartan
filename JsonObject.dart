@@ -87,6 +87,8 @@ class JsonObject extends Object implements Map {
       var property = function_name.replaceFirst("get:", "");
       if (this.containsKey(property)) {
         return this[property];
+      } else {
+        return null; // Return null
       }
     }
     else if (args.length == 1 && function_name.startsWith("set:")) {

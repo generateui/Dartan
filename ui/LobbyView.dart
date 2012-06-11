@@ -73,21 +73,61 @@ class LobbyView {
 }
 class GameListElement {
   Element element;
-  DivElement wrapper;
+ // DivElement wrapper;
   SpanElement nameEl;
+  IconList players, spectators;
+
   GameListElement(Game game) {
     element = new Element.tag("li");
-    wrapper = new Element.tag("div");
+    //wrapper = new Element.tag("div");
     nameEl = new Element.html("<span>${game.name}</span>");
-    Element amountUsersEl = new Element.tag("span");
-    amountUsersEl.innerHTML = game.users.length.toString();
-    nameEl.elements.add(amountUsersEl);
+    players = new IconList();
+    players.list = game.users;
+    spectators = new IconList.fixed("Spectator");
+    spectators.list = game.spectators;
 
     //nameEl = new Element.html("<span>${game.name}</span>");
-    wrapper.elements.add(nameEl);
-    element.elements.add(wrapper);
-    game.users.onAdded((User u) {
-      amountUsersEl.innerHTML = game.users.length.toString();
-    });
+    element.elements.add(nameEl);
+    //ement.elements.add(wrapper);
+    element.elements.add(players.element);
+    element.elements.add(spectators.element);
+  }
+}
+/** Display an icon for every item in the list */
+class IconList {
+  ListenableList _list;
+  String fixedIcon = null;
+  set list(ListenableList list) {
+    _list = list;
+    for (var i in list) {
+      addIcon(i);
+    }
+    list.onAdded(addIcon);
+    list.onRemoved(removeIcon);
+  }
+  Element element;
+  Map<Hashable, Element> elementsByObject;
+  IconList() {
+    element = new Element.tag("span");
+    elementsByObject = new Map();
+  }
+  IconList.fixed(String nameOfIcon) : this() {
+    fixedIcon = nameOfIcon;
+  }
+  addIcon(i) {
+    Element eli;
+    if (fixedIcon != null) {
+      eli = new Element.html("""<img src="img/icon16/${fixedIcon}.png"/>""");
+    } else {
+      eli = new Element.html(Dartan.smallIcon(i));
+    }
+    element.elements.add(eli);
+    elementsByObject[i] = eli;
+  }
+  removeIcon(i) {
+    Element e = elementsByObject[i];
+    if (e != null) {
+      e.remove();
+    }
   }
 }

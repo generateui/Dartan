@@ -33,10 +33,10 @@ class AllStatuses implements GameStatus {
   bool get isPlaying() => _current.isPlaying;
   int hashCode() =>  _current.hashCode();
   String get description() => _current.description;
-  AllStatuses();
-  AllStatuses.data(JsonObject json) {
 
-  }
+  AllStatuses();
+  AllStatuses.data(JsonObject json) { }
+
   AllStatuses copy([JsonObject data]) =>
       data == null ? new AllStatuses() : new AllStatuses.data(data);
   JsonObject get data() {
