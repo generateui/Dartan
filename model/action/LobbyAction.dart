@@ -11,7 +11,8 @@ class SupportedLobbyActions extends ImmutableL<LobbyAction> {
     new NewGame(),
     new JoinLobby(),
     new JoinGame(),
-    new LeaveLobby()
+    new LeaveLobby(),
+    new ChangeSettings()
   ]);
 }
 interface LobbyActionData extends JsonObject {
@@ -216,35 +217,27 @@ class SpectateGame extends AbstractLobbyAction {
   }
 }
 interface ChangeSettingsData extends LobbyActionData {
-  List settings;
+  GameSettingsData settings;
   int gameId;
 }
 /** The host changed the settings in the lobby */
 class ChangeSettings extends AbstractLobbyAction {
   int _gameId;
   Game game;
-  List<GameSetting> settings;
+  GameSettings settings;
 
   ChangeSettings();
   ChangeSettings.data(JsonObject json) : super.data(json) {
     ChangeSettingsData data = json;
-    settings = listFrom(data.settings);
+    settings = new GameSettings.data(data.settings);
     _gameId = data.gameId;
   }
   JsonObject get data() {
     ChangeSettingsData data = super.data;
     data.gameId = game == null ? null : game.id;
-    data.settings = nullOrDataListFrom(settings);
+    data.settings = nullOrDataFrom(settings);
     return data;
   }
-  update(Lobby lobby) {
-    for (GameSetting setting in settings) {
-      setting.setSetting(game.settings);
-    }
-    game.phases.lobby.unreadyAllExceptHost(game.host);
-
-  }
-
   ChangeSettings copy([JsonObject data])  => data == null ?
       new ChangeSettings() : new ChangeSettings.data(data);
 
@@ -252,16 +245,48 @@ class ChangeSettings extends AbstractLobbyAction {
     super.prepareLobby(lobby);
     game = byId(_gameId, lobby.games);
   }
+  update(Lobby lobby) {
+    game.settings = settings;
+    game.phases.lobby.unreadyAllExceptHost(game.host);
+  }
 }
 /** A user signals he is ready to start the game */
 class ReadyToStart extends AbstractLobbyAction {
-  int gameId;
-  Game _game;
+  int _gameId;
+  Game game;
+
+  ReadyToStart();
+  ReadyToStart.data(JsonObject data) : super.data(data);
+  ReadyToStart copy([JsonObject data])  => data == null ?
+      new ReadyToStart() : new ReadyToStart.data(data);
+
+  prepareLobby(Lobby lobby) {
+    super.prepareLobby(lobby);
+    game = byId(_gameId, lobby.games);
+  }
   update(Lobby lobby) {
-    _game.phases.lobby.readyUsers.add(user);
+    game.phases.lobby.readyUsers.add(user);
   }
 }
+/** A user leaves a game
+TODO: implement for both in the game and in the lobby */
 class LeaveGame extends AbstractLobbyAction {
-  int gameId;
-  Game _game;
+  int _gameId;
+  Game game;
+
+  LeaveGame();
+  LeaveGame.data(JsonObject data) : super.data(data);
+  LeaveGame copy([JsonObject data])  => data == null ?
+      new LeaveGame() : new LeaveGame.data(data);
+
+  prepareLobby(Lobby lobby) {
+    super.prepareLobby(lobby);
+    game = byId(_gameId, lobby.games);
+  }
+  update(Lobby lobby) {
+    if (game.phases.isLobby) {
+      lobby.users.remove(user);
+    }
+  }
+  String toText() => "${user.name} left the game [${game.name}]";
 }

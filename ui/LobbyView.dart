@@ -76,6 +76,7 @@ class GameListElement {
  // DivElement wrapper;
   SpanElement nameEl;
   IconList players, spectators;
+  GameSettingsIconSummary settingsIcons;
 
   GameListElement(Game game) {
     element = new Element.tag("li");
@@ -86,11 +87,47 @@ class GameListElement {
     spectators = new IconList.fixed("Spectator");
     spectators.list = game.spectators;
 
+    settingsIcons = new GameSettingsIconSummary();
+    game.onSetted("settings", (GameSettings old, GameSettings newSettings) {
+      settingsIcons.settings = newSettings;
+    });
+
     //nameEl = new Element.html("<span>${game.name}</span>");
     element.elements.add(nameEl);
     //ement.elements.add(wrapper);
     element.elements.add(players.element);
     element.elements.add(spectators.element);
+    element.elements.add(settingsIcons.element);
+  }
+}
+/** Displays a list of icons hinting the user settings info */
+class GameSettingsIconSummary {
+  Element withRobber;
+  Element maxCardsInHandOn7;
+  Element playerAmount;
+  Element maxTradesInTurn;
+  Element element;
+  GameSettings _settings;
+
+  GameSettingsIconSummary() {
+    Robber r = new Robber();
+    element = new Element.tag("span");
+    withRobber = new Element.html("<span>${Dartan.smallIcon(r)}</span>");
+    maxCardsInHandOn7 = new Element.html("<span class=settings></span>");
+    maxTradesInTurn = new Element.html("<span class=settings></span>");
+    playerAmount = new Element.html("<span class=settings></span>");
+    element.elements.add(withRobber);
+    element.elements.add(maxCardsInHandOn7);
+    element.elements.add(maxTradesInTurn);
+    element.elements.add(playerAmount);
+  }
+
+  set settings(GameSettings s) {
+    _settings=s;
+    withRobber.style.opacity = s.withRobber ? "1.0" : "0.5";
+    maxCardsInHandOn7.innerHTML = s.maxCardsOn7.toString();
+    maxTradesInTurn.innerHTML = s.maxTradesInTurn.toString();
+    playerAmount.innerHTML = s.playerAmount.toString();
   }
 }
 /** Display an icon for every item in the list */

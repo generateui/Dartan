@@ -80,6 +80,7 @@ class GameTest implements ScriptedGameTest {
     joinNewGame();
     joinAnotherPlayer();
     joinSpectator();
+    changeSettings();
 
     /* TODO
     setPlayersReadyToPlay();
@@ -366,11 +367,28 @@ class GameTest implements ScriptedGameTest {
     expectServerLobby.actionIsPlayed(14, spectateGame);
     expectClientLobby.actionIsPlayed(14, spectateGame);
   }); }
+  changeSettings() { acts.add(() {
+    var changeSettingz = new ChangeSettings();
+    changeSettingz.game = gameAtClient;
+    changeSettingz.user = user1;
+    var newSettings = new GameSettings();
+    newSettings.maxCardsOn7 = 10;
+    newSettings.maxTradesInTurn = 2;
+    newSettings.withRobber = true;
+    newSettings.playerAmount = 3;
+    changeSettingz.settings = newSettings;
+    gameClient.send(changeSettingz);
+
+    changeSettingz.id = nextId();
+
+    Expect.isTrue(gameAtClient.settings.equals(newSettings),
+      "Expectsed equal settings");
+    Expect.isTrue(gameAtServer.settings.equals(newSettings),
+      "Expected equal settings");
+  }); }
 /*  CP template:
 
-    methodName() { acts.add(() {
 
-    }); }
 
     TODO:
 

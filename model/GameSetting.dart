@@ -6,7 +6,7 @@ interface GameSettingsData extends JsonObject {
   int playerAmount = 3;
 }
 /** All the possible settings of a game */
-class GameSettings {
+class GameSettings implements Jsonable, Copyable {
   bool withRobber = true; // use the robber in the game?
   int maxCardsOn7 = 7;    // Max handcards to stay unaffected by robber 7 roll
 
@@ -14,6 +14,7 @@ class GameSettings {
   Board are designed for _one_ amount of players, not a range.
   This should get better game by having more tailored board designs */
   int maxTradesInTurn = 3;
+  int playerAmount;
 
   GameSettings();
   GameSettings.data(JsonObject json) {
@@ -43,5 +44,6 @@ class GameSettings {
   bool equals(other) =>
       withRobber == other.withRobber &&
       maxCardsOn7 == other.maxCardsOn7 &&
-      maxTradesInTurn == other.maxTradesInTurn;
+      maxTradesInTurn == other.maxTradesInTurn &&
+      playerAmount == other.playerAmount;
 }
