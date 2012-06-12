@@ -184,6 +184,26 @@ class Board
   Set<Vertice> townPossibilities() {
     return null;
   }
+  /** Compiles and returns a list with all ports used on this board */
+  List<Port> ports() {
+    List<Port> result = new List();
+    for (Tile t in _tilesByCell.getValues()) {
+      if (t.hasPort) {
+        result.add(t.port);
+      }
+    }
+    return result;
+  }
+  /** Compiles and returns a list of all chits on this board */
+  List<Chit> chits() {
+    List<Chit> result = new List();
+    for (Tile t in _tilesByCell.getValues()) {
+      if (t.hasChit) {
+        result.add(t.chit);
+      }
+    }
+    return result;
+  }
   /** True when threither vertice allows building landpieces on it */
   bool landBuildable(Vertice vertice) =>
       _tilesByCell[vertice.c1].canBuildOnLand ||
@@ -255,8 +275,10 @@ class Standard4p extends Board {
         const [1,  2,  3,  4],
           const [2,  3,  4]
   ];
-  static List<int> chits = const [2, 3, 3, 4, 4, 5, 5, 6, 6,
-                                  12,11,11,10,10,9, 9, 8, 8];
+  static List<int> chitNumbers = const [
+    2, 3, 3, 4, 4, 5, 5, 6, 6,
+    12,11,11,10,10,9, 9, 8, 8
+  ];
 
   static List<Chit> randomChits = [
     new Chit2(),

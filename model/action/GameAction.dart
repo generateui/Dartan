@@ -150,9 +150,47 @@ class StartGame extends AbstractGameAction {
     super.perform(game);
   }
   performServer(ServerGame serverGame) {
-    serverGame.prepareDevelopmentCards();
-    serverGame.game.startedDateTime = new Date.now();
+    // setup board
     serverGame.game.board.make(serverGame.random);
+    // identify
+    for (Port port in serverGame.game.board.ports()) {
+      serverGame.pieceIdentifier.identify(port);
+    }
+    for (Chit chit in serverGame.game.board.chits()) {
+      serverGame.pieceIdentifier.identify(chit);
+    }
+    // Fill bank with resources
+    GameSettings gs = serverGame.game.settings;
+    for (Resource r in gs.bankResourceTypes) {
+      for (int i = 0; i < gs.bankResourceAmount; i++) {
+        Resource newr = r.copy();
+        serverGame.pieceIdentifier.identify(newr);
+        serverGame.game.bank.add(newr);
+      }
+    }
+    // Give roads/cities/towns to players' stock
+    for (Player p in serverGame.game.players) {
+      for (int i=0; i< gs.stockRoads; i++) {
+        Road road = new Road();
+        serverGame.pieceIdentifier.identify(road);
+        p.stock.roads.add(road);
+      }
+      for (int i=0; i< gs.stockCities; i++) {
+        City city = new City();
+        serverGame.pieceIdentifier.identify(city);
+        p.stock.cities.add(city);
+      }
+      for (int i=0; i< gs.stockTowns; i++) {
+        Town town = new Town();
+        serverGame.pieceIdentifier.identify(town);
+        p.stock.towns.add(town);
+      }
+    }
+    // setup devcards
+    serverGame.prepareDevelopmentCards();
+
+    // record start
+    serverGame.game.startedDateTime = new Date.now();
   }
   // Jsonable
   JsonObject get data() {

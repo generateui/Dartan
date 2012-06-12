@@ -224,5 +224,5 @@ class PlayerListMu extends ListenableList<Player> {
     return this[index];
   }
   PlayerListMu();
-  PlayerListMu.from(Iterable<Player> players) : super.from(players);
+  PlayerListMu.from(List<Player> players) : super.from(players);
 }

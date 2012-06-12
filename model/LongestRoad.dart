@@ -10,13 +10,14 @@ class LongestRoad implements VictoryPointItem, PlayerPiece, Observable, Jsonable
   ObservableHelper observable;
   LongestRoute route;
   int get points() => 2;
-  LongestRoad.data(JsonObject json) {
+
+  LongestRoad() {
+    observable = new ObservableHelper();
+  }
+  LongestRoad.data(JsonObject json) : this() {
     LongestRoadData data = json;
     playerId = data.playerId;
     // TODO: longest route data edgesOfRoute
-  }
-  LongestRoad() {
-    observable = new ObservableHelper();
   }
   Player get /* on */ player() => _player;
   set /* on */ player(Player p) {
@@ -28,7 +29,9 @@ class LongestRoad implements VictoryPointItem, PlayerPiece, Observable, Jsonable
   }
   JsonObject get data() {
     LongestRoadData data = new JsonObject();
+    data.type = nameOf(this);
     data.playerId = playerId;
+    // TODO: longest route data
     return data;
   }
   addToPlayer(Player p) {

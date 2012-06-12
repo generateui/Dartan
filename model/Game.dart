@@ -101,7 +101,7 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
     phases = d.phases == null ? new AllPhases() : new AllPhases.data(d.phases);
     status = new Playing();
     _settings = fromData(d.settings);
-//    turns = new ListenableList<Turn>.from(data.turns);
+    turns = llFrom(d.turns);
     players = new PlayerListMu.from(listFrom(d.players));
     bank = new ResourceListMu();
     actions = new ListenableList<GameAction>();
@@ -125,17 +125,38 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
         chats.add(say);
       }
     }
-
+    if (longestRoad != null && longestRoad.playerId != null) { // LR
+      longestRoad.player = byId(longestRoad.playerId, players);
+    }
+    if (largestArmy != null && largestArmy.playerId != null) { // LA
+      largestArmy.player = byId(largestArmy.playerId, players);
+    }
   }
 
+  /** Sets everything into starting position */
   start() {
-    phases.next(this);
+    // setup robber
     if (settings.withRobber) {
       robber = new Robber();
     }
-  }
-  prepareDevelopmentCards() {
+    // setup longest road
+    if (true) { // TODO: add LR setting
+      longestRoad = new LongestRoad();
+    }
+    // setup army
+    if (true) { // TODO: add LA setting
+      largestArmy = new LargestArmy();
+    }
+    // setup phases
+    if (true)  {  // add game phases setting
+      // TODO: change to incremental phases where only
+      // LobbyPhase is default, and all the other
+      // instantiated based on settings/variant
+    }
+    // Set status to Playing
 
+    // Move from LobbyPhase to next
+    phases.next(this);
   }
 
   bool isSpectator(User user) => hasId(user.id, spectators);
@@ -144,6 +165,7 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
   bool hasPlayerId(int pid) => byId(pid, players) != null;
   bool hasUserId(int uid) => byId(uid, users) != null;
 
+  /** Get target player by given user, or null if no player found */
   Player playerByUser(User u) {
     List<Player> r = players.filter((p) => p.user.id == u.id);
     if (!r.isEmpty()) {
@@ -202,13 +224,13 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
     data.developmentCards = nullOrDataListFrom(developmentCards);
 //
 //    //data.status = status == null ? null : status.data;
-//    data.board = nullOrDataFrom(board);
+    data.board = nullOrDataFrom(board);
     data.phases = nullOrDataFrom(phases);
-//    data.currentGamePhaseId = currentGamePhase == null ? null : currentGamePhase.id;
-//    data.currentTurnPhaseId = currentTurnPhase == null ? null : currentTurnPhase.id;
-//    data.robber = nullOrDataFrom(robber);
-//    data.longestRoad = nullOrDataFrom(longestRoad);
-//    data.largestArmy = nullOrDataFrom(largestArmy);
+    data.currentGamePhaseId = currentGamePhase == null ? null : currentGamePhase.id;
+    data.currentTurnPhaseId = currentTurnPhase == null ? null : currentTurnPhase.id;
+    data.robber = nullOrDataFrom(robber);
+    data.longestRoad = nullOrDataFrom(longestRoad);
+    data.largestArmy = nullOrDataFrom(largestArmy);
     return data;
   }
   bool equals(other) => other.id==id;
