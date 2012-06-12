@@ -1,4 +1,15 @@
-/** Status of the game */
+/** Status of the game
+
+wait for user
+wait for turn action
+wait for queued
+  -RobPlayer (next)
+  -MoveRobber (next)
+  -PickGold (next / each player)
+  -Build Town (next)
+  -Build Road (next)
+  -Roll Dice (next:DetFirstPlayer); // not queued in normal game
+*/
 interface GameStatus extends Hashable, Testable, Identifyable, Jsonable, Copyable {
   bool get blocks();
   String get description();
@@ -54,7 +65,7 @@ class AllStatuses implements GameStatus {
 }
 class AbstractGameStatus implements GameStatus {
   int id;
-  bool get blocks() => false;
+  bool get blocks() => false; /** !!! Default non-blocking !!! */
   bool get waitsForPlayers() => false;
   bool get isPlaying() => true;
   String get description() => "Abstract GameStatus implementation";

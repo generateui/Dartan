@@ -1,19 +1,23 @@
 interface DevelopmentCard
   extends Identifyable, Hashable, Testable, Jsonable {
 
-  bool get onePerTurn();
-  bool get summoningSickness();
-  bool get keepInStock();
+  bool get onePerTurn(); // Is this devcard limited to play one per turn?
+  bool get summoningSickness(); // Wait one turn before able to play this card?
+  bool get keepInStock(); // After playing, move the card to stock?
   bool turnAllowed(TurnPhase turn);
   bool gameAllowed(GamePhase phase);
   Turn turnBought;
   Turn turnPlayed;
+  Player player;
 }
 class SupportedDevelopmentCards extends ImmutableL<DevelopmentCard> {
   SupportedDevelopmentCards() : super([
     new AbstractDevelopmentCard(),
     new VictoryPoint(),
-    new DummyDevelopmentCard()]);
+    new Knight(),
+    new Invention(),
+    new DummyDevelopmentCard()
+  ]);
 }
 interface DevelopmentCardData extends JsonObject {
   int id;
@@ -24,19 +28,19 @@ interface DevelopmentCardData extends JsonObject {
 }
 class AbstractDevelopmentCard implements DevelopmentCard {
   int id;
-  int playerId;
+  int _playerId;
   int turnBoughtId;
   int turnPlayedId;
 
   Turn turnPlayed;
   Turn turnBought;
-  Player _player;
+  Player player;
 
   AbstractDevelopmentCard([this.id]);
   AbstractDevelopmentCard.data(JsonObject json) {
     DevelopmentCardData data = json;
     id = data.id;
-    playerId = data.playerId == null ? null : data.playerId;
+    _playerId = data.playerId == null ? null : data.playerId;
     turnBoughtId = data.turnBoughtId;
     turnPlayedId = data.turnPlayedId;
   }
@@ -46,10 +50,6 @@ class AbstractDevelopmentCard implements DevelopmentCard {
   bool turnAllowed(TurnPhase turnPhase) => true;
   bool gameAllowed(GamePhase gamePhase) => true;
 
-  Player get player() => _player;
-  set player(Player p) {
-    _player = p;
-  }
   // Hashable
   int hashCode() {
     if (id == null) {
@@ -66,8 +66,8 @@ class AbstractDevelopmentCard implements DevelopmentCard {
     DevelopmentCardData data = new JsonObject();
     data.id=id;
     data.type = Dartan.name(this);
-    data.playerId = player == null ? playerId == null ?
-        null : playerId : player.id;
+    data.playerId = player == null ? _playerId == null ?
+        null : _playerId : player.id;
     data.turnBoughtId = turnBought == null ? turnBoughtId == null ?
         null : turnBoughtId : turnBought.id;
     data.turnPlayedId = turnPlayed == null ? turnPlayedId == null ?
@@ -102,7 +102,7 @@ interface VictoryPointData extends DevelopmentCardData {
 }
 class VictoryPoint extends AbstractDevelopmentCard implements VictoryPointItem {
   static List<String> bonuses = const["Market", "University", "Town Hall"];
-  String bonusName; // University, etc..
+  String bonusName;
 
   VictoryPoint([int id, this.bonusName]): super(id);
   VictoryPoint.market() : bonusName = bonuses[0];
@@ -117,11 +117,12 @@ class VictoryPoint extends AbstractDevelopmentCard implements VictoryPointItem {
     json.bonusName = bonusName;
     return json;
   }
+  DevelopmentCard copy([JsonObject data]) => data == null ?
+      new VictoryPoint() : new VictoryPoint.data(data);
+
   bool get summoningSickness() => false;
   bool get onePerTurn() => false;
   int get points() => 1;
-  DevelopmentCard copy([JsonObject data]) => data == null ?
-      new VictoryPoint() : new VictoryPoint.data(data);
 }
 /** Clientside placeholder for a devcard in the stack of devcards */
 class DummyDevelopmentCard extends AbstractDevelopmentCard {
@@ -129,9 +130,6 @@ class DummyDevelopmentCard extends AbstractDevelopmentCard {
   DummyDevelopmentCard.data(JsonObject json) : super.data(json);
   DummyDevelopmentCard copy([JsonObject data]) =>
       data == null ? new DummyDevelopmentCard() : new DummyDevelopmentCard.data(data);
-}
-interface KnightData extends DevelopmentCardData {
-  /* empty */
 }
 /** Move the robber, rob a player and build an army */
 class Knight extends AbstractDevelopmentCard {

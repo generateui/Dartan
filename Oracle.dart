@@ -28,7 +28,6 @@ class Oracle {
       }
     }
   }
-
   // TODO: add null checks
 
   /** From a concrete type string */
@@ -59,7 +58,7 @@ class Oracle {
   }
 
   // TODO: cleanup
-//  static newChitByType(String type) => instanceOf(type);
+  //static newChitByType(String type) => instanceOf(type);
   /** Creates new list with data objects from a list of jsonables */
   static List<JsonObject> toDataList(Iterable<Jsonable> jsonables) {
     List<JsonObject> result = new List<JsonObject>();
@@ -79,3 +78,4 @@ class Oracle {
     return instantiated;
   }
 }
+

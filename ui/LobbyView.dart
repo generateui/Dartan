@@ -130,6 +130,24 @@ class GameSettingsIconSummary {
     playerAmount.innerHTML = s.playerAmount.toString();
   }
 }
+class ActsView {
+  Element element;
+  Element latestText;
+  Map<int, Element> elementsByActIndex;
+  GameTester gameTester;
+  int index;
+
+  ActsView(this.gameTester) {
+    element = new Element.tag("div");
+    latestText = new Element.tag("label");
+    elementsByActIndex = new Map();
+    gameTester.onSetted("latest", (old, newF) {
+      latestText.text = "Act #${index} went okay";
+      index++;
+    });
+    element.elements.add(latestText);
+  }
+}
 /** Display an icon for every item in the list */
 class IconList {
   ListenableList _list;

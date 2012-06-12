@@ -244,6 +244,7 @@ class SupportedVariouss extends ImmutableL<Testable> {
 void main() {
   new Dartan();
 }
+
 bool valueEquals(Jsonable first, Jsonable second) {
   if (first != null && second != null) {
     return first.data.equals(second.data);

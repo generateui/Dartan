@@ -73,22 +73,9 @@ class Play extends View {
       ScriptedGameTest sgt = new GameTest();
       GameTester gt = new GameTester.manual(sgt);
       LobbyView lobbyView = new LobbyView(sgt.clientLobby);
+      ActsView actsView = new ActsView(gt);
+      div.elements.add(actsView.element);
       div.elements.add(lobbyView.toElement());
-
-//      User user = new ServerUser();
-//
-//      JoinLobby join = new JoinLobby();
-//      join.user = user;
-//      lobby.performAction(join);
-//
-//      SayLobby say = new SayLobby();
-//      say.message = "jeuj";
-//      say.user = user;
-//      lobby.performAction(say);
-//
-//      NewGame newGame = new NewGame();
-//      newGame.user=user;
-//      lobby.performAction(newGame);
 
       rendered = true;
     }

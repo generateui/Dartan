@@ -1,20 +1,25 @@
 interface GameSettingsData extends JsonObject {
   String type;
-  bool withRobber = true;
-  int maxCardsOn7 = 7;
-  int maxTradesInTurn = 3;
-  int playerAmount = 3;
+  bool withRobber;
+  int maxCardsOn7;
+  int maxTradesInTurn;
+  int playerAmount;
 }
 /** All the possible settings of a game */
 class GameSettings implements Jsonable, Copyable {
-  bool withRobber = true; // use the robber in the game?
-  int maxCardsOn7 = 7;    // Max handcards to stay unaffected by robber 7 roll
+  /** use the robber in the game? */
+  bool withRobber = true; //
 
-  /* Default should be copied from board setting.
+  /** Max handcards to stay unaffected by robber 7 roll */
+  int maxCardsOn7 = 7;    //
+
+  /** Default should be copied from board setting.
   Board are designed for _one_ amount of players, not a range.
   This should get better game by having more tailored board designs */
   int maxTradesInTurn = 3;
-  int playerAmount;
+
+  /** Amount of players allowed playing in this game */
+  int playerAmount = 3;
 
   GameSettings();
   GameSettings.data(JsonObject json) {

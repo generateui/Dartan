@@ -13,6 +13,7 @@ class SupportedDices extends ImmutableL<Dice> {
   ]);
 }
 interface DiceRollData extends JsonObject {
+  String type;
   int dice1;
   int dice2;
 }
@@ -43,6 +44,7 @@ class DiceRoll implements Jsonable {
     DiceRollData d = new JsonObject();
     d.dice1 = dice1;
     d.dice2 = dice2;
+    d.type = Dartan.name(this);
     return d;
   }
   // Copyable

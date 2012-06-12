@@ -53,6 +53,7 @@ class Road implements Piece, EdgePiece, PlayerPiece {
   bool get connectsWithRoad() => true;
   bool get connectsWithShip() => false;
   bool get connectsWithBridge() => true;
+
   Road();
   Road.data(JsonObject json) {
     RoadData data = json;
@@ -60,6 +61,17 @@ class Road implements Piece, EdgePiece, PlayerPiece {
     playerId = data.playerId;
     edge = fromData(data.edge);
   }
+  JsonObject get data() {
+    RoadData data = new JsonObject();
+    data.id = id;
+    data.type = Dartan.name(this);
+    data.edge = nullOrDataFrom(edge);
+    data.playerId = playerId;
+    return data;
+  }
+  Road copy([JsonObject data]) => data == null ?
+      new Road() : new Road.data(data);
+
   addToPlayer(Player p) {
     p.roads.add(this);
     p.stock.roads.remove(this);
@@ -69,17 +81,6 @@ class Road implements Piece, EdgePiece, PlayerPiece {
     p.roads.remove(this);
     p.stock.roads.add(this);
     p.edgePieces.remove(this);
-  }
-  // Copyable
-  Road copy([JsonObject data]) => data==null ? new Road() : new Road.data(data);
-  // Jsonable
-  JsonObject get data() {
-    RoadData data = new JsonObject();
-    data.id = id;
-    data.type = Dartan.name(this);
-    data.edge = nullOrDataFrom(edge);
-    data.playerId = playerId;
-    return data;
   }
   // Hashable
   int hashCode() {

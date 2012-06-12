@@ -1,7 +1,7 @@
 /** Takes a game, a list of acts (action with expectations after performing)
 and runs through all the acts consecutively. This can also be used for scripted
 game testing while watching. */
-class GameTester {
+class GameTester implements Observable {
   bool automated = true;
   int delayInMilliseconds = 250;
   bool optimistic = true;
@@ -10,14 +10,18 @@ class GameTester {
   int tested = 0;
   ScriptedGameTest _sgt;
   int timeHandle = 0;
+  ObservableHelper observable;
+  Function /* on */  latest;
 
   GameTester.manual(ScriptedGameTest sgt) {
+    observable = new ObservableHelper();
     automated = false;
     _sgt = sgt;
     it = _sgt.acts.iterator();
     timeHandle = window.setTimeout(executeNext, delayInMilliseconds);
   }
   GameTester.auto(ScriptedGameTest sgt) {
+    observable = new ObservableHelper();
     automated = true;
     _sgt = sgt;
     it = _sgt.acts.iterator();
@@ -31,6 +35,8 @@ class GameTester {
         f();
         print("OK: Performed act #${tested.toString()}.");
         timeHandle = window.setTimeout(executeNext, delayInMilliseconds);
+        Function old = latest;
+        observable.fire("latest", old, f);
       } catch(Exception ex) {
         if (!optimistic) {
           window.clearTimeout(timeHandle); //just schedule next
@@ -42,6 +48,13 @@ class GameTester {
       window.clearTimeout(timeHandle);
       print("That went better then expected: all ${tested} passed");
     }
+  }
+  // Observable
+  void onSetted(String property, PropertyChanged handler) {
+    observable.addListener(property, handler);
+  }
+  void offSetted(String property, PropertyChanged handler) {
+    observable.removeListener(property, handler);
   }
 }
 
@@ -70,12 +83,16 @@ interface ScriptedGameTest {
 class GameTest implements ScriptedGameTest {
   // Actual script. Placed on top of class (before var declr) for better readflow.
   performScript() {
+
+    // Join the lobby
     joinSpectatorInLobby();
     joinPlayer12InLobby();
     joinAndLeavePlayerInLobby();
     joinPlayer3InLobby();
     chatSomething();
     chatABitMore();
+
+    // New game in the lobby
     openNewGame();
     joinNewGame();
     joinAnotherPlayer();
@@ -83,10 +100,11 @@ class GameTest implements ScriptedGameTest {
     changeSettings();
     leaveGame();
     spectateGameBack();
+    setAllPlayersReadyToPlay();
+    changeSettingsAgain();
 
     /* TODO
     setPlayersReadyToPlay();
-    changeGameSettings();
     againSetPlayersReadyToPlay();
     startGame();
     rollDice x3
@@ -361,10 +379,10 @@ class GameTest implements ScriptedGameTest {
 
     spectateGame.id = nextId();
 
-    expectClientGame.hasUser(spectator);
-    expectClientGame.hasUserAmount(4);
-    expectServerGame.hasUser(spectator);
-    expectServerGame.hasUserAmount(4);
+    expectClientGame.hasSpectator(spectator);
+    expectClientGame.hasUserAmount(3);
+    expectServerGame.hasSpectator(spectator);
+    expectServerGame.hasUserAmount(3);
 
     expectServerLobby.actionIsPlayed(14, spectateGame);
     expectClientLobby.actionIsPlayed(14, spectateGame);
@@ -383,8 +401,10 @@ class GameTest implements ScriptedGameTest {
 
     changeSettingz.id = nextId();
 
+//    Expect.isTrue(hasId(user1.id, gameAtClient.phases.lobby.readyUsers),
+//      "Expected game to have the settings changer as having OKed the settings");
     Expect.isTrue(gameAtClient.settings.equals(newSettings),
-      "Expectsed equal settings");
+      "Expected equal settings");
     Expect.isTrue(gameAtServer.settings.equals(newSettings),
       "Expected equal settings");
     expectServerLobby.actionIsPlayed(15, changeSettingz);
@@ -411,10 +431,57 @@ class GameTest implements ScriptedGameTest {
 
     spectate2.id = nextId();
 
-    expectServerGame.hasUser(spectator);
+    expectServerGame.hasSpectator(spectator);
     expectServerGame.hasSpectatorAmount(1);
     expectServerLobby.actionIsPlayed(17, spectate2);
     expectClientLobby.actionIsPlayed(17, spectate2);
+  }); }
+  setAllPlayersReadyToPlay() { acts.add(() {
+    var ready1 = new ReadyToStart();
+    ready1.user = user1;
+    ready1.game = gameAtClient;
+    gameClient.send(ready1);
+
+    var ready2 = new ReadyToStart();
+    ready2.user = user2;
+    ready2.game = gameAtClient;
+    gameClient.send(ready2);
+
+    var ready3 = new ReadyToStart();
+    ready3.user = user3;
+    ready3.game = gameAtClient;
+    gameClient.send(ready3);
+
+    ready1.id = nextId();
+    ready2.id = nextId();
+    ready3.id = nextId();
+
+    expectServerGame.allUsersReadyToStart();
+
+    expectServerLobby.actionsArePlayed(20, [ready1, ready2, ready3]);
+    expectClientLobby.actionsArePlayed(20, [ready1, ready2, ready3]);
+  }); }
+  changeSettingsAgain() { acts.add(() {
+    var newSettings = new GameSettings();
+    newSettings.maxCardsOn7 = 7;
+    newSettings.maxTradesInTurn = 4;
+    newSettings.withRobber = true;
+    newSettings.playerAmount = 3;
+
+    var changeSettingz = new ChangeSettings();
+    changeSettingz.game = gameAtClient;
+    changeSettingz.user = user1;
+    changeSettingz.settings = newSettings;
+    gameClient.send(changeSettingz);
+
+    changeSettingz.id = nextId();
+
+    Expect.isTrue(gameAtClient.settings.equals(newSettings),
+      "Expectsed equal settings");
+    Expect.isTrue(gameAtServer.settings.equals(newSettings),
+      "Expected equal settings");
+    expectServerLobby.actionIsPlayed(21, changeSettingz);
+    expectClientLobby.actionIsPlayed(21, changeSettingz);
   }); }
 /*  CP template:
 
@@ -550,6 +617,13 @@ class ExpectGame {
     int actualAmount = game.spectators.length;
     Expect.isTrue(amount == actualAmount,
         "Expected ${amount} #spectators, got #${actualAmount}.");
+  }
+  allUsersReadyToStart() {
+    for (User user in game.users) {
+      if (game.phases.lobby.readyUsers.filter((User u) => u.equals(user)).length==0) {
+        Expect.fail("Expected user ${user.name} to be ready to play");
+      }
+    }
   }
 }
 class ExpectLobby {

@@ -40,7 +40,7 @@ class LocalServer implements Server { // LocalGameServer
         serverGame.performServer(ga);
         serverGame.perform(ga);
       } catch (Exception ex) {
-        print("Action exec fail at lokcalServer: ${ga.toText()}");
+        print("GameAction exec fail at localServer: ${ga.toText()}");
         throw ex;
       }
     } else {

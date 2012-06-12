@@ -48,13 +48,14 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
   ListenableList<User> spectators;
   ListenableList<User> users;
   ListenableList<GameAction> actions;
-  ListenableList<Turn> turns;
+  ListenableList<Turn> turns;  // Turns start in Turns GamePhase
   ListenableList<Say> chats;
-  ListenableList<Action> queue;
+  ListenableList<Action> queue; // Restrict queue actions only (e.g. move robber)
   ListenableList<DevelopmentCard> developmentCards;
 
   PlayerListMu players;
   ResourceListMu bank;
+
   Robber robber;
   LongestRoad longestRoad;
   LargestArmy largestArmy;
@@ -142,10 +143,20 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
 
   }
 
+  bool isSpectator(User user) => hasId(user.id, spectators);
   User userById(int userId) => byId(userId, users);
   Player playerById(int playerId) => byId(playerId, players);
   bool hasPlayerId(int pid) => byId(pid, players) != null;
   bool hasUserId(int uid) => byId(uid, users) != null;
+
+  Player playerByUser(User u) {
+    List<Player> r = players.filter((p) => p.user.id == u.id);
+    if (!r.isEmpty()) {
+      return r[0];
+    } else {
+      return null;
+    }
+  }
 
   nextTurn() {
     if (currentGamePhase.isTurns) {
@@ -227,10 +238,10 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
         { "id": 1, "userId": 1, "type": "Player" }
       ],
       "actions": [
-        {"type": "Say", "isLobby": true, "userId": 1, "id": 1}
+        {"type": "Say", "isLobby": true, "userId": 1, "id": 1 }
       ],
       "chats": [
-        {"type": "Say", "isLobby": true, "userId": 1, "id": 1}
+        {"type": "Say", "isLobby": true, "userId": 1, "id": 1 }
       ],
       "developmentCards": [
         { "id": "1", "type": "Kinght", "playerId": 1 },

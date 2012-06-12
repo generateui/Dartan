@@ -219,7 +219,25 @@ TODO: refactor into smaller pieces
 */
 class Standard4p extends Board {
   Territory mainIsland;
-  List<List<int>> randomFields = const [const[2, 3, 4], const[1, 2, 3, 4], const[1, 2, 3, 4, 5], const[1, 2, 3, 4], const[2, 3, 4]];
+  static List<List<int>> seaTiles = const [
+          const [1, 2, 3, 4],
+        const [1,           5],
+      const [0,               5],
+    const [0,                   6],
+      const [0,               5],
+        const [1,           5],
+          const [1, 2, 3, 4]
+   ];
+  static List<List<int>> randomFields = const [
+          const [2,  3,  4],
+        const [1,  2,  3,  4],
+      const [1,  2,  3,  4,  5],
+        const [1,  2,  3,  4],
+          const [2,  3,  4]
+  ];
+  static List<int> chits = const [2, 3, 3, 4, 4, 5, 5, 6, 6,
+                                  12,11,11,10,10,9, 9, 8, 8];
+
   static List<Chit> randomChits = [
     new Chit2(),
     new Chit3(), new Chit3(),
@@ -237,7 +255,11 @@ class Standard4p extends Board {
     new TwoToOnePort(new Timber()),
     new TwoToOnePort(new Clay()),
     new TwoToOnePort(new Sheep()),
-    new TwoToOnePort(new Ore())
+    new TwoToOnePort(new Ore()),
+    new ThreeToOnePort(),
+    new ThreeToOnePort(),
+    new ThreeToOnePort(),
+    new ThreeToOnePort()
   ];
 
   Standard4p() : super() {
