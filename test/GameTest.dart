@@ -106,6 +106,8 @@ class GameTest implements ScriptedGameTest {
     spectateGameBack();
     setAllPlayersReadyToPlay();
     changeSettingsAgain();
+    setAllPlayersReadyAgain();
+//    startTheGame();
 
     /* TODO
     setPlayersReadyToPlay();
@@ -484,12 +486,33 @@ class GameTest implements ScriptedGameTest {
 
     changeSettingz.id = nextId();
 
+    expectClientGame.onlyHostReadyToStart();
+    expectServerGame.onlyHostReadyToStart();
     Expect.isTrue(gameAtClient.settings.equals(newSettings),
       "Expectsed equal settings");
     Expect.isTrue(gameAtServer.settings.equals(newSettings),
       "Expected equal settings");
     expectServerLobby.actionIsPlayed(21, changeSettingz);
     expectClientLobby.actionIsPlayed(21, changeSettingz);
+  }); }
+  setAllPlayersReadyAgain() { acts.add(() {
+    var ready2 = new ReadyToStart();
+    ready2.user = user2;
+    ready2.game = gameAtClient;
+    gameClient.send(ready2);
+
+    var ready3 = new ReadyToStart();
+    ready3.user = user3;
+    ready3.game = gameAtClient;
+    gameClient.send(ready3);
+
+    ready2.id = nextId();
+    ready3.id = nextId();
+
+    expectServerGame.allUsersReadyToStart();
+
+    expectServerLobby.actionsArePlayed(23, [ready2, ready3]);
+    expectClientLobby.actionsArePlayed(23, [ready2, ready3]);
   }); }
 /*  CP template:
 
@@ -632,6 +655,12 @@ class ExpectGame {
         Expect.fail("Expected user ${user.name} to be ready to play");
       }
     }
+  }
+  onlyHostReadyToStart() {
+    Expect.isTrue(game.phases.lobby.readyUsers.length == 1,
+        "Only host should be ready to start");
+    Expect.isTrue(game.phases.lobby.readyUsers[0].equals(game.host),
+      "Expected only host in list of users ready to start");
   }
 }
 class ExpectLobby {

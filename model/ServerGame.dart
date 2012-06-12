@@ -52,7 +52,13 @@ class ServerGame implements IdProvider {
     }
   }
   prepareDevelopmentCards() {
-
+    for (DevelopomentCard dc in game.settings.developmentCards) {
+      DevelopmentCard copy = dc.copy(); // copy next from settings
+      pieceIdentifier.identify(copy);   // give it an id
+      developmentCards.add(copy);       // add it to this instance
+      var dummy = new DummyDevelopmentCard();  // create/add dummy to the game
+      game.developmentCards.add(dummy);
+    }
   }
   identify(Identifyable withId) {
     withId.id = _consecutiveId++;

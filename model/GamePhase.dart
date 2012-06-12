@@ -71,7 +71,10 @@ class LobbyPhase extends AbstractGamePhase {
     readyUsers = new ListenableList<User>();
   }
   unreadyAllExceptHost(User host) {
-    readyUsers.filter((User u) => u.id == host.id);
+    for (User u in
+        readyUsers.filter((User uu) => !uu.equals(host))) {
+      readyUsers.remove(u);
+    }
   }
   JsonObject get data() {
     LobbyPhaseData data = new JsonObject();

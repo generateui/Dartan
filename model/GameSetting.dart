@@ -9,6 +9,7 @@ interface GameSettingsData extends JsonObject {
   int stockRoads;
   int bankResourceAmount;
   List bankResourceTypes;
+  List developmentCards;
 }
 /** All the possible settings of a game */
 class GameSettings implements Jsonable, Copyable, Testable {
@@ -34,8 +35,11 @@ class GameSettings implements Jsonable, Copyable, Testable {
   /** Amount of resources the bank spawns at start for each type */
   int bankResourceAmount = 19;
 
+  /** All resource types the bank has */
   List<Resource> bankResourceTypes;
 
+  /** All development cards to be used for this game */
+  List<DevelopmentCard> developmentCards;
 
   GameSettings() {
     bankResourceTypes = new List.from([
@@ -54,6 +58,7 @@ class GameSettings implements Jsonable, Copyable, Testable {
     stockRoads = data.stockRoads;
     bankResourceAmount = data.bankResourceAmount;
     bankResourceTypes = Oracle.fromDataList(data.bankResourceTypes);
+    developmentCards = Oracle.fromDataList(data.developmentCards);
   }
   JsonObject get data() {
     GameSettingsData data = new JsonObject();
@@ -67,6 +72,7 @@ class GameSettings implements Jsonable, Copyable, Testable {
     data.stockRoads = stockRoads;
     data.bankResourceAmount = bankResourceAmount;
     data.bankResourceTypes = Oracle.toDataList(bankResourceTypes);
+    data.developmentCards = Oracle.toDataList(developmentCards);
     return data;
   }
   // Copyable
@@ -76,6 +82,7 @@ class GameSettings implements Jsonable, Copyable, Testable {
   test() {}
   String toText() => "Game Settings";
 
+  // TODO: listEquals bankResources & DevelopomentCards
   bool equals(other) =>
       withRobber == other.withRobber &&
       maxCardsOn7 == other.maxCardsOn7 &&
