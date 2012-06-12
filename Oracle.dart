@@ -29,6 +29,13 @@ class Oracle {
     }
   }
   // TODO: add null checks
+  /*
+
+  Jsonable -> data
+  List<Jsonable> -> data
+
+
+  */
 
   /** From a concrete type string */
   factory Jsonable.type(String type) {
@@ -69,7 +76,7 @@ class Oracle {
     }
     return result;
   }
-  /** Creates a list of non-data instances from a list of data instances */
+  /** Creates a list of models from a list of data instances */
   static List<Copyable> fromDataList(List<JsonObject> dataList) {
     List<Copyable> instantiated = new List();
     for (JsonObject json in dataList) {
@@ -78,4 +85,51 @@ class Oracle {
     return instantiated;
   }
 }
+
+
+/** Null if JsonObject is null, otherwise its data instance */
+Jsonable fromData(JsonObject json) {
+  if (json == null) {
+    return null;
+  } else {
+    return new Jsonable.data(json);
+  }
+}
+/** returns a listenable list from a list of json objects */
+ListenableList<Jsonable> llFrom(Iterable<JsonObject> jsonables) {
+  if (jsonables == null) {
+    return new ListenableList();
+  } else {
+    return new ListenableList.from(listFrom(jsonables));
+  }
+}
+/** Returns a list from a list of json objects */
+List<Jsonable> listFrom(Iterable<JsonObject> jsonObjects) {
+  if (jsonObjects == null) {
+    return new List();
+  } else {
+    List l = new List();
+    for (JsonObject json in jsonObjects) {
+      Jsonable newJsonable = new Jsonable.data(json);
+      l.add(newJsonable);
+    }
+    return l;
+  }
+}
+/** List ofJsonObject from a list of Jsonables */
+List<JsonObject> nullOrDataListFrom(Iterable<Jsonable> jsonables) {
+  if (jsonables == null) {
+    return null;
+  }
+  return Oracle.toDataList(jsonables);
+}
+/** JsonObject or null from target Jsonable */
+JsonObject nullOrDataFrom(Jsonable json) {
+  if (json == null) {
+    return null;
+  }
+  return json.data;
+}
+/** True if target list is null OR empty */
+bool isNullOrEmpty(List l) => l == null || l.isEmpty();
 

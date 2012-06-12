@@ -1,13 +1,13 @@
 /** A wrapped game instance with additional info like a
 developmentcard stack, dice, basically anything that needs
-randomization */
+randomization or stuff the client should not know about */
 class ServerGame implements IdProvider {
   Game game; // Wrapped game
   Random random; // Abstracted randomization generator
   Dice dice;
   List<DevelopmentCard> developmentCards; // Development cards in randomized order
-  IdProvider pieceIdentifier;
-  //IdProvider pieceIdentifier;
+  IdProvider pieceIdentifier;  // Gives Ids to Game Actions
+  IdProvider actionIdentifier;
   int _consecutiveId = 100;
   List<User> users;
 

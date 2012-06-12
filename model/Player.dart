@@ -1,7 +1,7 @@
 interface PlayerData extends JsonObject{
   int id;
   String type;
-  int userId;
+  UserData user;
   String color;
   List resources;
   List ports;
@@ -24,7 +24,6 @@ class Player implements Hashable, Identifyable, Observable, Jsonable {
   static List<String> allColors = const ["green", "blue", "white", "orange"];
   User /* on */ _user;
   int id;
-  int userId;
   String color;
   ObservableHelper observable;
 
@@ -58,7 +57,7 @@ class Player implements Hashable, Identifyable, Observable, Jsonable {
 
     PlayerData data = json;
     id = data.id;
-    userId = data.userId;
+    user = data.user == null ? null : new User.data(data.user);
     color = data.color;
 
     data.resources.forEach((d) { resources.add(new Jsonable.data(d)); });
@@ -77,10 +76,8 @@ class Player implements Hashable, Identifyable, Observable, Jsonable {
     ports = llFrom(data.ports);
     stock = new Stock.data(data.stock);
   }
-  Player(this._user) {
+  Player([this._user]) {
     init();
-
-    id = user.id;
 
     resources = new ResourceListMu();
     ports = new PortListMu();
@@ -121,7 +118,7 @@ class Player implements Hashable, Identifyable, Observable, Jsonable {
   JsonObject get data() {
     PlayerData data = new JsonObject();
     data.id = id;
-    data.userId = user == null ? userId == null? null : userId : user.id;
+    data.user = nullOrDataFrom(user);
     data.type = Dartan.name(this);
     data.color = color;
 

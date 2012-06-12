@@ -35,7 +35,7 @@ class AbstractChit implements Chit {
     ChitData data = json;
     _id = data.id;
   }
-  bool equals(other) => other.id==id;
+  bool equals(other) => other.id == id;
   // Hashable
   int hashCode() {
     if (_id == null)

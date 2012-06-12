@@ -1,13 +1,19 @@
-//#library('ZetTown');
+#library('Dartan');
 
 #import('dart:html');
 #import('dart:coreimpl');
 #import('dart:json');
 
+#source('SeeAllTested.dart');
+
+#source('ImmutableL.dart');
 #source('Observable.dart');
 #source('Testable.dart');
 #source('JsonObject.dart');
 #source('Oracle.dart');
+#source('Jsonable.dart');
+#source('Identifyable.dart');
+#source('Copyable.dart');
 
 // Model
 #source('model/Resource.dart');
@@ -90,123 +96,8 @@
 
 #resource('zettown.css');
 
-/** global unique id
-To ensure the server and client are talkin' about the same thing, each supported
-interface extends [Identifyable]. Implementors should assume the thing is first
-instantiated serverside (which may be on the client for local games), and assigned a fresh
-GUID.
-*/
-interface Identifyable {
-  int get id();
-  set id(int id); // Throw IdAlreadySetException?
-}
-interface IdProvider {
-  identify(Identifyable withId);
-}
-class IdProviderImpl implements IdProvider {
-  int current = 0;
-  bool increment = false;
-  bool isRandom = false;
-  Random random;
-
-  IdProviderImpl.increment() {
-    increment = true;
-  }
-  IdProviderImpl.random(Random r) {
-    isRandom = true;
-    random = r;
-  }
-  identify(Identifyable withId) {
-    if (withId != null) {
-      if (increment) {
-        withId.id = current++;
-      } else if (isRandom) {
-        withId.id = (Math.random()* 10000000).toInt();
-      } else if(false) { // ?
-        // ??
-      }
-    }
-  }
-}
-/** Allow classes to be (de)serialized from/to json */
-interface Jsonable
-  extends Copyable
-  default Oracle {
-
-  Jsonable.data(JsonObject json);
-  Jsonable.type(String type);
-  Jsonable.string(String jsonString);
-  JsonObject get data();
-}
-interface DefaultJsonableData extends JsonObject {
-  int id;
-  String type;
-}
-/** Provides a default implementation for all interfaces.
-Not to be used for any purpose other then copy/pasting code and testing
-Jsonable interface test code.  */
-class DefaultJsonable
-  implements
-  Copyable,
-  Testable,
-  Identifyable,
-  Hashable,
-  Jsonable {
-
-  int id = 0;
-  DefaultJsonable();
-  DefaultJsonable.data(JsonObject json) {
-    DefaultJsonableData data = json;
-    id = data.id;
-  }
-  JsonObject get data() {
-    DefaultJsonableData data = new JsonObject();
-    data.id = id;
-    data.type = Dartan.name(this);
-    return data;
-  }
-  // Hashable
-  int hashCode() {
-    if (id==null)
-      id = Dartan.generateHashCode(this);
-    return id;
-  }
-  DefaultJsonable copy([JsonObject data]) =>
-      data == null ? new DefaultJsonable() : new DefaultJsonable.data(data);
-  bool equals(other) => id == other.id;
-  test() {
-    new JsonableTest().test();
-  }
-}
-
-/** Mirror kitteh sees wall - No mirrors detected.
-Each object requires:
-- Object.data(JsonObject json) constructor
-- copy instance method defaulting on Object() or Object.data(json) e.g.
-  ObjectName copy([JsonObject data]) => data == null ?
-    new ObjectName() : new ObjectName.data(data);
-
-*/
-interface Copyable {
-  Dynamic copy([JsonObject data]);
-}
-/** I'd like to be able to declare immutable collection types, not
-necesarily instances with const. */
-class ImmutableL<T> implements Iterable<T> {
-  List<T> wrapped;
-  ImmutableL(Iterable<T> list) {
-    wrapped = new List<T>();
-    for (T t in list) {
-      wrapped.add(t);
-    }
-  }
-  Iterator<T> iterator() {
-    return wrapped.iterator();
-  }
-}
-
 /** Instances of all collections containing instances of supported objects
-    One day, AllSupportedLists can add itself to itself. */
+    One day, AllSupportedLists can add itself to itself. Or look in a mirror. */
 class AllSupportedLists extends ImmutableL<Iterable<Testable>> {
   AllSupportedLists() : super([
    new SupportedGames(),
@@ -237,94 +128,13 @@ class SupportedVariouss extends ImmutableL<Testable> {
      new Vertice(new Cell(0,0), new Cell(1,0), new Cell(1,1)),
      new Board(),
      new DefaultJsonable(),
-     new User()
-     //new Vertice(new Cell(0,0),
-     ]);
+     new User(),
+     new GameSettings()
+   ]);
 }
-void main() {
-  new Dartan();
-}
-
-bool valueEquals(Jsonable first, Jsonable second) {
-  if (first != null && second != null) {
-    return first.data.equals(second.data);
-  }
-  if (first == null && second == null) {
-    return false;
-  }
-}
-Jsonable fromData(JsonObject json) {
-  if (json == null) {
-    return null;
-  } else {
-    return new Jsonable.data(json);
-  }
-}
-/** returns a listenable list from a list of json objects */
-ListenableList<Jsonable> llFrom(Iterable<JsonObject> jsonables) {
-  if (jsonables == null) {
-    return new ListenableList();
-  } else {
-    return new ListenableList.from(listFrom(jsonables));
-  }
-}
-/** Returns a list from a list of json objects */
-List<Jsonable> listFrom(Iterable<JsonObject> jsonObjects) {
-  if (jsonObjects == null) {
-    return new List();
-  } else {
-    List l = new List();
-    for (JsonObject json in jsonObjects) {
-      Jsonable newJsonable = new Jsonable.data(json);
-      l.add(newJsonable);
-    }
-    return l;
-  }
-}
-List<JsonObject> nullOrDataListFrom(Iterable<Jsonable> jsonables) {
-  if (jsonables == null) {
-    return null;
-  }
-  return Oracle.toDataList(jsonables);
-}
-JsonObject nullOrDataFrom(Jsonable json) {
-  if (json == null) {
-    return null;
-  }
-  return json.data;
-}
-bool isNullOrEmpty(List l) => l == null || l.isEmpty();
-List copiesOf(Copyable c, int amount) {
-  var l = new List();
-  for (int i=0; i<amount; i++) {
-    l.add(c.copy());
-  }
-  return l;
-}
-Identifyable byId(int theid, Collection<Identifyable> withIds) {
-  Collection<Identifyable> filtered = withIds.filter
-      ((Identifyable withId) => withId.id == theid);
-  if (filtered.iterator().hasNext()) {
-    return filtered.iterator().next();
-  } else {
-    return null;
-  }
-}
-bool hasId(int id, Collection<Identifyable> withIds) {
-  if (id != null) {
-    return byId(id, withIds) != null;
-  }
-  return false;
-}
-
 class Dartan {
   static String check = "<span class=checkOk>&#10004</span>";
   static String noCheck = "&#10006";
-  ViewRouter viewRouter;
-  Dartan() {
-    viewRouter = new ViewRouter();
-  }
-
   /* ಠ_ಠ */
   static String name(obj) {
     if (obj != null) {

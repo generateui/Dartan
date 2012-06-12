@@ -234,7 +234,7 @@ class ChangeSettings extends AbstractLobbyAction {
   ChangeSettings();
   ChangeSettings.data(JsonObject json) : super.data(json) {
     ChangeSettingsData data = json;
-    settings = new GameSettings.data(data.settings);
+    settings = fromData(data.settings);
     _gameId = data.gameId;
   }
   JsonObject get data() {

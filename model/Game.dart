@@ -102,7 +102,6 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
     status = new Playing();
 //    turns = new ListenableList<Turn>.from(data.turns);
     players = new PlayerListMu();
-    observable = new ObservableHelper();
     bank = new ResourceListMu();
     actions = new ListenableList<GameAction>();
     queue = new ListenableList<Action>();
