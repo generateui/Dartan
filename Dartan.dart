@@ -129,7 +129,8 @@ class SupportedVariouss extends ImmutableL<Testable> {
      new Board(),
      new DefaultJsonable(),
      new User(),
-     new GameSettings()
+     new GameSettings(),
+     new Player()
    ]);
 }
 class Dartan {

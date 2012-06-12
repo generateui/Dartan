@@ -136,23 +136,6 @@ class NewGame extends AbstractLobbyAction {
     NewGameData data = json;
     game = fromData(data.game);
   }
-  prepareLobby(Lobby lobby) {
-    super.prepareLobby(lobby);
-  }
-  update(Lobby lobby) {
-    lobby.games.add(game);
-  }
-  performAtLobbyServer(Lobby lobby) {
-    if (game == null) {
-      game = new Game();
-      game.board = new Standard4p();
-      game.name = "waitwhat?";
-    }
-    game.host = user;
-    game.users.add(user);
-    lobby.identify(game);
-  }
-  String toText() => "${user.name} created a new game: ${game.name}";
   JsonObject get data() {
     NewGameData data = super.data;
     data.game = nullOrDataFrom(game);
@@ -160,26 +143,50 @@ class NewGame extends AbstractLobbyAction {
   }
   NewGame copy([JsonObject data])  => data == null ?
       new NewGame() : new NewGame.data(data);
+
+  update(Lobby lobby) {
+
+    lobby.games.add(game);
+  }
+  /** Prepares a complete game server-side based on the settings given
+  by the host (creator) of this  game */
+  performAtLobbyServer(Lobby lobby) {
+    // Get a default game if sender is lazy
+    if (game == null) {
+      game = new Game();
+      game.board = new Standard4p();
+      game.name = "waitwhat?";
+    } else {
+      // TODO: get a blank game from user provided game (ignore most stuff)
+    }
+    lobby.identifyGame.identify(game);
+
+    // Create a player for each spot
+    for (int i = 0; i < game.settings.playerAmount; i++) {
+      Player p = new Player();
+      game.players.add(p);
+    }
+    game.players[0].user = user; // occupy first slot by game creator
+    game.host = user;            // set him as host
+    game.users.add(user);        // convenience users acces list
+  }
+  String toText() => "${user.name} created a new game: ${game.name}";
 }
 
 interface JoinGameData extends JsonObject {
   int gameId;
+  int slotIndex;
 }
 /** A user joins the game intending to fill a player slot and play then game */
 class JoinGame extends AbstractLobbyAction {
   int gameId;
+  int slotIndex;
   Game game;
+
   JoinGame();
   JoinGame.data(JsonObject json) : super.data(json){
     JoinGameData data = json;
     gameId = data.gameId;
-  }
-  prepareLobby(Lobby lobby) {
-    super.prepareLobby(lobby);
-    game = byId(gameId, lobby.games);
-  }
-  update(Lobby lobby) {
-    game.users.add(user);
   }
   JsonObject get data() {
     JoinGameData data = super.data;
@@ -188,7 +195,16 @@ class JoinGame extends AbstractLobbyAction {
   }
   JoinGame copy([JsonObject data])  => data == null ?
       new JoinGame() : new JoinGame.data(data);
-      String toText() => "${user.name} joins the game [${game.name}]";
+
+  prepareLobby(Lobby lobby) {
+    super.prepareLobby(lobby);
+    game = byId(gameId, lobby.games);
+  }
+  update(Lobby lobby) {
+    game.users.add(user);
+  }
+
+  String toText() => "${user.name} joins the game [${game.name}]";
 }
 
 interface SpectateGameData extends LobbyActionData {
@@ -308,7 +324,7 @@ class LeaveGame extends AbstractLobbyAction {
     _gameId = data.gameId;
   }
   LeaveGame copy([JsonObject data])  => data == null ?
-  new LeaveGame() : new LeaveGame.data(data);
+    new LeaveGame() : new LeaveGame.data(data);
   JsonObject get data() {
     LeaveGameData data = super.data;
     data.gameId = game == null ? null : game.id;

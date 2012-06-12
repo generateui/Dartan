@@ -64,13 +64,33 @@ class Board
   Board.name() {
   }
   Board.data(JsonObject json) {
+    init();
     BoardData data = json;
     id = data.id;
     name = data.name;
     chitsBag = llFrom(data.chitsBag);
     portsBag = llFrom(data.portsBag);
     tilesBag = llFrom(data.tilesBag);
+    addTiles(Oracle.fromDataList(data.tiles));
     territories = llFrom(data.territories);
+    referenceTerritoriesOnTiles();
+  }
+  /** Tiles should get Territory from Id referenced */
+  referenceTerritoriesOnTiles() {
+    // loop over tiles with territoryId set
+    for (Tile t in tiles.filter((Tile tt) => tt.territoryId != null)) {
+      Territory terr = byId(t.territoryId, territories);
+      if (terr == null) {
+        print("nonexisting territory referenced");
+        continue; // break? TODO
+      }
+      if (!t.canHaveTerritory) {
+        print("territoryId found, but tile cannot have a territory. Tile: ${t.data.toString()}");
+        continue;
+      }
+
+      t.territory = terr;
+    }
   }
   Board([this.columns, this.rows]) {
     init();
@@ -90,9 +110,9 @@ class Board
   Board copy([JsonObject data]) => data == null ? new Board() :  new Board.data(data);
   JsonObject get data() {
     BoardData data = new JsonObject();
-    data.name = name;
+    data.type = nameOf(this);
     data.id = id;
-    data.type = Dartan.name(this);
+    data.name = name;
     data.tiles = Oracle.toDataList(_tilesByCell.getValues());
     data.chitsBag = Oracle.toDataList(chitsBag);
     data.tilesBag = Oracle.toDataList(tilesBag);
@@ -115,7 +135,7 @@ class Board
     _addVertices(t.cell);
     _addEdges(t.cell);
   }
-  void addTiles(Iterable<Tile> tiles) {
+  void addTiles(List<Tile> tiles) {
     for (Tile t in tiles) {
       addTile(t);
     }

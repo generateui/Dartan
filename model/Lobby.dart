@@ -1,11 +1,16 @@
 /** The lobby residing on both the client and the server */
-class Lobby implements IdProvider {
+class Lobby {
   ListenableList<User> users;
   ListenableList<Game> games;
   ListenableList<LobbyAction> actions;
   ListenableList<Say> chats;
   int consecutiveId = 0;
+  IdProvider identifyGame;
+  IdProvider identifyAction;
+
   Lobby() {
+    identifyGame = new IdProviderImpl.increment();
+    identifyAction = new IdProviderImpl.increment();
     users = new ListenableList<User>();
     games = new ListenableList<Game>();
     actions = new ListenableList<LobbyAction>();
@@ -21,8 +26,5 @@ class Lobby implements IdProvider {
     prepareAction(action); // Ensure action instance is initialized
     action.update(this);   // Dispatch call to the action instance
     actions.add(action);   // Add to the log of actions in this lobby
-  }
-  identify(Identifyable withId) {
-    withId.id = consecutiveId++;
   }
 }

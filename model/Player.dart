@@ -20,10 +20,11 @@ interface PlayerData extends JsonObject{
 }
 /** A [Player] *has* a user, because players never leave
 the game, but users do leave the game */
-class Player implements Hashable, Identifyable, Observable, Jsonable {
+class Player implements Hashable, Identifyable, Observable, Jsonable, Testable {
   static List<String> allColors = const ["green", "blue", "white", "orange"];
   User /* on */ _user;
   int id;
+  int _userId;
   String color;
   ObservableHelper observable;
 
@@ -44,9 +45,9 @@ class Player implements Hashable, Identifyable, Observable, Jsonable {
   User /* on */ get user() => _user;
   set /* on */ user(User u) {
     if (user != u) {
-      User old = user;
-      user=u;
-      observable.fire("user", old, user);
+      User old = _user;
+      _user=u;
+      observable.fire("user", old, _user);
     }
   }
   init() {
@@ -61,7 +62,7 @@ class Player implements Hashable, Identifyable, Observable, Jsonable {
     color = data.color;
 
     data.resources.forEach((d) { resources.add(new Jsonable.data(d)); });
-    ports = new PortListMu.from(listFrom(data.ports));
+    ports = new PortListMu.from(Oracle.fromDataList(data.ports));
 
     roads = llFrom(data.roads);
     towns = llFrom(data.towns);
@@ -148,6 +149,10 @@ class Player implements Hashable, Identifyable, Observable, Jsonable {
   // Copyable
   Player copy([JsonObject data]) =>
       data == null ? new Player(user) : new Player.data(data);
+  bool equals(other) => id == other.id;
+  test() {
+
+  }
 }
 interface UserData extends JsonObject {
   int id;
@@ -218,4 +223,6 @@ class PlayerListMu extends ListenableList<Player> {
     }
     return this[index];
   }
+  PlayerListMu();
+  PlayerListMu.from(Iterable<Player> players) : super.from(players);
 }

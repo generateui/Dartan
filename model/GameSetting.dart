@@ -6,7 +6,7 @@ interface GameSettingsData extends JsonObject {
   int playerAmount;
 }
 /** All the possible settings of a game */
-class GameSettings implements Jsonable, Copyable {
+class GameSettings implements Jsonable, Copyable, Testable {
   /** use the robber in the game? */
   bool withRobber = true; //
 

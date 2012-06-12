@@ -104,7 +104,7 @@ ListenableList<Jsonable> llFrom(Iterable<JsonObject> jsonables) {
   }
 }
 /** Returns a list from a list of json objects */
-List<Jsonable> listFrom(Iterable<JsonObject> jsonObjects) {
+List<Jsonable> listFrom(List<JsonObject> jsonObjects) {
   if (jsonObjects == null) {
     return new List();
   } else {

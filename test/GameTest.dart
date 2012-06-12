@@ -26,7 +26,9 @@ class GameTester implements Observable {
     _sgt = sgt;
     it = _sgt.acts.iterator();
     delayInMilliseconds = 0;
-    executeNext();
+//    while (it.hasNext()) {
+//      executeNext();
+//    }
   }
   executeNext() {
     if (it.hasNext()) {
@@ -34,7 +36,9 @@ class GameTester implements Observable {
       try {
         f();
         print("OK: Performed act #${tested.toString()}.");
-        timeHandle = window.setTimeout(executeNext, delayInMilliseconds);
+        if (!automated) {
+          timeHandle = window.setTimeout(executeNext, delayInMilliseconds);
+        }
         Function old = latest;
         observable.fire("latest", old, f);
       } catch(Exception ex) {
@@ -328,20 +332,24 @@ class GameTest implements ScriptedGameTest {
         "Expected both games having equal id");
 
     expectServerGame.hasUser(user1);
+    expectServerGame.hasUserAmount(1);
     expectServerGame.hasHost(user1);
     expectServerLobby.actionIsPlayed(11, newGame);
 
     expectClientGame.hasUser(user1);
+    expectClientGame.hasUserAmount(1);
     expectClientGame.hasHost(user1);
     expectClientLobby.actionIsPlayed(11, newGame);
 
-    Expect.isFalse(gameClient.lobby.games.isEmpty(), "empty list of games in client-lobby");
-    Expect.isFalse(server.lobby.games.isEmpty(), "empty list of games in server-lobby");
+    Expect.isFalse(gameClient.lobby.games.isEmpty(),
+      "empty list of games in client-lobby");
+    Expect.isFalse(server.lobby.games.isEmpty(),
+      "empty list of games in server-lobby");
     Expect.isFalse(server.lobby.games[0] == null);
   }); }
   joinNewGame() { acts.add(() {
     JoinGame joinGame1 = new JoinGame();
-    joinGame1.user = player2.user;
+    joinGame1.user = user2;
     joinGame1.game = gameAtClient;
     print(gameAtClient.id);
     gameClient.send(joinGame1);
