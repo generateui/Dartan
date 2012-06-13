@@ -1,4 +1,5 @@
-interface RobberData extends JsonObject{
+interface RobberData extends JsonObject {
+  String type;
   CellData cell;
 }
 class Robber implements Testable, Observable, Jsonable {
@@ -13,7 +14,7 @@ class Robber implements Testable, Observable, Jsonable {
   Robber.data(JsonObject json) {
     init();
     RobberData data = json;
-    cell = new Cell.data(data.cell);
+    cell = fromData(data.cell);
   }
   move(Cell newCell) {
     if (cell != newCell) {
@@ -24,9 +25,10 @@ class Robber implements Testable, Observable, Jsonable {
   }
   // Jsonable
   JsonObject get data() {
-    RobberData data = new JsonObject();
-    data.cell = cell.data;
-    return data;
+    RobberData d = new JsonObject();
+    d.type = nameOf(this);
+    d.cell = nullOrDataFrom(cell);
+    return d;
   }
   // Observable
   void onSetted(String property, PropertyChanged handler) {

@@ -74,8 +74,7 @@ class Player implements Hashable, Identifyable, Observable, Jsonable, Testable {
     knights = llFrom(data.knights);
     playedDevelopmentCards = llFrom(data.playedDevelopmentCards);
     producers = llFrom(data.producers);
-    ports = llFrom(data.ports);
-    stock = new Stock.data(data.stock);
+    stock = fromData(data.stock);
   }
   Player([this._user]) {
     init();

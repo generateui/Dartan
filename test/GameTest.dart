@@ -107,12 +107,9 @@ class GameTest implements ScriptedGameTest {
     setAllPlayersReadyToPlay();
     changeSettingsAgain();
     setAllPlayersReadyAgain();
-//    startTheGame();
+    startTheGame();
 
     /* TODO
-    setPlayersReadyToPlay();
-    againSetPlayersReadyToPlay();
-    startGame();
     rollDice x3
     switch player
     place town-road x4
@@ -324,6 +321,9 @@ class GameTest implements ScriptedGameTest {
 
     gameAtClient = gameClient.lobby.games[0];
     gameAtServer = server.lobby.games[0];
+    player1 = gameAtClient.players[0];
+    Player p1 = new Player(user1);
+    p1.id=0;
 
     expectClientGame = new ExpectGame(gameAtClient);
     expectServerGame = new ExpectGame(gameAtServer);
@@ -341,6 +341,9 @@ class GameTest implements ScriptedGameTest {
     expectClientGame.hasUser(user1);
     expectClientGame.hasUserAmount(1);
     expectClientGame.hasHost(user1);
+    expectClientGame.hasPlayer(p1);
+    Expect.isTrue(gameAtClient.players[0].user.equals(user1),
+      "Expected user of first player to be user1");
     expectClientLobby.actionIsPlayed(11, newGame);
 
     Expect.isFalse(gameClient.lobby.games.isEmpty(),
@@ -514,43 +517,38 @@ class GameTest implements ScriptedGameTest {
     expectServerLobby.actionsArePlayed(23, [ready2, ready3]);
     expectClientLobby.actionsArePlayed(23, [ready2, ready3]);
   }); }
+  startTheGame() { acts.add(() {
+    var startGame = new StartGame();
+    startGame.player = player1;
+    startGame.gameId = gameAtClient.id;
+    gameClient.send(startGame);
+
+    startGame.id = nextId();
+
+    gameAtClient = gameClient.game;
+    gameAtServer = server.lobby.games[0];
+
+    expectServerGame = new ExpectGame(gameAtServer);
+    expectClientGame = new ExpectGame(gameAtClient);
+
+    expectServerGame.hasRobber();
+    expectServerGame.hasLargestArmy();
+    expectServerGame.hasLongestRoad();
+
+    expectClientGame.hasRobber();
+    expectClientGame.hasLargestArmy();
+    expectClientGame.hasLongestRoad();
+    expectClientGame.hasPlayer(player1);
+
+    // TODO: achieve bonnus prize implementing this
+//    Expect.isTrue(gameAtClient.equals(gameAtServer),
+//      "Expected both games to be equal instances");
+  }); }
+
 /*  CP template:
 
 
-
-    TODO:
-
-    // Join another player
-
-
-    // ... And join the observer
-
-
-    MaximumCardsInHandWhenSeven maxCardsInhand = new MaximumCardsInHandWhenSeven();
-    maxCardsInhand.maxCards = 10;
-
-    MaximumTradesPerTurn maxTrades = new MaximumTradesPerTurn();
-    maxTrades.maxTrades = 4;
-
-    ChangeSettings changeSettings = new ChangeSettings();
-    changeSettings.settings = new List<GameSetting>.from([maxCardsInhand, maxTrades]);
-    changeSettings.userId = player1.user.id;
-    changeSettings.gameId = game.id;
-    server.send(changeSettings);
-
-    Expect.isTrue(game.settings.maximumCardsInHandWhenSeven == 10,
-        "Expected 10 maxmimum cards in hand, got ${game.settings.maximumCardsInHandWhenSeven.maxCards}");
-    Expect.isTrue(game.settings.maximumTradesPerTurn == 4,
-        "Expected 4 maximum trades per turn, got ${game.settings.maximumTradesPerTurn.maxTrades}");
-
-    ReadyToStart ready1 = new ReadyToStart();
-    ready1.userId = player1.user.id;
-
-    // Start the game
-    StartGame start = new StartGame();
-    start.userId = player1.user.id;
-    server.send(start);
-    */
+*/
 
   int nextId() => currentActionId++;
 
@@ -661,6 +659,47 @@ class ExpectGame {
         "Only host should be ready to start");
     Expect.isTrue(game.phases.lobby.readyUsers[0].equals(game.host),
       "Expected only host in list of users ready to start");
+  }
+  hasRobber() {
+    Expect.isNotNull(game.robber,
+      "Expected game to have a robber");
+  }
+  hasLargestArmy() {
+    Expect.isNotNull(game.largestArmy,
+      "Expected game to have largest army");
+  }
+  hasLongestRoad() {
+    Expect.isNotNull(game.longestRoad,
+      "Expected game to have longest road");
+  }
+  hasPlayerAmount(int amount) {
+    Expect.isTrue(game.players.length == amount,
+        "Expected ${amount} players in the game, found ${game.players.length}");
+  }
+  hasPlayers(Iterable<Player> players) {
+    for (Player p in players) {
+      hasPlayer(p);
+    }
+  }
+  hasPlayer(Player p) {
+    Player found = byId(p.id, game.players);
+    Expect.isNotNull(found,
+      "Expected to find a player in game with id=${p.id}, name=${p.user.name}");
+    Expect.isTrue(p.equals(found),
+      "Expected the found player to be equal to the specified player");
+  }
+}
+class ExpectPlayer {
+  Player player;
+  ExpectPlayer(this.player);
+
+  hasStandardStock() {
+    Expect.isTrue(player.stock.towns.length == 5,
+        "Expected player to have 4 stock towns");
+    Expect.isTrue(player.stock.cities.length == 4,
+        "Expected player to have 4 stock cities");
+    Expect.isTrue(player.stock.roads.length == 15,
+        "Expected player to have 15 stock roads");
   }
 }
 class ExpectLobby {

@@ -233,6 +233,7 @@ class AllPhases extends AbstractGamePhase {
     addAllPhasesToList();
   }
   AllPhases.data(JsonObject json) {
+    observable = new ObservableHelper();
     AllPhasesData data = json;
     lobby = data.lobby == null ? null : new LobbyPhase.data(data.lobby);
     determinFirstPlayer = new DetermineFirstPlayerGamePhase.data(data.determinFirstPlayer);

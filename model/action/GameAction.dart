@@ -29,6 +29,7 @@ class SupportedGameActions extends ImmutableL<GameAction> {
     new AbstractGameAction(),
     new RollDice(),
     new StartGame(),
+    new NewGame(),
 
     // Trading
     new TradeBank(),
@@ -100,7 +101,7 @@ class AbstractGameAction implements GameAction {
     user = game.userById(userId);
     player = game.playerById(playerId);
     gamePhase = game.currentGamePhase;
-    if (gamePhase.isTurns) {
+    if (gamePhase != null && gamePhase.isTurns) {
       turnPhase = game.phases.turns.turnPhase;
     }
   }
@@ -118,13 +119,13 @@ class AbstractGameAction implements GameAction {
   Dynamic copy([JsonObject data]) => new AbstractGameAction();
   // Jsonable
   JsonObject get data() {
-    GameActionData data = new JsonObject();
-    data.type = Dartan.name(this);
-    data.id = id;
-    data.playerId = playerId;
-    data.userId = userId;
-    data.gameId = gameId;
-    return data;
+    GameActionData d = new JsonObject();
+    d.type = Dartan.name(this);
+    d.id = id;
+    d.playerId = playerId;
+    d.userId = userId;
+    d.gameId = gameId;
+    return d;
   }
   bool equals(other) => other.id == id;
 
@@ -142,13 +143,19 @@ class StartGame extends AbstractGameAction {
 
   StartGame();
   StartGame.data(JsonObject json) : super.data(json) {
-    StartGameData data=json;
-    newGame = data.newGame == null ? null :new Game.data(data.newGame);
+    StartGameData data = json;
+    newGame = data.newGame == null ? null : fromData(data.newGame);
   }
+  JsonObject get data() {
+    StartGameData d = super.data;
+    d.newGame = nullOrDataFrom(newGame);
+    return d;
+  }
+
   perform(Game game) {
-    game.start();
-    super.perform(game);
+    newGame = game;
   }
+
   performServer(ServerGame serverGame) {
     // setup board
     serverGame.game.board.make(serverGame.random);
@@ -191,12 +198,9 @@ class StartGame extends AbstractGameAction {
 
     // record start
     serverGame.game.startedDateTime = new Date.now();
-  }
-  // Jsonable
-  JsonObject get data() {
-    StartGameData data = super.data;
-    data.newGame = nullOrDataFrom(newGame);
-    return data;
+
+    // And start it!
+    serverGame.game.start();
   }
   // Copyable
   StartGame copy([JsonObject data]) =>

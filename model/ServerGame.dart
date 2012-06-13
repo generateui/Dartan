@@ -12,31 +12,21 @@ class ServerGame implements IdProvider {
   List<User> users;
 
   ServerGame(this.game) {
+    pieceIdentifier = new IdProviderImpl.increment();
+    actionIdentifier = new IdProviderImpl.increment();
     random = new ClientRandom();
     dice = new RandomDice(random);
     users = new List<User>();
     developmentCards = new List<DevelopmentCard>();
   }
 
-  performServer(GameAction action) {
-    action.performServer(this);
-  }
   void perform(GameAction action) {
-    action.performServer(this); // prepare the action
-    action.performedTime = new Date.now();
-    game.performAction(action); // performing an action is done by the game instance itself
-  }
-  void prepare(GameAction action) {
-    // Set appropriate user
-    if (action.isServer) {
-      action.user = Game.serverUser;
-    }
     action.prepare(game);
-    // Set appropriate player if this action is performed in a game
-    //if (action.isGame) {
-      //action.player = game.players.filter((Player p) => p.id == action.playerId).iterator().next();
-    //}
+    action.performServer(this);
+    game.performAction(action); // performing an action is done by the game instance itself
+    action.performedTime = new Date.now();
   }
+
   identifyAllPieces() {
     for (Tile tile in game.board.tiles) {
       pieceIdentifier.identify(tile);
@@ -52,7 +42,7 @@ class ServerGame implements IdProvider {
     }
   }
   prepareDevelopmentCards() {
-    for (DevelopomentCard dc in game.settings.developmentCards) {
+    for (DevelopmentCard dc in game.settings.developmentCards) {
       DevelopmentCard copy = dc.copy(); // copy next from settings
       pieceIdentifier.identify(copy);   // give it an id
       developmentCards.add(copy);       // add it to this instance

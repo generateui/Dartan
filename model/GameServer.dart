@@ -32,19 +32,19 @@ class LocalServer implements Server { // LocalGameServer
   LocalServer(this.game) {
     lobby = new Lobby();
   }
+  initGame(StartGame startGame) {
+    serverGame = new ServerGame(byId(startGame.gameId, lobby.games));
+  }
   doGame(GameAction ga) {
-    if (ga == game.id) {
-      try {
-        ga.id = consecutiveGameId++;
-        serverGame.prepare(ga);
-        serverGame.performServer(ga);
-        serverGame.perform(ga);
-      } catch (Exception ex) {
-        print("GameAction exec fail at localServer: ${ga.toText()}");
-        throw ex;
+    try {
+      ga.id = consecutiveGameId++;
+      if (ga is StartGame) {
+        initGame(ga);
       }
-    } else {
-      throw new Exception("Game with id ${ga.gameId} not found");
+      serverGame.perform(ga);
+    } catch (Exception ex) {
+      print("GameAction exec fail at localServer: ${ga.toText()}");
+      throw ex;
     }
   }
   doLobby(LobbyAction la) {
@@ -83,6 +83,7 @@ class LocalServer implements Server { // LocalGameServer
           GameAction ga = action;
           doGame(ga); // update local state
           sendToUser(ga, user); // broadcast back to the clients, so they'll update
+          game.actions.add(ga);
         }
         if (jso.isLobby) {
           LobbyAction la = action;
@@ -145,8 +146,12 @@ class GameClient {
         }
         if (a.isGame) {
           GameAction ga = a;
+          if (ga is StartGame) {
+            game = ga.newGame;
+          }
           ga.prepare(game);
           ga.perform(game);
+          game.actions.add(ga);
         }
       }
     }

@@ -106,6 +106,10 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
     bank = new ResourceListMu();
     actions = new ListenableList<GameAction>();
     queue = new ListenableList<Action>();
+    board = fromData(d.board);
+    robber = fromData(d.robber);
+    longestRoad = fromData(d.longestRoad);
+    largestArmy = fromData(d.largestArmy);
 
     _init();
 
@@ -187,7 +191,7 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
   }
   void performAction(GameAction action) {
     action.perform(this);
-    actions.add(action);
+//    actions.add(action);
   }
   // Observable
   void onSetted(String property, PropertyChanged handler) {
@@ -231,6 +235,7 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
     data.robber = nullOrDataFrom(robber);
     data.longestRoad = nullOrDataFrom(longestRoad);
     data.largestArmy = nullOrDataFrom(largestArmy);
+    data.board = nullOrDataFrom(board);
     return data;
   }
   bool equals(other) => other.id==id;

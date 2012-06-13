@@ -29,9 +29,9 @@ class LargestArmy
 
   JsonObject get data() {
     LargestArmyData data = new JsonObject();
+    data.type = Dartan.name(this);
     data.playerId = player == null ? null : player.id;
     data.knights = knights;
-    data.type = Dartan.name(this);
     return data;
   }
   Player get player() => _player;

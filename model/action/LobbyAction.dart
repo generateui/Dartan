@@ -158,12 +158,16 @@ class NewGame extends AbstractLobbyAction {
       game.name = "waitwhat?";
     } else {
       // TODO: get a blank game from user provided game (ignore most stuff)
+      // Ensure the user has not set any weird things in the game instance
     }
     lobby.identifyGame.identify(game);
 
     // Create a player for each spot
     for (int i = 0; i < game.settings.playerAmount; i++) {
       Player p = new Player();
+      // Give the players Id's equal to their index. Not that the index may
+      // change later, when the determined first player gets index 0.
+      p.id = i;
       game.players.add(p);
     }
     game.players[0].user = user; // occupy first slot by game creator
