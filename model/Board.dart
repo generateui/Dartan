@@ -11,7 +11,7 @@ interface BoardData extends JsonObject {
   Map edgePieces;
 }
 /**
-  Keeps track of tiles
+  Keeps track of tilesz
 
   Vertice: one of the 6 points on a hexagon
   Edge: one of the six edges of an hexagon
