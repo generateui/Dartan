@@ -1,3 +1,5 @@
+part of Dartan;
+
 /** Get instances from concrete class name strings or JsonObject instances.
     Assumptions:
       -Unique names for all concrete classes
@@ -5,65 +7,6 @@
       -
  */
 class Oracle {
-  static Map<String, Copyable> instancesByType;
-  /** Ensures all instances are mapped to its interface and concrete name */
-  static ensureMap() {
-    if (instancesByType == null) {
-      instancesByType = new HashMap<String, Copyable>();
-
-      // Fill the maps
-      for (Iterable<Testable> instances in new AllSupportedLists()) {
-        for (Testable t in instances) {
-          if (t is Copyable) {
-            Copyable c = t;
-            String concretename = Dartan.name(c);
-            if (instancesByType.containsKey(concretename)) {
-              print("Naming collision: ${concretename}");
-            }
-            instancesByType[concretename] = c;
-          } else {
-            print("Not copyable: ${Dartan.name(t)}");
-          }
-        }
-      }
-    }
-  }
-  // TODO: add null checks
-  /*
-
-  Jsonable -> data
-  List<Jsonable> -> data
-
-
-  */
-
-  /** From a concrete type string */
-  factory Jsonable.type(String type) {
-    ensureMap();
-    if (instancesByType.containsKey(type)) {
-      return instancesByType[type];
-    } else {
-      String msg = "Oracle: Type ${type} not found";
-      print (msg);
-      throw new Exception(msg);
-    }
-  }
-  /** From a JsonObject containing a type attribute with the concrete class name */
-  factory Jsonable.data(JsonObject data) {
-    Jsonable fromType = new Jsonable.type(data["type"]);
-    return fromType.copy(data);
-  }
-  factory Jsonable.string(String jsonString) {
-    Jsonable referenced;
-    try {
-      JsonObject parsed = new JsonObject.fromJsonString(jsonString);
-      referenced = new Jsonable.data(parsed);
-    } catch (Exception ex) {
-      print("fail: create Jsonable from ${jsonString}");
-    }
-    return referenced;
-  }
-
   // TODO: cleanup
   //static newChitByType(String type) => instanceOf(type);
   /** Creates new list with data objects from a list of jsonables */
@@ -80,7 +23,7 @@ class Oracle {
   static List<Copyable> fromDataList(List<JsonObject> dataList) {
     List<Copyable> instantiated = new List();
     for (JsonObject json in dataList) {
-      instantiated.add(new Jsonable.data(json));
+      instantiated.add(new Jsonable.fromData(json));
     }
     return instantiated;
   }
@@ -92,7 +35,7 @@ Jsonable fromData(JsonObject json) {
   if (json == null) {
     return null;
   } else {
-    return new Jsonable.data(json);
+    return new Jsonable.fromData(json);
   }
 }
 /** returns a listenable list from a list of json objects */
@@ -110,7 +53,7 @@ List<Jsonable> listFrom(List<JsonObject> jsonObjects) {
   } else {
     List l = new List();
     for (JsonObject json in jsonObjects) {
-      Jsonable newJsonable = new Jsonable.data(json);
+      Jsonable newJsonable = new Jsonable.fromData(json);
       l.add(newJsonable);
     }
     return l;
@@ -131,5 +74,5 @@ JsonObject nullOrDataFrom(Jsonable json) {
   return json.data;
 }
 /** True if target list is null OR empty */
-bool isNullOrEmpty(List l) => l == null || l.isEmpty();
+bool isNullOrEmpty(List l) => l == null || l.isEmpty;
 

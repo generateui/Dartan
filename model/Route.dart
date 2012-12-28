@@ -1,5 +1,7 @@
+part of Dartan;
+
 /** A path on the board */
-interface Route {
+abstract class Route {
 
 }
 /** A path on the board representing the longest route */

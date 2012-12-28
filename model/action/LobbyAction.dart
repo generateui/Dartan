@@ -1,4 +1,6 @@
-interface LobbyAction extends Action {
+part of Dartan;
+
+abstract class LobbyAction extends Action {
   update(Lobby lobby);
   prepareLobby(Lobby lobby);
   performAtLobbyServer(Lobby lobby);
@@ -17,7 +19,7 @@ class SupportedLobbyActions extends ImmutableL<LobbyAction> {
     new ReadyToStart()
   ]);
 }
-interface LobbyActionData extends JsonObject {
+class LobbyActionData extends JsonObject {
   String type;
   int id;
   int userId;
@@ -31,18 +33,18 @@ class AbstractLobbyAction implements LobbyAction {
   User _user;
 
   AbstractLobbyAction();
-  AbstractLobbyAction.data(JsonObject json) {
-    LobbyActionData data = json;
+  AbstractLobbyAction.fromData(JsonObject json) {
+    var data = json;
     id = data.id;
     performedTime = data.performedTime == null ?
         null : new Date.fromString(data.performedTime);
     userId = data.userId;
   }
 
-  bool get isServer() => this is ServerAction;
-  bool get isGame() => this is GameAction;
-  bool get isLobby() => true;
-  bool get isTrade() => false;
+  bool get isServer => this is ServerAction;
+  bool get isGame => this is GameAction;
+  bool get isLobby => true;
+  bool get isTrade => false;
 
   prepareLobby(Lobby lobby) {
     user = byId(userId, lobby.users);
@@ -51,7 +53,7 @@ class AbstractLobbyAction implements LobbyAction {
   }
   update(Lobby lobby) { }
 
-  User get user() => _user;
+  User get user => _user;
   set user(User u) {
     _user = u;
     if (u != null) {
@@ -60,21 +62,23 @@ class AbstractLobbyAction implements LobbyAction {
   }
 
   // Hashable
-  int hashCode() {
-    if (id==null)
+  int get hashCode {
+    if (id==null) {
       id = Dartan.generateHashCode(this);
+    }
     return id;
   }
   // Copyable
   Action copy([JsonObject data]) => data == null ?
-      new AbstractLobbyAction() : new AbstractLobbyAction.data(data);
+      new AbstractLobbyAction() : new AbstractLobbyAction.fromData(data);
   // Testable
   test() {}
+  
   String toText() => Dartan.name(this);
-  bool equals(other) => other.id == id;
+  bool operator ==(other) => other.id == id;
   // Jsonable
-  JsonObject get data() {
-    LobbyActionData data = new JsonObject();
+  JsonObject get data {
+    var data = new JsonObject();
     data.type = Dartan.name(this);
     data.id = id;
     data.userId = userId;
@@ -82,16 +86,16 @@ class AbstractLobbyAction implements LobbyAction {
     return data;
   }
 }
-interface JoinLobbyData extends LobbyActionData {
+abstract class JoinLobbyData extends LobbyActionData {
   UserData user;
 }
 /** A user just logged in */
 class JoinLobby extends AbstractLobbyAction {
 
   JoinLobby();
-  JoinLobby.data(JsonObject json) : super.data(json) {
-    JoinLobbyData data = json;
-    user = data.user == null ? user : new User.data(data.user);
+  JoinLobby.fromData(JsonObject json) : super.fromData(json) {
+    var data = json;
+    user = data.user == null ? user : new User.fromData(data.user);
   }
   prepareLobby(Lobby lobby) {
     /* explicit empty */
@@ -99,21 +103,21 @@ class JoinLobby extends AbstractLobbyAction {
   update(Lobby lobby) {
     lobby.users.add(user);
   }
-  JsonObject get data() {
-    JoinLobbyData data = super.data;
+  JsonObject get data {
+    var data = super.data;
     data.user = nullOrDataFrom(user);
     return data;
   }
 
   JoinLobby copy([JsonObject data]) => data == null ?
-      new JoinLobby() : new JoinLobby.data(data);
+      new JoinLobby() : new JoinLobby.fromData(data);
   String toText() => "${user.name} joins";
 }
 /** A user left the lobby */
 class LeaveLobby extends AbstractLobbyAction {
 
   LeaveLobby();
-  LeaveLobby.data(JsonObject data) : super.data(data);
+  LeaveLobby.data(JsonObject data) : super.fromData(data);
 
   update(Lobby lobby) {
     lobby.users.remove(user);
@@ -122,9 +126,9 @@ class LeaveLobby extends AbstractLobbyAction {
       new LeaveLobby() : new LeaveLobby.data(data);
   String toText() => "${user.name} left";
 }
-interface LeaveLobbyData extends LobbyActionData{
+abstract class LeaveLobbyData extends LobbyActionData{
 }
-interface NewGameData extends LobbyActionData {
+abstract class NewGameData extends LobbyActionData {
   GameData game;
 }
 /** A user starts a new game */
@@ -132,17 +136,17 @@ class NewGame extends AbstractLobbyAction {
   Game game;
 
   NewGame();
-  NewGame.data(JsonObject json) : super.data(json) {
-    NewGameData data = json;
+  NewGame.fromData(JsonObject json) : super.fromData(json) {
+    var data = json;
     game = fromData(data.game);
   }
-  JsonObject get data() {
-    NewGameData data = super.data;
+  JsonObject get data {
+    var data = super.data;
     data.game = nullOrDataFrom(game);
     return data;
   }
   NewGame copy([JsonObject data])  => data == null ?
-      new NewGame() : new NewGame.data(data);
+      new NewGame() : new NewGame.fromData(data);
 
   update(Lobby lobby) {
 
@@ -177,7 +181,7 @@ class NewGame extends AbstractLobbyAction {
   String toText() => "${user.name} created a new game: ${game.name}";
 }
 
-interface JoinGameData extends JsonObject {
+abstract class JoinGameData extends JsonObject {
   int gameId;
   int slotIndex;
 }
@@ -188,17 +192,17 @@ class JoinGame extends AbstractLobbyAction {
   Game game;
 
   JoinGame();
-  JoinGame.data(JsonObject json) : super.data(json){
-    JoinGameData data = json;
+  JoinGame.fromData(JsonObject json) : super.fromData(json){
+    var data = json;
     gameId = data.gameId;
   }
-  JsonObject get data() {
-    JoinGameData data = super.data;
+  JsonObject get data {
+    var data = super.data;
     data.gameId = game== null ? null : game.id;
     return data;
   }
   JoinGame copy([JsonObject data])  => data == null ?
-      new JoinGame() : new JoinGame.data(data);
+      new JoinGame() : new JoinGame.fromData(data);
 
   prepareLobby(Lobby lobby) {
     super.prepareLobby(lobby);
@@ -211,7 +215,7 @@ class JoinGame extends AbstractLobbyAction {
   String toText() => "${user.name} joins the game [${game.name}]";
 }
 
-interface SpectateGameData extends LobbyActionData {
+abstract class SpectateGameData extends LobbyActionData {
   int gameId;
 }
 /** A user joins the game with the intent to watch it */
@@ -220,17 +224,17 @@ class SpectateGame extends AbstractLobbyAction {
   Game game;
 
   SpectateGame();
-  SpectateGame.data(JsonObject json) : super.data(json) {
-    SpectateGameData data = json;
+  SpectateGame.fromData(JsonObject json) : super.fromData(json) {
+    var data = json;
     _gameId = data.gameId;
   }
-  JsonObject get data() {
-    SpectateGameData data = super.data;
+  JsonObject get data {
+    var data = super.data;
     data.gameId = game == null ? null : game.id;
     return data;
   }
   SpectateGame copy([JsonObject data])  => data == null ?
-      new SpectateGame() : new SpectateGame.data(data);
+      new SpectateGame() : new SpectateGame.fromData(data);
 
   prepareLobby(Lobby lobby) {
     super.prepareLobby(lobby);
@@ -241,7 +245,7 @@ class SpectateGame extends AbstractLobbyAction {
   }
   String toText() => "${user.name} spectates game [${game.name}";
 }
-interface ChangeSettingsData extends LobbyActionData {
+abstract class ChangeSettingsData extends LobbyActionData {
   GameSettingsData settings;
   int gameId;
 }
@@ -252,19 +256,19 @@ class ChangeSettings extends AbstractLobbyAction {
   GameSettings settings;
 
   ChangeSettings();
-  ChangeSettings.data(JsonObject json) : super.data(json) {
-    ChangeSettingsData data = json;
+  ChangeSettings.fromData(JsonObject json) : super.fromData(json) {
+    var data = json;
     settings = fromData(data.settings);
     _gameId = data.gameId;
   }
-  JsonObject get data() {
-    ChangeSettingsData data = super.data;
+  JsonObject get data {
+    var data = super.data;
     data.gameId = game == null ? null : game.id;
     data.settings = nullOrDataFrom(settings);
     return data;
   }
   ChangeSettings copy([JsonObject data])  => data == null ?
-      new ChangeSettings() : new ChangeSettings.data(data);
+      new ChangeSettings() : new ChangeSettings.fromData(data);
 
   prepareLobby(Lobby lobby) {
     super.prepareLobby(lobby);
@@ -275,7 +279,7 @@ class ChangeSettings extends AbstractLobbyAction {
     game.phases.lobby.unreadyAllExceptHost(game.host);
   }
 }
-interface ReadyToStartData extends LobbyActionData {
+abstract class ReadyToStartData extends LobbyActionData {
   int gameId;
 }
 /** A user signals he is ready to start the game */
@@ -284,14 +288,14 @@ class ReadyToStart extends AbstractLobbyAction {
   Game game;
 
   ReadyToStart();
-  ReadyToStart.data(JsonObject json) : super.data(json) {
-    ReadyToStartData data = json;
+  ReadyToStart.fromData(JsonObject json) : super.fromData(json) {
+    var data = json;
     _gameId = data.gameId;
   }
   ReadyToStart copy([JsonObject data])  => data == null ?
-      new ReadyToStart() : new ReadyToStart.data(data);
-  JsonObject get data() {
-    LeaveGameData data = super.data;
+      new ReadyToStart() : new ReadyToStart.fromData(data);
+  JsonObject get data {
+    var data = super.data;
     data.gameId = game == null ? null : game.id;
     return data;
   }
@@ -302,13 +306,13 @@ class ReadyToStart extends AbstractLobbyAction {
   }
   update(Lobby lobby) {
     if (game.phases.lobby.readyUsers.filter
-        ((User u) => u.equals(user)).length == 0) {
+        ((User u) => u == user).length == 0) {
       game.phases.lobby.readyUsers.add(user);
     }
   }
   String toText() => "${user.name} wants to start the game";
 }
-interface LeaveGameData extends LobbyActionData {
+abstract class LeaveGameData extends LobbyActionData {
   int gameId;
 }
 /** A user leaves a game
@@ -323,14 +327,14 @@ class LeaveGame extends AbstractLobbyAction {
   Game game;
 
   LeaveGame();
-  LeaveGame.data(JsonObject json) : super.data(json) {
-    LeaveGameData data = json;
+  LeaveGame.fromData(JsonObject json) : super.fromData(json) {
+    var data = json;
     _gameId = data.gameId;
   }
   LeaveGame copy([JsonObject data])  => data == null ?
-    new LeaveGame() : new LeaveGame.data(data);
-  JsonObject get data() {
-    LeaveGameData data = super.data;
+    new LeaveGame() : new LeaveGame.fromData(data);
+  JsonObject get data {
+    var data = super.data;
     data.gameId = game == null ? null : game.id;
     return data;
   }

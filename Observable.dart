@@ -1,4 +1,7 @@
 // Makes events very terse!
+
+part of Dartan;
+
 typedef void Changed<T>();
 typedef void Added<T>(T item);
 typedef void Inserted<T>(T item, int insertedIndex);
@@ -42,7 +45,7 @@ class SupportedListenableLists extends ImmutableL<ListenableList> {
   SupportedListenableLists() : super([new ListenableList<String>()]);
 }
 
-interface Observable {
+abstract class Observable {
   void onSetted(String property, PropertyChanged handler);
   void offSetted(String property, PropertyChanged handler);
 }
@@ -53,8 +56,9 @@ class ObservableHelper {
   ObservableHelper() : listeners = new Map();
   void addListener(String propertyName, PropertyChanged handler) {
     if (handler != null) {
-      if (listeners[propertyName] == null)
+      if (listeners[propertyName] == null) {
         listeners[propertyName] = new List<PropertyChanged>();
+      }
       listeners[propertyName].add(handler);
     }
   }
@@ -66,10 +70,12 @@ class ObservableHelper {
       }
     }
   }
-  void fire(String propertyName, Dynamic oldValue, Dynamic newValue) {
-    if (listeners[propertyName] != null && !listeners[propertyName].isEmpty())
-      for (PropertyChanged handler in listeners[propertyName])
+  void fire(String propertyName, dynamic oldValue, dynamic newValue) {
+    if (listeners[propertyName] != null && !listeners[propertyName].isEmpty) {
+      for (PropertyChanged handler in listeners[propertyName]) {
         handler(oldValue, newValue);
+      }
+    }
   }
 }
 
@@ -154,7 +160,7 @@ class ListenableList<T> implements List<T>, Testable {
   */
 
   /** Fire event per item when list mutations happen */
-  bool get fireIndividualItems() => _fireIndividualItems;
+  bool get fireIndividualItems => _fireIndividualItems;
 
   init() {
     _internal = new List<T>();
@@ -175,8 +181,9 @@ class ListenableList<T> implements List<T>, Testable {
   ListenableList.from(Iterable<T> other)  {
     init();
 
-    for (T item in other)
+    for (T item in other) {
       _internal.add(item);
+    }
   }
 
   /* Changed */
@@ -187,14 +194,16 @@ class ListenableList<T> implements List<T>, Testable {
     _removeFromList(changedListeners, changed);
   }
   void _fireChanged() {
-    for (Changed<T> changed in changedListeners)
+    for (Changed changed in changedListeners) {
       changed();
+    }
   }
 
   /* Added */
   void onAdded(Added listener) {
-    if (addedListeners == null)
+    if (addedListeners == null) {
       addedListeners = new List<Added>();
+    }
 
     addedListeners.add(listener);
   }
@@ -202,8 +211,9 @@ class ListenableList<T> implements List<T>, Testable {
     _removeFromList(addedListeners, added);
   }
   void _fireAdded(T item) {
-    for (Added added in addedListeners)
+    for (Added added in addedListeners) {
       added(item);
+    }
   }
   void add(T toAdd) {
     _internal.add(toAdd);
@@ -224,8 +234,9 @@ class ListenableList<T> implements List<T>, Testable {
     _removeFromList(removedListeners, removed);
   }
   void _fireRemoved(T item){
-    for (Removed removed in removedListeners)
+    for (Removed removed in removedListeners) {
       removed(item);
+    }
   }
   bool remove(T item) {
     int index = _internal.indexOf(item);
@@ -245,8 +256,9 @@ class ListenableList<T> implements List<T>, Testable {
     }
   }
   T removeLast() {
-    if (!_internal.isEmpty())
+    if (!_internal.isEmpty) {
       remove(_internal[_internal.length-1]);
+    }
   }
 
 
@@ -258,8 +270,9 @@ class ListenableList<T> implements List<T>, Testable {
     _removeFromList(insertedListeners, inserted);
   }
   void _fireInserted(T insertedItem, int index) {
-    for (Inserted<T> inserted in insertedListeners)
+    for (Inserted<T> inserted in insertedListeners) {
       inserted(insertedItem, index);
+    }
   }
 
 
@@ -268,12 +281,15 @@ class ListenableList<T> implements List<T>, Testable {
     listAddedListeners.add(listAdded);
   }
   void _fireListAdded(Collection<T> added) {
-    for (ListAdded listAdded in listAddedListeners)
+    for (ListAdded listAdded in listAddedListeners) {
       listAdded(added);
+    }
 
-    if (_fireIndividualItems)
-      for (T item in added)
+    if (_fireIndividualItems) {
+      for (T item in added) {
         _fireAdded(item);
+    }
+      }
   }
   void addAll(Collection<T> collection)  {
     _internal.addAll(collection);
@@ -289,12 +305,15 @@ class ListenableList<T> implements List<T>, Testable {
     listRemovedListeners.add(listRemoved);
   }
   void _fireListRemoved(List<T> removedList) {
-    for (ListRemoved removed in listRemovedListeners)
+    for (ListRemoved removed in listRemovedListeners) {
       removed(removedList);
+    }
 
-    if (_fireIndividualItems)
-      for (T item in removedList)
+    if (_fireIndividualItems) {
+      for (T item in removedList) {
         _fireRemoved(item);
+    }
+      }
   }
   void clear() {
     List<T> removedItems = _internal;
@@ -305,8 +324,9 @@ class ListenableList<T> implements List<T>, Testable {
   void removeRange(int start, int len){
     List<T> removedItems = new List();
     if (len != 0 && start < _internal.length){
-      for (int i = 0; i < len; i++)
+      for (int i = 0; i < len; i++) {
         removedItems.add(_internal[start + i]);
+      }
 
       Expect.equals(len, removedItems.length);
       _internal.removeRange(start, len);
@@ -326,23 +346,26 @@ class ListenableList<T> implements List<T>, Testable {
     _removeFromList(listInsertedListeners, listInserted);
   }
   void _fireListInserted(List<T> insertedList) {
-    for (ListInserted inserted in listInsertedListeners)
+    for (ListInserted inserted in listInsertedListeners) {
       inserted(insertedList);
+    }
   }
 
   void insertRange(int start, int length, [T initialValue]) {
     if (length > 0) {
       List<T> insertedItems = new List();
-      for (int i=start; i < start+length; i++)
+      for (int i=start; i < start+length; i++) {
         insertedItems.add(initialValue);
+      }
       _internal.insertRange(start, length, initialValue);
       _fireListInserted(insertedItems);
       _fireChanged();
 
       int index = start;
       if (_fireIndividualItems) {
-        for (T item in insertedItems)
+        for (T item in insertedItems) {
           _fireInserted(item, index);
+        }
         index++;
       }
     }
@@ -351,8 +374,9 @@ class ListenableList<T> implements List<T>, Testable {
   void setRange(int start, int length, List<T> from, [int startFrom]) {
     if (from.length > 0) {
       List<T> removedItems = new List();
-      for (int i = start; i< start + length; i++)
+      for (int i = start; i< start + length; i++) {
         removedItems.add(_internal[i]);
+      }
       _internal.setRange(start, length, from, startFrom);
       _fireListRemoved(removedItems);
       _fireListAdded(from);
@@ -373,11 +397,13 @@ class ListenableList<T> implements List<T>, Testable {
   }
 
   // List<T>:
+  T get first => _internal.first;
+  T removeAt(int index) => _internal.removeAt(index);
   T operator [](int index) { return _internal[index]; }
   void set length(int newLength)  { /* nothing */ }
-  T last()  { return _internal.last(); }
-  void sort(int compare(T a, T b))  { _internal.sort(compare); }
-  int indexOf(T element, [int start]) { return _internal.indexOf(element, start); }
+  T get last  { return _internal.last; }
+  void sort([int compare(T a, T b)])  { _internal.sort(compare); }
+  int indexOf(T element, [int start = 0]) { return _internal.indexOf(element, start); }
   int lastIndexOf(T element, [int start])  { return _internal.lastIndexOf(element, start); }
   List<T> getRange(int start, int length) { return _internal.getRange(start, length); }
 
@@ -385,13 +411,15 @@ class ListenableList<T> implements List<T>, Testable {
   Iterator<T> iterator() => _internal.iterator();
 
   // Collection<T>:
+  T reduce(initial, combine(previous, T element)) => _internal.reduce(initial, combine);
+  bool contains(T element) => _internal.contains(element);
   Collection<T> filter(bool f(T element)) => _internal.filter(f);
   Collection map(f(T element)) => _internal.map(f);
   bool every(bool f(T element)) => _internal.every(f);
   bool some(bool f(T element)) => _internal.some(f);
   void forEach(void f(T element)) { _internal.forEach(f); }
-  bool isEmpty() => _internal.isEmpty();
-  int get length() => _internal.length;
+  bool get isEmpty => _internal.isEmpty;
+  int get length => _internal.length;
 
   test() {
     return new ListenableListTest().test();

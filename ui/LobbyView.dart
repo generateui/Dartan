@@ -1,3 +1,5 @@
+part of Dartan;
+
 /** Displays a lobby to the user and updates whenever lobby actions are performed */
 class LobbyView {
   Element root;
@@ -32,10 +34,10 @@ class LobbyView {
     users = new Element.html("<ul class=span4><h2>users</h2></ul>");
     chats = new Element.html("<ul class=span4><h2>chat</h2></ul>");
     games = new Element.html("<ul class=span4><h2>games</h2></ul>");
-    root.elements.add(actions);
-    root.elements.add(users);
-    root.elements.add(chats);
-    root.elements.add(games);
+    root.children.add(actions);
+    root.children.add(users);
+    root.children.add(chats);
+    root.children.add(games);
     root.classes.add("lobby");
     root.classes.add("row");
   }
@@ -44,9 +46,9 @@ class LobbyView {
   /** Shows and adds target user in the list of users of the lobby */
   addUser(User userToAdd) {
     Element e = new Element.tag("li");
-    e.innerHTML = userToAdd.name;
+    e.innerhtml = userToAdd.name;
     elementsByUser[userToAdd] = e;
-    users.elements.add(e);
+    users.children.add(e);
   }
   /** Removes target user from the displayed list of users */
   removeUser(User user) {
@@ -56,18 +58,18 @@ class LobbyView {
   /** Adds target action to the list element containing the actions */
   addAction(LobbyAction action) {
     Element e = new Element.tag("li");
-    e.elements.add(new Element.html("<p>${Dartan.smallIcon(action)} ${action.toText()}</p>"));
-    actions.elements.add(e);
+    e.children.add(new Element.html("<p>${Dartan.smallIcon(action)} ${action.toText()}</p>"));
+    actions.children.add(e);
   }
   /** Adds target action to the list element containing the chats */
   addChat(Say said) {
     Element e = new Element.tag("li");
-    e.innerHTML = said.toText();
-    chats.elements.add(e);
+    e.innerHtml = said.toText();
+    chats.children.add(e);
   }
   addGame(Game game) {
     GameListElement gameEl = new GameListElement(game);
-    games.elements.add(gameEl.element);
+    games.children.add(gameEl.element);
     elementsByGame[game] = gameEl;
   }
 }
@@ -93,11 +95,11 @@ class GameListElement {
     });
 
     //nameEl = new Element.html("<span>${game.name}</span>");
-    element.elements.add(nameEl);
+    element.children.add(nameEl);
     //ement.elements.add(wrapper);
-    element.elements.add(players.element);
-    element.elements.add(spectators.element);
-    element.elements.add(settingsIcons.element);
+    element.children.add(players.element);
+    element.children.add(spectators.element);
+    element.children.add(settingsIcons.element);
   }
 }
 /** Displays a list of icons hinting the user settings info */
@@ -116,18 +118,18 @@ class GameSettingsIconSummary {
     maxCardsInHandOn7 = new Element.html("<span class=settings></span>");
     maxTradesInTurn = new Element.html("<span class=settings></span>");
     playerAmount = new Element.html("<span class=settings></span>");
-    element.elements.add(withRobber);
-    element.elements.add(maxCardsInHandOn7);
-    element.elements.add(maxTradesInTurn);
-    element.elements.add(playerAmount);
+    element.children.add(withRobber);
+    element.children.add(maxCardsInHandOn7);
+    element.children.add(maxTradesInTurn);
+    element.children.add(playerAmount);
   }
 
   set settings(GameSettings s) {
     _settings=s;
     withRobber.style.opacity = s.withRobber ? "1.0" : "0.5";
-    maxCardsInHandOn7.innerHTML = s.maxCardsOn7.toString();
-    maxTradesInTurn.innerHTML = s.maxTradesInTurn.toString();
-    playerAmount.innerHTML = s.playerAmount.toString();
+    maxCardsInHandOn7.innerHtml = s.maxCardsOn7.toString();
+    maxTradesInTurn.innerHtml = s.maxTradesInTurn.toString();
+    playerAmount.innerHtml = s.playerAmount.toString();
   }
 }
 class ActsView {
@@ -138,14 +140,15 @@ class ActsView {
   int index;
 
   ActsView(this.gameTester) {
+    index = 0;
     element = new Element.tag("div");
     latestText = new Element.tag("label");
     elementsByActIndex = new Map();
     gameTester.onSetted("latest", (old, newF) {
       latestText.text = "Act #${index} went okay";
-      index++;
+      index = index + 1;
     });
-    element.elements.add(latestText);
+    element.children.add(latestText);
   }
 }
 /** Display an icon for every item in the list */
@@ -166,7 +169,9 @@ class IconList {
     element = new Element.tag("span");
     elementsByObject = new Map();
   }
-  IconList.fixed(String nameOfIcon) : this() {
+  IconList.fixed(String nameOfIcon) {
+    element = new Element.tag("span");
+    elementsByObject = new Map();
     fixedIcon = nameOfIcon;
   }
   addIcon(i) {
@@ -176,7 +181,7 @@ class IconList {
     } else {
       eli = new Element.html(Dartan.smallIcon(i));
     }
-    element.elements.add(eli);
+    element.children.add(eli);
     elementsByObject[i] = eli;
   }
   removeIcon(i) {

@@ -1,3 +1,5 @@
+part of Dartan;
+
 /** A wrapped game instance with additional info like a
 developmentcard stack, dice, basically anything that needs
 randomization or stuff the client should not know about */

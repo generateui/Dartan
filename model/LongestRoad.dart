@@ -1,25 +1,28 @@
-interface LongestRoadData extends JsonObject {
+part of Dartan;
+
+abstract class LongestRoadData extends JsonObject {
   String type;
   int playerId;
   List edgesOfRoute;
 }
 /** Represents the 2 points of the longest road */
-class LongestRoad implements VictoryPointItem, PlayerPiece, Observable, Jsonable {
+class LongestRoad implements VictoryPointItem, PlayerPiece, Observable, Jsonable, Testable {
   Player /* on */ _player;
   int playerId;
   ObservableHelper observable;
   LongestRoute route;
-  int get points() => 2;
+  int get points => 2;
 
   LongestRoad() {
     observable = new ObservableHelper();
   }
-  LongestRoad.data(JsonObject json) : this() {
-    LongestRoadData data = json;
+  LongestRoad.fromData(JsonObject json) {
+    observable = new ObservableHelper();
+    var data = json;
     playerId = data.playerId;
     // TODO: longest route data edgesOfRoute
   }
-  Player get /* on */ player() => _player;
+  Player get /* on */ player => _player;
   set /* on */ player(Player p) {
     if (p != _player) {
       Player oldPlayer = _player;
@@ -27,8 +30,8 @@ class LongestRoad implements VictoryPointItem, PlayerPiece, Observable, Jsonable
       observable.fire("player", oldPlayer, p);
     }
   }
-  JsonObject get data() {
-    LongestRoadData data = new JsonObject();
+  JsonObject get data {
+    var data = new JsonObject();
     data.type = nameOf(this);
     data.playerId = playerId;
     // TODO: longest route data
@@ -40,6 +43,7 @@ class LongestRoad implements VictoryPointItem, PlayerPiece, Observable, Jsonable
   removeFromPlayer(Player p) {
     p.victoryPoints.remove(this);
   }
+  bool operator ==(other) => true; // TODO: implement
   // Observable
   void onSetted(String property, PropertyChanged handler) {
     observable.addListener(property, handler);
@@ -49,6 +53,8 @@ class LongestRoad implements VictoryPointItem, PlayerPiece, Observable, Jsonable
   }
   // Copyable
   LongestRoad copy([JsonObject data]) =>
-      data == null ? new LongestRoad() : new LongestRoad.data(data);
+      data == null ? new LongestRoad() : new LongestRoad.fromData(data);
 
+  // Testable
+  void test() {}
 }

@@ -1,7 +1,9 @@
+part of Dartan;
+
 class BoardEditor extends View {
   Element element;
   DivElement buttonList;
-  SVGElement boardRoot;
+  svg.SvgElement boardRoot;
   SpanElement stateName;
   Board board;
   BoardVisual boardVisual;
@@ -22,12 +24,12 @@ class BoardEditor extends View {
       b.on.click.add((e) {
         setState(s);
       });
-      buttonList.elements.add(b);
+      buttonList.children.add(b);
     }
-    element.elements.add(stateName);
-    element.elements.add(buttonList);
-    element.elements.add(boardVisual.element);
-    div.elements.add(element);
+    element.children.add(stateName);
+    element.children.add(buttonList);
+    element.children.add(boardVisual.element);
+    div.children.add(element);
     boardVisual.hideAllEdges();
     boardVisual.hideAllVertices();
   }

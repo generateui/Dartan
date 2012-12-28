@@ -1,3 +1,5 @@
+part of Dartan;
+
 class ListenableListTest {
   test() {
     testOnAdded();
@@ -17,7 +19,7 @@ class ListenableListTest {
     list.offAdded(fail);
     list.add("wassup");
   }
-  
+
   testSet() {
     ListenableList<String> list = new ListenableList.from(["yo"]);
     int eventHitCount = 0;
@@ -30,7 +32,7 @@ class ListenableListTest {
     list[0] = "woei";
     Expect.equals(2, eventHitCount, "2 events fired");
   }
-  
+
   testOnAdded() {
     ListenableList<String> list = new ListenableList.from(["yo"]);
     bool addedEventFired = false;
@@ -48,7 +50,7 @@ class ListenableListTest {
     Expect.isTrue(changedEventFired, "Expected changed event to be fired");
     Expect.equals(2, list.length, "Expected 2 items in the list");
   }
-  
+
   testOnRemoved() {
     ListenableList<String> list = new ListenableList.from(["yo"]);
     bool removedEventFired = false;
@@ -59,7 +61,7 @@ class ListenableListTest {
     list.remove("yo");
     Expect.isTrue(removedEventFired, "expected remove event to be fired");
     Expect.equals(0, list.length, "Expected 0 items in the list");
-    
+
     ListenableList<String> list2 = new ListenableList.from(["yo", "yo", "yo"]);
     int removedEventsFired = 0;
     list2.onRemoved((String removed) {
@@ -82,14 +84,14 @@ class ListenableListTest {
     list2.offRemoved(l);
     list2.remove("yo");
   }
-  
+
   testAddList() {
     ListenableList<String> list = new ListenableList.from(["yo"]);
     bool listAddedEventFired = false;
     list.onListAdded((Collection<String> added) {
       Expect.equals(list[1], "yey", "Expected yey item in index=1");
       Expect.equals(list[2], "lol", "Expected lol item in index=2");
-      
+
       Iterator<String> it = list.iterator();
       it.next(); // skip index=0;
       Expect.equals(it.next(), "yey", "Expected yey item in index=1");
@@ -97,7 +99,7 @@ class ListenableListTest {
       Expect.equals(list.length, 3, "Expected 3 items in the list");
       listAddedEventFired = true;
     });
-    
+
     list.addAll(["yey", "lol"]);
     //Expect(
     Expect.isTrue(listAddedEventFired, "Expected listAdded event to be fired");

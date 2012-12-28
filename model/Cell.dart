@@ -1,4 +1,6 @@
-interface CellData extends JsonObject {
+part of Dartan;
+
+abstract class CellData extends JsonObject {
   String type;
   int row;
   int column;
@@ -11,14 +13,14 @@ class Cell implements Hashable, Testable, Jsonable, Copyable, Identifyable {
   List<Vertice> _vertices;
   List<Edge> _edges;
 
-  int get id() => hashCode();
+  int get id => hashCode;
+      set id(int id) { }
 
   // TODO: delegate to hashmap lookup
   Cell([this.row, this.column]);
-  Cell.data(JsonObject json) {
-    CellData d = json;
-    this.row = d.row;
-    this.column = d.column;
+  Cell.fromData(JsonObject json) {
+    row = json.row;
+    column = json.column;
   }
 
   String toText() => "[${row}, ${column}]";
@@ -26,15 +28,17 @@ class Cell implements Hashable, Testable, Jsonable, Copyable, Identifyable {
   Edge edgeByDegrees(int verticePosition) => new Edge(cells[verticePosition], this);
 
   bool operator ==(other) {
-    if (other === this)
+    if (identical(other, this)) {
       return true;
-    if (other == null)
+    }
+    if (other == null) {
       return false;
+    }
     return this.equals(other);
   }
 
   /** Returns a list containing 6 HexLocations starting with deg0 and ending with deg300 */
-  List<Cell> get cells() {
+  List<Cell> get cells {
     if (_cells == null) { // Lazy init
       _cells = new List<Cell>();
       int offset = row % 2 == 0 ? 0 : -1;  // offset for uneven rows
@@ -48,7 +52,7 @@ class Cell implements Hashable, Testable, Jsonable, Copyable, Identifyable {
     return _cells;
   }
   /** Neighbouring 6 vertices of this cell. */
-  List<Vertice> get vertices() {
+  List<Vertice> get vertices {
     if (_vertices == null) { // Lazy init
        _vertices = new List<Vertice>();
 
@@ -60,11 +64,12 @@ class Cell implements Hashable, Testable, Jsonable, Copyable, Identifyable {
     return _vertices;
   }
   /** Returns all 6 edges of this cell. */
-  List<Edge> get edges() {
+  List<Edge> get edges {
     if (_edges == null) { // lazy init
       _edges = new List<Edge>();
-      for (Cell n in cells)
+      for (Cell n in cells) {
         _edges.add(new Edge(this, n));
+      }
     }
     return _edges;
   }
@@ -82,9 +87,9 @@ class Cell implements Hashable, Testable, Jsonable, Copyable, Identifyable {
   }
   // Copyable
   copy([JsonObject data]) =>
-      data == null ? new Cell(row, column) : new Cell.data(data);
+      data == null ? new Cell(row, column) : new Cell.fromData(data);
   // Hashable
-  int hashCode() {
+  int get hashCode {
     int hash = 1;
     hash = hash * 31 + row;
     hash = hash * 31 + column;
@@ -92,8 +97,8 @@ class Cell implements Hashable, Testable, Jsonable, Copyable, Identifyable {
     return hash;
   }
   // Jsonable
-  JsonObject get data() {
-    CellData d = new JsonObject();
+  JsonObject get data {
+    var d = new JsonObject();
     d.row = row;
     d.column = column;
     d.type = Dartan.name(this);

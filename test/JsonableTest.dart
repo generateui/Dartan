@@ -1,3 +1,5 @@
+part of Dartan;
+
 expectJsonifiesType(JsonObject json) {
   Expect.isTrue(json["type"] != null);
 }
@@ -8,27 +10,27 @@ Jsonable copyJsonable(Jsonable toCopy) {
   String jsonString = JSON.stringify(data);
   JsonObject jsonNew = new JsonObject.fromJsonString(jsonString);
 
-  Jsonable newJsonable = new Jsonable.data(jsonNew);
+  Jsonable newJsonable = new Jsonable.fromData(jsonNew);
   return newJsonable;
 }
 expectEqualCopy(Jsonable thing) {
   Jsonable thingCopy;
   try {
     thingCopy = copyJsonable(thing);
-  } catch (Exception ex) {
+  } on Exception catch (ex) {
     Expect.fail("Failed copying a ${Dartan.name(thing)} because ${ex.toString()}");
   }
 
   String concreteName = Dartan.name(thing);
   Expect.isTrue(thingCopy != null, "Expected copied instance of ${concreteName}");
-  Expect.isTrue(thing.equals(thingCopy), "Copying a ${concreteName} failed");
+  Expect.isTrue(thing == thingCopy, "Copying a ${concreteName} failed");
 }
 class JsonableTest {
   test() {
     print("******* TESTING ALL IMPORTANT OBJECTS ********");
     for (Iterable<Testable> testables in new AllSupportedLists()) {
       for (Testable t in testables) {
-        Jsonable j = t;
+        var j = t; // TODO: unsure about m2 cast here
         String concreteName = Dartan.name(t);
         print ("testing ${concreteName}");
         if (t is! Collection) {
@@ -46,12 +48,13 @@ class JsonableTest {
           } else {
             try {
 //              t.equals(null);
-            } catch(Exception ex) {
-              NoSuchMethodException nsmex = ex;
-              print (nsmex._functionName);
-              if (ex is NoSuchMethodException && nsmex._functionName == "equals") {
-                Expect.fail("${concreteName} does not have an equals() method");
-              }
+            } on Exception catch(ex) {
+              // TODO: convert to m2
+//              NoSuchMethodError nsmex = ex;
+//              print (nsmex._functionName);
+//              if (ex is NoSuchMethodException && nsmex._functionName == "equals") {
+//                Expect.fail("${concreteName} does not have an equals() method");
+//              }
             }
             expectEqualCopy(j);
           }

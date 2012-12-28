@@ -1,3 +1,5 @@
+part of Dartan;
+
 class RoadTest {
   test() {
     User user = new ServerUser();
@@ -15,7 +17,7 @@ class RoadTest {
     Road r = new Road();
     r.id = 1;
     r.playerId = 1;
-    r.edge = new Edge(new Cell(0,0), new Cell(0,1));
+    r.edge = new Edge(new Cell(0, 0), new Cell(0, 1));
     expectEqualCopy(r);
   }
 }

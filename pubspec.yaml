@@ -1,0 +1,7 @@
+name:  sample_pubspec
+description:  A sample application
+
+dependencies:
+  json_object:
+    git: git://github.com/chrisbu/dartwatch-JsonObject.git
+

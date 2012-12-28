@@ -1,4 +1,6 @@
-interface GameSettingsData extends JsonObject {
+part of Dartan;
+
+abstract class GameSettingsData extends JsonObject {
   String type;
   bool withRobber;
   int maxCardsOn7;
@@ -46,8 +48,12 @@ class GameSettings implements Jsonable, Copyable, Testable {
       new Wheat(), new Ore(), new Sheep(), new Clay(), new Timber()
     ]);
   }
-  GameSettings.data(JsonObject json) : this() {
-    GameSettingsData data = json;
+  GameSettings.fromData(JsonObject json) {
+    bankResourceTypes = new List.from([
+      new Wheat(), new Ore(), new Sheep(), new Clay(), new Timber()
+    ]);
+    
+    var data = json;
 
     withRobber = data.withRobber;
     maxCardsOn7 = data.maxCardsOn7;
@@ -60,8 +66,8 @@ class GameSettings implements Jsonable, Copyable, Testable {
     bankResourceTypes = Oracle.fromDataList(data.bankResourceTypes);
     developmentCards = Oracle.fromDataList(data.developmentCards);
   }
-  JsonObject get data() {
-    GameSettingsData data = new JsonObject();
+  JsonObject get data {
+    var data = new JsonObject();
     data.type = Dartan.name(this);
     data.withRobber = withRobber;
     data.maxCardsOn7 = maxCardsOn7;
@@ -77,13 +83,13 @@ class GameSettings implements Jsonable, Copyable, Testable {
   }
   // Copyable
   GameSettings copy([JsonObject data]) => data == null ?
-      new GameSettings() : new GameSettings.data(data);
+      new GameSettings() : new GameSettings.fromData(data);
   // Testable
   test() {}
   String toText() => "Game Settings";
 
   // TODO: listEquals bankResources & DevelopomentCards
-  bool equals(other) =>
+  bool operator ==(other) =>
       withRobber == other.withRobber &&
       maxCardsOn7 == other.maxCardsOn7 &&
       maxTradesInTurn == other.maxTradesInTurn &&

@@ -1,44 +1,46 @@
+part of Dartan;
+
 /** HTML widget has a root element */
-interface AsElement {
+abstract class AsElement {
   Element element;
 }
-interface Svg {
-  SVGElement get svg();
+abstract class Svg {
+  svg.SvgElement get svgRoot;
 }
-interface Canvas {
+abstract class Canvas {
   draw(CanvasRenderingContext ctx); // Delegated drawing function
 }
 /** Anything that needs to be drawn onto a surface, like a tile, chit et cetera */
-interface Visual extends Svg, Canvas default VisualFactory {
+abstract class Visual implements Svg, Canvas {
   show(); // render it
   hide(); // don't render it
   select(); // render as user selected
   deSelect(); // toggle off user selected
-  Visual.svg(String type);
+//  factory Visual.svg(String type) = VisualFactory.svg;
 }
-class VisualFactory {
-  factory Visual.svg(String type) {
-    if (type=="Road") {
-      //return new RoadVisual.svg
-    }
-  }
-}
+//class VisualFactory {
+//  factory Visual.svg(String type) {
+//    if (type=="Road") {
+//      //return new RoadVisual.svg
+//    }
+//  }
+//}
 /** Draw a board on a canvas */
-interface BoardVisual extends Observable, AsElement, Visual {
+abstract class BoardVisual implements Observable, AsElement, Visual {
   showAllEdges();
   hideAllEdges();
   showAllVertices();
   hideAllVertices();
   showVertices(Collection<Vertice> vertices); // Only show target vertices subset
   showEdges(Collection<Edge> edges); // Only show target edges subset
-  Board2D get board2d();
+  Board2D get board2d;
   Board board;
-  BoardState get boardState();
-  PortPickerVisual get portPicker();
+  BoardState get boardState;
+  PortPickerVisual get portPicker;
 
   set boardState(BoardState s);
 
-  Visual get currentVisual();
+  Visual get currentVisual;
   set /* on */ currentVisual(Visual v);
 }
 
@@ -53,17 +55,17 @@ class Hexagon2D {
   double _edgeHeightFactor = 0.2;
   double _strokeWidth = 2.0;
 
-  double get bottomHeight() => _h;
-  double get halfHeight() => _height / 2;
-  double get halfWidth() => _halfWidth;
-  double get height() => _height;
-  double get partialHeight() => _sideLength + _h;
-  double get width()=> _width;
-  double get sideLength() => _sideLength;
-  double get edgeWidthFactor() => _edgeWidthFactor;
-  double get edgeHeightFactor() => _edgeHeightFactor;
-  double get strokeWidth() => _strokeWidth;
-  double get halfStrokeWidth() => _strokeWidth /2;
+  double get bottomHeight => _h;
+  double get halfHeight => _height / 2;
+  double get halfWidth => _halfWidth;
+  double get height => _height;
+  double get partialHeight => _sideLength + _h;
+  double get width=> _width;
+  double get sideLength => _sideLength;
+  double get edgeWidthFactor => _edgeWidthFactor;
+  double get edgeHeightFactor => _edgeHeightFactor;
+  double get strokeWidth => _strokeWidth;
+  double get halfStrokeWidth => _strokeWidth /2;
   double _degreesToRadians(double degrees) => degrees * Math.PI / 180;
 
   Hexagon2D(this._sideLength) { calculateHexSizes(); }
@@ -154,22 +156,24 @@ class AbstractVisual implements Visual {
   bool isHidden = false;
   bool isSvg = false;
   bool isCanvas = false;
-  SVGElement svg;
+  svg.SvgElement svgRoot;
   Board2D board2d;
 
   AbstractVisual.svg(this.board2d) { isSvg = true; }
   AbstractVisual.canvas(this.board2d) { isCanvas = true; }
-  SVGElement toSvg() => svg;
+  svg.SvgElement toSvg() => svgRoot;
 
   show() {
     isHidden = false;
-    if (isSvg)
-      svg.style.setProperty("display", "block");
+    if (isSvg) {
+      svgRoot.style.setProperty("display", "block");
+    }
   }
   hide() {
     isHidden = true;
-    if (isSvg)
-      svg.style.setProperty("display", "none");
+    if (isSvg) {
+      svgRoot.style.setProperty("display", "none");
+    }
   }
   void draw(CanvasRenderingContext ctx) {
     if (!isHidden) {
@@ -178,13 +182,15 @@ class AbstractVisual implements Visual {
   }
   select() {
     isSelected = true;
-    if (isSvg)
-      svg.attributes["stroke"] = "yellow";
+    if (isSvg) {
+      svgRoot.attributes["stroke"] = "yellow";
+    }
   }
   deSelect() {
     isSelected = false;
-    if (isSvg)
-      svg.attributes["stroke"] = "black";
+    if (isSvg) {
+      svgRoot.attributes["stroke"] = "black";
+    }
   }
 }
 class Point2D {

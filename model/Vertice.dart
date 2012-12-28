@@ -1,4 +1,6 @@
-interface VerticeData extends JsonObject{
+part of Dartan;
+
+abstract class VerticeData extends JsonObject{
   CellData c1;
   CellData c2;
   CellData c3;
@@ -37,26 +39,27 @@ class Vertice implements Hashable, Jsonable, Testable {
   Set<Vertice> _vertices; // neighbouring vertices
   Set<Edge> _edges;       // the three edges
 
-  int hashCode() => c1.hashCode() * c2.hashCode() * c3.hashCode();
-  bool equals(o) => hashCode() == o.hashCode();
+  int get hashCode => c1.hashCode * c2.hashCode * c3.hashCode;
+  bool equals(o) => hashCode == o.hashCode;
   String toText() => "Vertice [cell1: ${c1.toString()}, cell2: ${c2.toString()}, cell3: ${c3.toString()}]\n";
   bool hasCell(Cell c) => c1 == c || c2 == c || c3 == c;
 
   bool operator ==(other) {
-    if (other === this)
+    if (identical(other, this)) {
       return true;
-    if (other == null)
+    }
+    if (other == null) {
       return false;
-    return this.equals(other);
+    }
+    return this.hashCode == other.hashCode;
   }
   Vertice(this.c1, this.c2, this.c3){
     _swapCellsIfNecesary();
   }
-  Vertice.data(JsonObject json) {
-    VerticeData data = json;
-    c1 = new Cell.data(data.c1);
-    c2 = new Cell.data(data.c2);
-    c3 = new Cell.data(data.c3);
+  Vertice.fromData(JsonObject json) {
+    c1 = new Cell.fromData(json.c1);
+    c2 = new Cell.fromData(json.c2);
+    c3 = new Cell.fromData(json.c3);
     _swapCellsIfNecesary();
   }
   Vertice.coords(c1row, c1col, c2row, c2col, c3row, c3col) :
@@ -67,18 +70,20 @@ class Vertice implements Hashable, Jsonable, Testable {
 
     // Find the Cell used by both edges, remove it
     Cell equalCell = null;
-    if (e1.c1 == e2.c1)
+    if (e1.c1 == e2.c1) {
       equalCell = e1.c1;
-    if (e1.c1 == e2.c2)
+    }
+    if (e1.c1 == e2.c2) {
       equalCell = e1.c1;
+    }
     allCells.removeRange(allCells.indexOf(equalCell), 1);
 
     c1 = allCells[0];
     c2 = allCells[1];
     c3 = allCells[2];
   }
-  JsonObject get data() {
-    VerticeData data = new JsonObject();
+  JsonObject get data {
+    JsonObject data = new JsonObject();
     data.c1 = c1.data;
     data.c2 = c2.data;
     data.c3 = c3.data;
@@ -154,25 +159,28 @@ class Vertice implements Hashable, Jsonable, Testable {
       neighbours.filter((Vertice v) => v != ignore);
 
   /** The three cells in a set */
-  List<Cell> get cells() {
-    if (_cells == null) // lazy init
+  List<Cell> get cells {
+    if (_cells == null) { // lazy init
       _cells = new List<Cell>.from([c1, c2, c3]);
+    }
 
     return _cells;
   }
   /** Returns the type of the hex: one or two Hexes on the upper row */
-  int get type() {
+  int get type {
     if (_type == -1) { // lazy init
       List<Cell> cells = new List<Cell>.from([c1, c2, c3]);
       int rmax = 220; //arbitrary high number
       for (Cell c in cells)
-        if (c.row < rmax)
+        if (c.row < rmax) {
           rmax = c.row;
+        }
 
       int count = 0;
       for (Cell c in cells)
-        if (c.row == rmax)
+        if (c.row == rmax) {
           count++;
+        }
 
       _type = count == 1 ? VerticeType.UpperRow1 : VerticeType.UpperRow2;
     }
@@ -183,7 +191,7 @@ class Vertice implements Hashable, Jsonable, Testable {
     return type == VerticeType.UpperRow1 ? VerticePosition.BottomMiddle : VerticePosition.BottomRight;
   }
   /** Returns a list of the three [Edge]s adjacent to this point */
-  Set<Edge> get edges() {
+  Set<Edge> get edges {
     if (_edges == null) { // lazy init
       _edges = new HashSet<Edge>.from([
          new Edge(c1, c2),
@@ -203,28 +211,34 @@ class Vertice implements Hashable, Jsonable, Testable {
       int maxr = 220;
       int maxc = 220;
       for (Cell c in cells) {
-        if (c.row < maxr)
+        if (c.row < maxr) {
           maxr = c.row;
-        if (c.column < maxc)
+        }
+        if (c.column < maxc) {
           maxc = c.column;
+        }
       }
       List<Cell> res = new List<Cell>();
-      if (c1.column == maxc)
+      if (c1.column == maxc) {
         res.add(c1);
-      if (c2.column == maxc)
+      }
+      if (c2.column == maxc) {
         res.add(c2);
-      if (c3.column == maxc)
+      }
+      if (c3.column == maxc) {
         res.add(c3);
+      }
       if (res.length == 1) {
         return res[0];
       } else {
         if (res.length == 2)
         {
           Cell l = res[0];
-          if (l.row < res[0].row)
+          if (l.row < res[0].row) {
             return l;
-          else
+          } else {
             return res[1];
+          }
         }
       }
     }
@@ -232,7 +246,7 @@ class Vertice implements Hashable, Jsonable, Testable {
   }
 
   /** Returns a list of neighbour points */
-  List<Vertice> get neighbours() {
+  List<Vertice> get neighbours {
     List<Vertice> result = new List<Vertice>();
     Cell topmost = topMost();
     if (topmost.column % 2 == 0) {
@@ -310,5 +324,5 @@ class Vertice implements Hashable, Jsonable, Testable {
   }
   // Copyable
   copy([JsonObject data]) =>
-      data == null ? new Vertice(c1, c2, c3) : new Vertice.data(data);
+      data == null ? new Vertice(c1, c2, c3) : new Vertice.fromData(data);
 }

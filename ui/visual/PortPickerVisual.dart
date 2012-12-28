@@ -1,17 +1,19 @@
+part of Dartan;
+
 class PortPickerVisual extends AbstractVisual {
-  List<SVGPolygonElement> polygons;
-  SVGGElement group;
+  List<svg.PolygonElement> polygons;
+  svg.GElement group;
   int selectedTriangle = 0;
   Tile selectedTile;
   PortPickerVisual(Board2D board2d) : super.svg(board2d) {
-    group  = new SVGElement.tag("g");
+    group  = new svg.SvgElement.tag("g");
     for (int i=0; i < 6; i++) {
       Cell c = new Cell(0, 0);
       Point2D center = board2d.xyCellCenter(c);
       int j = i == 5 ? 0 : i+1;
       Point2D v1 = board2d.xyVertice(c.vertices[i]);
       Point2D v2 = board2d.xyVertice(c.vertices[j]);
-      SVGPolygonElement p = new SVGElement.tag("polygon");
+      svg.PolygonElement p = new svg.SvgElement.tag("polygon");
       p.attributes = {
         "fill": "purple",
         "stroke": 2,
@@ -26,9 +28,9 @@ class PortPickerVisual extends AbstractVisual {
       p.on.mouseOut.add((Event e) {
 
       });
-      group.elements.add(p);
+      group.nodes.add(p);
     }
-    svg = group;
+    svgRoot = group;
   }
   setPosition(Tile tile) {
     selectedTile = tile;

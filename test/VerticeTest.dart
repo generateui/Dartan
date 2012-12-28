@@ -1,3 +1,5 @@
+part of Dartan;
+
 class VerticeTest {
   test() {
     Cell c1 = new Cell(0,0);

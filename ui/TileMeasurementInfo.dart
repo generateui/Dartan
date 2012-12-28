@@ -1,11 +1,13 @@
+part of Dartan;
+
 class TileMeasurementInfo {
   BoardVisual boardVisual;
   Board board;
   Cell fake;
-  SVGElement element;
+  svg.SvgElement element;
 
   TileMeasurementInfo() {
-    element = new Element.tag("svg");
+    element = new svg.SvgElement.tag("svg");
     fake = new Cell(0,0);
     board = new Board();
     board.addTile(new Sea(fake));
@@ -18,22 +20,22 @@ class TileMeasurementInfo {
     boardVisual.hideAllVertices();
     double x = board2d.xyCell(fake).x;
     double y = board2d.xyCell(fake).y + board2d.hex2d.height;
-    SVGElement g = horizontalLine(x, y, board2d.hex2d.halfWidth, "halfwidth");
-    element.elements.add(boardVisual.element);
-    element.elements.add(g);
+    svg.SvgElement g = horizontalLine(x, y, board2d.hex2d.halfWidth, "halfwidth");
+    element.nodes.add(boardVisual.element);
+    element.nodes.add(g);
   }
 
-  SVGGElement horizontalLine(num x, num y, num length, String t) {
-    SVGGElement g = new SVGElement.tag("g");
+  svg.GElement horizontalLine(num x, num y, num length, String t) {
+    svg.GElement g = new svg.SvgElement.tag("g");
     num shortlength = 5;
-    SVGLineElement shortLeft = new SVGElement.tag("line");
+    svg.LineElement shortLeft = new svg.SvgElement.tag("line");
     shortLeft.attributes = {
       "x1": x,
       "x2": x,
       "y1": y - (shortlength/2),
       "y2": y + (shortlength/2)
     };
-    SVGLineElement shortRight = new SVGElement.tag("line");
+    svg.LineElement shortRight = new svg.SvgElement.tag("line");
     shortRight.attributes = {
       //"fill": "black",
       "stroke-width":"2",
@@ -42,14 +44,14 @@ class TileMeasurementInfo {
       "y1": y - (shortlength/2),
       "y2": y + (shortlength/2)
     };
-    SVGLineElement long = new SVGElement.tag("line");
+    svg.LineElement long = new svg.SvgElement.tag("line");
     long.attributes = {
       "x1": x,
       "x2": x + length,
       "y1": y,
       "y2": y
     };
-    SVGTextElement text = new SVGElement.tag("text");
+    svg.TextElement text = new svg.SvgElement.tag("text");
     text.attributes = {
        "x": x + 3.0,
        "y": y + 10.0,
@@ -59,10 +61,10 @@ class TileMeasurementInfo {
        "font-size":"10"
     };
     text.text=t;
-    element.elements.add(shortLeft);
-    element.elements.add(shortRight);
-    element.elements.add(long);
-    element.elements.add(text);
+    element.nodes.add(shortLeft);
+    element.nodes.add(shortRight);
+    element.nodes.add(long);
+    element.nodes.add(text);
     return g;
   }
 }

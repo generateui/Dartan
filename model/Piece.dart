@@ -1,41 +1,43 @@
+part of Dartan;
+
 /** Anything a player may own and place on the board */
-interface Piece extends Identifyable, Hashable, Copyable, Testable, Jsonable {
+abstract class Piece implements Identifyable, Hashable, Copyable, Testable, Jsonable {
   Player player; // Player owning the piece, might be null
-  bool get isStock(); // If not yet placed on the board, is this piece kept in stock?
-  bool get affectsRoad(); // When placed on board, recalculate longest road?
-  ResourceList get cost(); // Cost to buy this piece, might be null
+  bool get isStock; // If not yet placed on the board, is this piece kept in stock?
+  bool get affectsRoad; // When placed on board, recalculate longest road?
+  ResourceList get cost; // Cost to buy this piece, might be null
 }
 class SupportedPieces extends ImmutableL<Piece> {
   SupportedPieces() : super([new Road(), new Town(), new City()]);
 }
 /** Dispatched calls to add/remove the piece */
-interface PlayerPiece {
+abstract class PlayerPiece {
   addToPlayer(Player player);
   removeFromPlayer(Player player);
 }
 /** A piece producing resources for the player */
-interface Producer extends Jsonable {
+abstract class Producer implements Jsonable {
   ResourceList produce(Tile tile);
-  Vertice get vertice();
+  Vertice get vertice;
 }
 /** Piece residing on an edge, e.g. a road, ship or bridge */
-interface EdgePiece extends Jsonable {
+abstract class EdgePiece implements Jsonable {
   Edge edge;
 
   // Assuming the vertice is not occupied by (friendly/non-friendly) VerticePiece
-  bool get connectsWithRoad();
-  bool get connectsWithShip();
-  bool get connectsWithBridge();
+  bool get connectsWithRoad;
+  bool get connectsWithShip;
+  bool get connectsWithBridge;
 }
 /** Piece residing on a vertice, e.g. a town or city */
-interface VerticePiece extends Jsonable {
+abstract class VerticePiece implements Jsonable {
   Vertice vertice;
 }
 /** Anything giving the player a point */
-interface VictoryPointItem extends Jsonable {
-  int get points();
+abstract class VictoryPointItem implements Jsonable {
+  int get points;
 }
-interface RoadData extends JsonObject {
+abstract class RoadData extends JsonObject {
   int id;
   int playerId;
   String type;
@@ -47,22 +49,22 @@ class Road implements Piece, EdgePiece, PlayerPiece {
   int playerId;
   Edge edge;
 
-  ResourceList get cost() => new RoadCost();
-  bool get isStock() => true;
-  bool get affectsRoad() => true;
-  bool get connectsWithRoad() => true;
-  bool get connectsWithShip() => false;
-  bool get connectsWithBridge() => true;
+  ResourceList get cost => new RoadCost();
+  bool get isStock => true;
+  bool get affectsRoad => true;
+  bool get connectsWithRoad => true;
+  bool get connectsWithShip => false;
+  bool get connectsWithBridge => true;
 
   Road();
-  Road.data(JsonObject json) {
-    RoadData data = json;
+  Road.fromData(JsonObject json) {
+    var data = json;
     id = data.id;
     playerId = data.playerId;
     edge = fromData(data.edge);
   }
-  JsonObject get data() {
-    RoadData data = new JsonObject();
+  JsonObject get data {
+    var data = new JsonObject();
     data.id = id;
     data.type = Dartan.name(this);
     data.edge = nullOrDataFrom(edge);
@@ -70,7 +72,7 @@ class Road implements Piece, EdgePiece, PlayerPiece {
     return data;
   }
   Road copy([JsonObject data]) => data == null ?
-      new Road() : new Road.data(data);
+      new Road() : new Road.fromData(data);
 
   addToPlayer(Player p) {
     p.roads.add(this);
@@ -83,22 +85,23 @@ class Road implements Piece, EdgePiece, PlayerPiece {
     p.edgePieces.remove(this);
   }
   // Hashable
-  int hashCode() {
-    if (id==null)
+  int get hashCode {
+    if (id==null) {
       id = Dartan.generateHashCode(this);
+    }
     return id;
   }
-  bool equals(other) =>
-      id == other.id &&
-      playerId == other.playerId &&
-      edge == other.edge;
+  bool operator ==(other) =>
+    id == other.id &&
+    playerId == other.playerId &&
+    edge == other.edge;
 
   // Testable
   test() {
     new RoadTest().test();
   }
 }
-interface TownData extends JsonObject {
+abstract class TownData extends JsonObject {
   int id;
   int playerId;
   String type;
@@ -110,14 +113,14 @@ class Town implements Piece, VerticePiece, Producer, VictoryPointItem, PlayerPie
   Player player;
   Vertice vertice;
 
-  ResourceList get cost() => new TownCost();
-  bool get isStock() => true;
-  bool get affectsRoad() => true;
-  int get points() => 1;
+  ResourceList get cost => new TownCost();
+  bool get isStock => true;
+  bool get affectsRoad => true;
+  int get points => 1;
 
   Town();
-  Town.data(JsonObject json) {
-    TownData data = json;
+  Town.fromData(JsonObject json) {
+    var data = json;
     id = data.id;
     playerId = data.playerId;
     vertice = fromData(data.vertice);
@@ -140,12 +143,12 @@ class Town implements Piece, VerticePiece, Producer, VictoryPointItem, PlayerPie
   ResourceList produce(Tile tile) {
     // TODO: implement
   }
-  bool equals(other) => other.id == id;
+  bool operator ==(other) => other.id == id;
   // Copyable
-  Town copy([JsonObject data]) => data==null ? new Town() : new Town.data(data);
+  Town copy([JsonObject data]) => data==null ? new Town() : new Town.fromData(data);
   // Jsonable
-  JsonObject get data() {
-    TownData data = new JsonObject();
+  JsonObject get data {
+    var data = new JsonObject();
     data.id = id;
     data.playerId = playerId;
     data.type = Dartan.name(this);
@@ -153,16 +156,17 @@ class Town implements Piece, VerticePiece, Producer, VictoryPointItem, PlayerPie
     return data;
   }
   // Hashable
-  int hashCode() {
-    if (id==null)
+  int get hashCode {
+    if (id==null) {
       id = Dartan.generateHashCode(this);
+    }
     return id;
   }
   test() {
     new TownTest().test();
   }
 }
-interface CityData extends JsonObject {
+abstract class CityData extends JsonObject {
   int id;
   int playerId;
   String type;
@@ -174,14 +178,14 @@ class City implements Piece, VerticePiece, Producer, VictoryPointItem, PlayerPie
   int playerId;
   Vertice vertice;
 
-  ResourceList get cost() => new CityCost();
-  bool get isStock() => true;
-  bool get affectsRoad() => false;
-  int get points() => 2;
+  ResourceList get cost => new CityCost();
+  bool get isStock => true;
+  bool get affectsRoad => false;
+  int get points => 2;
 
   City();
-  City.data(JsonObject json) {
-    CityData data = json;
+  City.fromData(JsonObject json) {
+    var data = json;
     id = data.id;
     playerId = data.playerId;
     vertice = fromData(data.vertice);
@@ -204,10 +208,10 @@ class City implements Piece, VerticePiece, Producer, VictoryPointItem, PlayerPie
     // TODO: implement
   }
   // Copyable
-  City copy([JsonObject data]) => data==null ? new City() : new City.data(data);
+  City copy([JsonObject data]) => data==null ? new City() : new City.fromData(data);
   // Jsonable
-  JsonObject get data() {
-    CityData data = new JsonObject();
+  JsonObject get data {
+    var data = new JsonObject();
     data.id = id;
     data.playerId = playerId;
     data.type = Dartan.name(this);
@@ -216,15 +220,16 @@ class City implements Piece, VerticePiece, Producer, VictoryPointItem, PlayerPie
     return data;
   }
   // Hashable
-  int hashCode() {
-    if (id==null)
+  int get hashCode {
+    if (id==null) {
       id = Dartan.generateHashCode(this);
+    }
     return id;
   }
-  bool equals(other) =>
-      other.id == id &&
-      other.playerId == playerId &&
-      other.vertice == vertice;
+  bool operator ==(other) =>
+    other.id == id &&
+    other.playerId == playerId &&
+    other.vertice == vertice;
 
   test() {
     new CityTest().test();

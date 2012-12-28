@@ -1,3 +1,5 @@
+part of Dartan;
+
 /** Shows all objects grouped by interface with test results per object */
 class Test extends View {
   bool performed = false;
@@ -31,7 +33,7 @@ class Test extends View {
         String n = Dartan.name(thing);
         try {
           thing.test();
-        } catch (Exception ex) { 
+        } on Exception catch (ex) {
           fail = true;
           failed++;
           groupMsg.add("""<li><span class="failure">${noCheck} <strong>Fail: </strong></span><strong>${n} </strong><span class="failure">${ex.toString()}</span></li>""");

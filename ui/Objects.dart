@@ -1,3 +1,5 @@
+part of Dartan;
+
 class Objects extends View {
   bool generated = false;
   Objects() {
@@ -17,8 +19,9 @@ class Objects extends View {
     int g = 0;
     for (Iterable<Testable> group in groups){
       g++;
-      for (Testable t in group)
+      for (Testable t in group) {
         i++;
+      }
     }
     String msg = "Supports <strong>${i}</strong> implementations grouped by <strong>${g}</strong> interfaces";
     document.query('#objectsSummary').innerHTML = msg;
@@ -44,14 +47,14 @@ class Objects extends View {
     StringBuffer msg = new StringBuffer("""
        <table class="table table-striped table-bordered table-condensed">
          <tr style="height: 5em;">
-           <th>name</th> 
-           <th><div class=condensed>robber</div></th> 
-           <th><div class=condensed>pirate</div></th> 
-           <th><div class=condensed>can have port</div></th> 
-           <th><div class=condensed>can have chit</div></th> 
-           <th><div class=condensed>included on game board</div></th> 
-           <th><div class=condensed>has chit</div></th> 
-           <th><div class=condensed>produces resource</div></th> 
+           <th>name</th>
+           <th><div class=condensed>robber</div></th>
+           <th><div class=condensed>pirate</div></th>
+           <th><div class=condensed>can have port</div></th>
+           <th><div class=condensed>can have chit</div></th>
+           <th><div class=condensed>included on game board</div></th>
+           <th><div class=condensed>has chit</div></th>
+           <th><div class=condensed>produces resource</div></th>
          </tr>
     """);
     for (Tile t in supp) {
@@ -87,9 +90,11 @@ class Objects extends View {
     StringBuffer msg = new StringBuffer();
     msg.add("<span>");
     for (String t in resources.types())
-      if (resources.hasType(t)) 
-        for (Resource r in resources.ofType(t))
+      if (resources.hasType(t)) {
+        for (Resource r in resources.ofType(t)) {
           msg.add(Dartan.smallIcon(r));
+      }
+        }
     msg.add("</span>");
     return msg.toString();
   }
@@ -124,12 +129,12 @@ class Objects extends View {
   }
   void writeResourcesTable() {
     Iterable<Resource> supported = new SupportedResources();
-    
+
     StringBuffer msg = new StringBuffer();
     msg.add("""
       <table class=\"table table-striped table-bordered table-condensed\">
       <th>name</th> <th>tradeable</th> <th>color</th>""");
-    
+
     for (Resource r in supported) {
       msg.add(""" <tr>
                     <td>${Dartan.link(r)}</td>

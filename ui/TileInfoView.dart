@@ -1,3 +1,5 @@
+part of Dartan;
+
 class TileInfoView {
   Element root;
   TileInfoView(){
@@ -12,7 +14,7 @@ class TileInfoView {
       <p></p>
       <p></p>
     """);
-    
+
     root.innerHTML = msg.toString();
   }
   String cellHtml(Cell c) {

@@ -1,3 +1,5 @@
+part of Dartan;
+
 /** Takes a game, a list of acts (action with expectations after performing)
 and runs through all the acts consecutively. This can also be used for scripted
 game testing while watching. */
@@ -31,7 +33,7 @@ class GameTester implements Observable {
 //    }
   }
   executeNext() {
-    if (it.hasNext()) {
+    if (it.hasNext) {
       Function f = it.next();
       try {
         f();
@@ -41,7 +43,7 @@ class GameTester implements Observable {
         }
         Function old = latest;
         observable.fire("latest", old, f);
-      } catch(Exception ex) {
+      } on Exception catch(ex) {
         if (!optimistic) {
           window.clearTimeout(timeHandle); //just schedule next
         }
@@ -65,8 +67,8 @@ class GameTester implements Observable {
 /** This should be seperated to client/game, client/lobby and
 server/game & server/lobby. Preferably to a splitscreen view,
 where visually monitoring the server state and client state is possible */
-interface ScriptedGameTest {
-  List<Function> get acts();
+abstract class ScriptedGameTest {
+  List<Function> get acts;
   Game game;
   Lobby clientLobby;
 }
@@ -342,13 +344,13 @@ class GameTest implements ScriptedGameTest {
     expectClientGame.hasUserAmount(1);
     expectClientGame.hasHost(user1);
     expectClientGame.hasPlayer(p1);
-    Expect.isTrue(gameAtClient.players[0].user.equals(user1),
+    Expect.isTrue(gameAtClient.players[0].user == user1,
       "Expected user of first player to be user1");
     expectClientLobby.actionIsPlayed(11, newGame);
 
-    Expect.isFalse(gameClient.lobby.games.isEmpty(),
+    Expect.isFalse(gameClient.lobby.games.isEmpty,
       "empty list of games in client-lobby");
-    Expect.isFalse(server.lobby.games.isEmpty(),
+    Expect.isFalse(server.lobby.games.isEmpty,
       "empty list of games in server-lobby");
     Expect.isFalse(server.lobby.games[0] == null);
   }); }
@@ -416,9 +418,9 @@ class GameTest implements ScriptedGameTest {
 
 //    Expect.isTrue(hasId(user1.id, gameAtClient.phases.lobby.readyUsers),
 //      "Expected game to have the settings changer as having OKed the settings");
-    Expect.isTrue(gameAtClient.settings.equals(newSettings),
+    Expect.isTrue(gameAtClient.settings == newSettings,
       "Expected equal settings");
-    Expect.isTrue(gameAtServer.settings.equals(newSettings),
+    Expect.isTrue(gameAtServer.settings == newSettings,
       "Expected equal settings");
     expectServerLobby.actionIsPlayed(15, changeSettingz);
     expectClientLobby.actionIsPlayed(15, changeSettingz);
@@ -491,9 +493,9 @@ class GameTest implements ScriptedGameTest {
 
     expectClientGame.onlyHostReadyToStart();
     expectServerGame.onlyHostReadyToStart();
-    Expect.isTrue(gameAtClient.settings.equals(newSettings),
+    Expect.isTrue(gameAtClient.settings == newSettings,
       "Expectsed equal settings");
-    Expect.isTrue(gameAtServer.settings.equals(newSettings),
+    Expect.isTrue(gameAtServer.settings == newSettings,
       "Expected equal settings");
     expectServerLobby.actionIsPlayed(21, changeSettingz);
     expectClientLobby.actionIsPlayed(21, changeSettingz);
@@ -635,7 +637,7 @@ class ExpectGame {
   hasHost(User host) {
     Expect.isNotNull(host);
     Expect.isNotNull(game.host, "Host of game is null, expected instance");
-    Expect.isTrue(game.host.equals(host),
+    Expect.isTrue(game.host == host,
         "Expected ${host.name} to be the host instead ${game.host.name} found as host");
   }
   hasSpectator(User spectator) {
@@ -649,7 +651,7 @@ class ExpectGame {
   }
   allUsersReadyToStart() {
     for (User user in game.users) {
-      if (game.phases.lobby.readyUsers.filter((User u) => u.equals(user)).length==0) {
+      if (game.phases.lobby.readyUsers.filter((User u) => u == user).length==0) {
         Expect.fail("Expected user ${user.name} to be ready to play");
       }
     }
@@ -657,7 +659,7 @@ class ExpectGame {
   onlyHostReadyToStart() {
     Expect.isTrue(game.phases.lobby.readyUsers.length == 1,
         "Only host should be ready to start");
-    Expect.isTrue(game.phases.lobby.readyUsers[0].equals(game.host),
+    Expect.isTrue(game.phases.lobby.readyUsers[0] == game.host,
       "Expected only host in list of users ready to start");
   }
   hasRobber() {
@@ -685,7 +687,7 @@ class ExpectGame {
     Player found = byId(p.id, game.players);
     Expect.isNotNull(found,
       "Expected to find a player in game with id=${p.id}, name=${p.user.name}");
-    Expect.isTrue(p.equals(found),
+    Expect.isTrue(p == found,
       "Expected the found player to be equal to the specified player");
   }
 }

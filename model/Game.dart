@@ -1,7 +1,9 @@
+part of Dartan;
+
 class SupportedGames extends ImmutableL<Game> {
   SupportedGames() : super([new Game()]);
 }
-interface GameData extends JsonObject {
+class GameData extends JsonObject {
   String type;
   int id;
   int hostUserId;
@@ -32,7 +34,7 @@ interface GameData extends JsonObject {
 /** Defaults to non-null members if not explicitly initialized on null */
 class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
   ObservableHelper observable;
-  static User get serverUser() => new ServerUser();
+  static User get serverUser => new ServerUser();
 
   Date startedDateTime;
 
@@ -67,10 +69,10 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
   GameStatus /* on */ status;
   Turn /* on */ turn = null;  // init to null, non-null when first time in [TurnsGamePhase]
 
-  bool get atClient() => true;  // True when executing at client
-  bool get atServer() => false; // True when at Server
+  bool get atClient => true;  // True when executing at client
+  bool get atServer => false; // True when at Server
 
-  GameSettings get /* on */ settings() => _settings;
+  GameSettings get /* on */ settings => _settings;
   set /* on */ settings(GameSettings s) {
     GameSettings old = _settings;
     _settings = s;
@@ -93,12 +95,12 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
     settings = settings == null ? new GameSettings() : settings;
   }
   Game() { _init(); }
-  Game.data(JsonObject json) {
-    GameData d = json;
+  Game.fromData(JsonObject json) {
+    var d = json;
     id = d.id;
     _hostUserId = d.hostUserId;
     spectators = llFrom(d.spectators);
-    phases = d.phases == null ? new AllPhases() : new AllPhases.data(d.phases);
+    phases = d.phases == null ? new AllPhases() : new AllPhases.fromData(d.phases);
     status = new Playing();
     _settings = fromData(d.settings);
     turns = llFrom(d.turns);
@@ -172,7 +174,7 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
   /** Get target player by given user, or null if no player found */
   Player playerByUser(User u) {
     List<Player> r = players.filter((p) => p.user.id == u.id);
-    if (!r.isEmpty()) {
+    if (!r.isEmpty) {
       return r[0];
     } else {
       return null;
@@ -201,17 +203,18 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
     observable.removeListener(property, handler);
   }
   // Hashable
-  int hashCode() {
-    if (id==null)
+  int get hashCode {
+    if (id==null) {
       id = Dartan.generateHashCode(this);
+    }
     return id;
   }
   // Copyable
   Game copy([JsonObject data]) => data == null ?
-      new Game() : new Game.data(data);
+      new Game() : new Game.fromData(data);
   // Jsonable
-  JsonObject get data() {
-    GameData data = new JsonObject();
+  JsonObject get data {
+    JsonObject data = new JsonObject();
     data.id = id;
     data.type = Dartan.name(this);
     data.name = name;
@@ -238,7 +241,7 @@ class Game implements Testable, Observable, Hashable, Identifyable, Jsonable {
     data.board = nullOrDataFrom(board);
     return data;
   }
-  bool equals(other) => other.id==id;
+  bool operator ==(other) => other.id == id;
   test() {
     JsonObject jso;
     jso = new JsonObject.fromMap({

@@ -1,5 +1,7 @@
+part of Dartan;
+
 /** Any action performed in a game */
-interface GameAction extends Action {
+abstract class GameAction extends Action {
   int gameId;
   int playerId;
 
@@ -17,7 +19,7 @@ interface GameAction extends Action {
   bool allowedGamePhase(GamePhase gamePhase);
 }
 /** Generalized interface for data needed on all actions */
-interface GameActionData extends JsonObject {
+abstract class GameActionData extends JsonObject {
   String type;
   int id;
   int userId;
@@ -29,7 +31,7 @@ class SupportedGameActions extends ImmutableL<GameAction> {
     new AbstractGameAction(),
     new RollDice(),
     new StartGame(),
-    new NewGame(),
+    //new NewGame(),
 
     // Trading
     new TradeBank(),
@@ -53,25 +55,25 @@ class AbstractGameAction implements GameAction {
   TurnPhase turnPhase;
 
   AbstractGameAction();
-  AbstractGameAction.data(JsonObject json) {
-    GameActionData data = json;
+  AbstractGameAction.fromData(JsonObject json) {
+    var data = json;
     id = data.id;
     userId = data.userId;
     playerId = data.playerId;
     gameId = data.gameId;
   }
 
-  bool get isServer() => this is ServerAction;
-  bool get inGame() => false;
-  bool get isGame() => true;
-  bool get isLobby() => this is LobbyAction;
-  bool get isTrade() => false;
-  bool get mutatesGame() => false;
+  bool get isServer => this is ServerAction;
+  bool get inGame => false;
+  bool get isGame => true;
+  bool get isLobby => this is LobbyAction;
+  bool get isTrade => false;
+  bool get mutatesGame => false;
 
   bool allowedTurnPhase(TurnPhase tp) => false;
   bool allowedGamePhase(GamePhase gp) => false;
 
-  User get user() => _user;
+  User get user => _user;
   set user(User u) {
     if (u != null) {
 
@@ -80,7 +82,7 @@ class AbstractGameAction implements GameAction {
     userId = u.id;
   }
 
-  Player get player() => _player;
+  Player get player => _player;
   set player(Player p) {
     _player = p;
     playerId = p.id;
@@ -110,16 +112,17 @@ class AbstractGameAction implements GameAction {
 
   String toText() => "[${id}, ${Dartan.name(this)}, ${user.name}]";
   // Hashable
-  int hashCode() {
-    if (id==null)
+  int get hashCode {
+    if (id==null) {
       id = Dartan.generateHashCode(this);
+    }
     return id;
   }
   // Copyable
-  Dynamic copy([JsonObject data]) => new AbstractGameAction();
+  dynamic copy([JsonObject data]) => new AbstractGameAction();
   // Jsonable
-  JsonObject get data() {
-    GameActionData d = new JsonObject();
+  JsonObject get data {
+    var d = new JsonObject();
     d.type = Dartan.name(this);
     d.id = id;
     d.playerId = playerId;
@@ -127,12 +130,12 @@ class AbstractGameAction implements GameAction {
     d.gameId = gameId;
     return d;
   }
-  bool equals(other) => other.id == id;
+  bool operator ==(other) => other.id == id;
 
   // Testable
   test() {}
 }
-interface StartGameData extends GameActionData {
+abstract class StartGameData extends GameActionData {
   GameData newGame;
 }
 /** A player starts the game */
@@ -142,12 +145,12 @@ class StartGame extends AbstractGameAction {
   bool allowedTurnPhase(TurnPhase tp) => false;
 
   StartGame();
-  StartGame.data(JsonObject json) : super.data(json) {
-    StartGameData data = json;
+  StartGame.fromData(JsonObject json) : super.fromData(json) {
+    var data = json;
     newGame = data.newGame == null ? null : fromData(data.newGame);
   }
-  JsonObject get data() {
-    StartGameData d = super.data;
+  JsonObject get data {
+    var d = super.data;
     d.newGame = nullOrDataFrom(newGame);
     return d;
   }
@@ -204,11 +207,11 @@ class StartGame extends AbstractGameAction {
   }
   // Copyable
   StartGame copy([JsonObject data]) =>
-      data == null ? new StartGame() : new StartGame.data(data);
+      data == null ? new StartGame() : new StartGame.fromData(data);
 
   String toText() => "${user.name} started game ${newGame.name}";
 }
-interface RollDiceData extends GameActionData {
+abstract class RollDiceData extends GameActionData {
   DiceRollData rolledDice;
 }
 /** Roll the dice in various phases of the game */
@@ -219,12 +222,12 @@ class RollDice extends AbstractGameAction {
   bool allowedTurnPhase(TurnPhase tp) => tp.isBeforeDiceRoll;
 
   RollDice();
-  RollDice.data(JsonObject json) : super.data(json) {
-    RollDiceData data = json;
-    rolledDice = data.rolledDice == null ? null : new DiceRoll.data(data.rolledDice);
+  RollDice.fromData(JsonObject json) : super.fromData(json) {
+    var data = json;
+    rolledDice = data.rolledDice == null ? null : new DiceRoll.fromData(data.rolledDice);
   }
-  JsonObject get data() {
-    RollDiceData data = super.data;
+  JsonObject get data {
+    var data = super.data;
     data.rolledDice = nullOrDataFrom(rolledDice);
     return data;
   }
@@ -247,5 +250,5 @@ class RollDice extends AbstractGameAction {
   }
   // Copyable
   RollDice copy([JsonObject data]) =>
-      data == null ? new RollDice() : new RollDice.data(data);
+      data == null ? new RollDice() : new RollDice.fromData(data);
 }

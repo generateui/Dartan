@@ -1,23 +1,25 @@
-interface Port
-  extends Hashable, Copyable, Identifyable, Testable, Jsonable, PlayerPiece
-  default Oracle {
+part of Dartan;
+
+abstract class Port
+  implements Hashable, Copyable, Identifyable, Testable, Jsonable, PlayerPiece
+  {
 
   int playerId;
-  Cell get seaCell();
-  Cell get landCell();
-  Resource get resource();
-  Edge get edge();
-  int get edgeDirection();
-  int get inAmount();
-  int get outAmount();
+  Cell get seaCell;
+  Cell get landCell;
+  Resource get resource;
+  Edge get edge;
+  int get edgeDirection;
+  int get inAmount;
+  int get outAmount;
   int divide(ResourceList resources, String resourceType);
   bool canTrade(Resource resource);
-  bool get isRandom(); // is it a placeholder for a random port?
-  String get color();
-  bool get hasResource();
+  bool get isRandom; // is it a placeholder for a random port?
+  String get color;
+  bool get hasResource;
   setCellAndDirection(Cell seaCell, int direction);
 }
-interface PortData extends JsonObject {
+abstract class PortData extends JsonObject {
   int id;
   int playerId;
   String type;
@@ -42,27 +44,27 @@ class AbstractPort implements Port {
   Edge _edge;
   int _edgeDirection;
 
-  Cell get landCell() => _landCell;
-  Cell get seaCell() => _seaCell;
-  Edge get edge() => _edge;
-  int get edgeDirection() => _edgeDirection;
-  int get inAmount() => 0;
-  int get outAmount() => 0;
-  String get color() => "black";
-  Resource get resource() => null;
-  bool get hasResource() => false;
-  bool get isRandom() => false;
+  Cell get landCell => _landCell;
+  Cell get seaCell => _seaCell;
+  Edge get edge => _edge;
+  int get edgeDirection => _edgeDirection;
+  int get inAmount => 0;
+  int get outAmount => 0;
+  String get color => "black";
+  Resource get resource => null;
+  bool get hasResource => false;
+  bool get isRandom => false;
 
   AbstractPort([this._seaCell, this._edgeDirection]) {
     if (_seaCell != null) {
       setCellAndDirection(_seaCell, _edgeDirection);
     }
   }
-  AbstractPort.data(JsonObject json) {
+  AbstractPort.fromData(JsonObject json) {
     _setFromData(json);
   }
   _setFromData(JsonObject json) {
-    PortData data = json;
+    var data = json;
     id = data.id;
     _seaCell = fromData(data.seaCell);
     _edgeDirection = data.direction;
@@ -90,14 +92,15 @@ class AbstractPort implements Port {
   bool canTrade(Resource resource) {
     return false;
   }
-  bool equals(other) => other.id == id;
-  int hashCode() {
-    if (id== null)
+  bool operator ==(other) => other.id == id;
+  int get hashCode {
+    if (id== null) {
       id = Dartan.generateHashCode(this);
+    }
     return id;
   }
-  JsonObject get data() {
-    PortData data = new JsonObject();
+  JsonObject get data {
+    var data = new JsonObject();
     data.isRandom = isRandom;
     data.direction = _edgeDirection;
     data.seaCell = nullOrDataFrom(seaCell);
@@ -107,52 +110,52 @@ class AbstractPort implements Port {
     return data;
   }
   Port copy([JsonObject data]) =>
-      data==null ? new AbstractPort() : new AbstractPort.data(data);
+      data==null ? new AbstractPort() : new AbstractPort.fromData(data);
   test() {
     PortTest.test();
   }
 }
 class FourToOnePort extends AbstractPort {
-  FourToOnePort.data(JsonObject json) { _setFromData(json); }
+  FourToOnePort.fromData(JsonObject json) { _setFromData(json); }
   FourToOnePort([Cell seaCell, int edgeDirection]) : super(seaCell, edgeDirection);
-  int get inAmount() => 4;
-  int get outAmount() => 1;
-  String get color() => "darkgrey";
+  int get inAmount => 4;
+  int get outAmount => 1;
+  String get color => "darkgrey";
   FourToOnePort copy([JsonObject data]) => data == null ?
-      new FourToOnePort() : new FourToOnePort.data(data);
+      new FourToOnePort() : new FourToOnePort.fromData(data);
 }
 class ThreeToOnePort extends AbstractPort {
   ThreeToOnePort([Cell seaCell, int edgeDirection]): super(seaCell, edgeDirection);
-  ThreeToOnePort.data(JsonObject json) { _setFromData(json); }
-  int get inAmount() => 3;
-  int get outAmount() => 1;
-  String get color() => "black";
+  ThreeToOnePort.fromData(JsonObject json) { _setFromData(json); }
+  int get inAmount => 3;
+  int get outAmount => 1;
+  String get color => "black";
   ThreeToOnePort copy([JsonObject data]) => data == null ?
-      new ThreeToOnePort() : new ThreeToOnePort.data(data);
+      new ThreeToOnePort() : new ThreeToOnePort.fromData(data);
 }
 class TwoToOnePort extends AbstractPort {
   Resource resource;
-  TwoToOnePort.data(JsonObject json) {
-    PortData data = json;
+  TwoToOnePort.fromData(JsonObject json) {
+    var data = json;
     _setFromData(json);
-    resource = new Jsonable.data(data.resource);
+    resource = new Jsonable.fromData(data.resource);
   }
   TwoToOnePort([this.resource, Cell seaCell, int edgeDirection])
      : super(seaCell, edgeDirection) {
     resource = resource == null ? new Wheat() : resource;
   }
-  int get inAmount() => 2;
-  int get outAmount() => 1;
-  String get color() => resource.color;
+  int get inAmount => 2;
+  int get outAmount => 1;
+  String get color => resource.color;
   TwoToOnePort copy([JsonObject data]) => data == null ?
-      new TwoToOnePort(resource) : new TwoToOnePort.data(data);
+      new TwoToOnePort(resource) : new TwoToOnePort.fromData(data);
 }
 class RandomPort extends AbstractPort {
-  RandomPort.data(JsonObject json) { _setFromData(json); }
+  RandomPort.fromData(JsonObject json) { _setFromData(json); }
   RandomPort([Cell seaCell, int edgeDirection]): super(seaCell, edgeDirection);
-  String get color() => "black";
-  bool get isRandom() => true;
+  String get color => "black";
+  bool get isRandom => true;
   RandomPort copy([JsonObject data]) => data == null ?
-      new RandomPort() : new RandomPort.data(data);
+      new RandomPort() : new RandomPort.fromData(data);
 }
 

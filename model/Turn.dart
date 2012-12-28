@@ -1,4 +1,6 @@
-interface TurnData extends JsonObject{
+part of Dartan;
+
+abstract class TurnData extends JsonObject{
   String type;
   int id;
   int playerId;
@@ -16,12 +18,12 @@ class Turn implements Identifyable, Hashable, Copyable, Jsonable {
 
   // Instance changes when latest offer changes (an offer is added)
   Map<TradeOffer, List<TradeResponse>> responsesByOffer;
-  Set<TradeOffer> get offers() => responsesByOffer.getKeys();
+  Set<TradeOffer> get offers => responsesByOffer.keys;
 
   ListenableList<TradeResponse> currentResponses;
   TradeOffer _latestOffer;
 
-  TradeOffer get latestOffer() => _latestOffer;
+  TradeOffer get latestOffer => _latestOffer;
   set latestOffer(TradeOffer offer) {
     TradeOffer old = _latestOffer;
     _latestOffer = offer;
@@ -39,7 +41,7 @@ class Turn implements Identifyable, Hashable, Copyable, Jsonable {
   Turn([this.humanIndex, this.player]) {
     init();
   }
-  Turn.data(JsonObject json) {
+  Turn.fromData(JsonObject json) {
     init();
     TurnData data = json;
     playerId = data.playerId;
@@ -52,7 +54,7 @@ class Turn implements Identifyable, Hashable, Copyable, Jsonable {
   addTradeResponse(TradeResponse response, TradeOffer offer) {
     if (responsesByOffer.containsKey(offer)) {
       responsesByOffer[offer].add(response);
-      if (offer.equals(latestOffer)) {
+      if (offer == latestOffer) {
         currentResponses.add(response);
       }
     }
@@ -65,7 +67,7 @@ class Turn implements Identifyable, Hashable, Copyable, Jsonable {
   }
 
   // Jsonable
-  JsonObject get data() {
+  JsonObject get data {
     TurnData data = new JsonObject();
     data.id = id;
     data.userId = userId;
@@ -82,14 +84,15 @@ class Turn implements Identifyable, Hashable, Copyable, Jsonable {
     observable.removeListener(property, handler);
   }
   // Hashable
-  int hashCode() {
-    if (id==null)
+  int get hashCode {
+    if (id==null) {
       id = Dartan.generateHashCode(this);
+    }
     return id;
   }
   // Copyable
   Turn copy([JsonObject data]) =>
-      data == null ? new Turn() : new Turn.data(data);
+      data == null ? new Turn() : new Turn.fromData(data);
 
   bool equals(other) => other.id == id &&
       other.playerId == playerId;

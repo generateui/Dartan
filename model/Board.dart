@@ -1,5 +1,7 @@
+part of Dartan;
+
 /** Raw data for a board */
-interface BoardData extends JsonObject {
+abstract class BoardData extends JsonObject {
   String type;
   String name;
   int id;
@@ -41,9 +43,9 @@ class Board
   HashMap<Vertice, List<VerticePiece>> verticePieces; // Keep 'em in a list, multiple pieces per vertice possible
   HashMap<Edge, EdgePiece> edgePieces;
 
-  HashSet<Vertice> get vertices() => _vertices;
-  HashSet<Edge> get edges() => _edges;
-  List<Tile> get tiles() => new List.from(_tilesByCell.getValues());
+  HashSet<Vertice> get vertices => _vertices;
+  HashSet<Edge> get edges => _edges;
+  List<Tile> get tiles => new List.from(_tilesByCell.values);
 
   ListenableList<Tile> tilesBag;
   ListenableList<Chit> chitsBag;
@@ -61,11 +63,11 @@ class Board
     observable = new ObservableHelper();
   }
 
-  Board.name() {
+  Board.fromName() {
   }
-  Board.data(JsonObject json) {
+  Board.fromData(JsonObject json) {
     init();
-    BoardData data = json;
+    var data = json;
     id = data.id;
     name = data.name;
     chitsBag = llFrom(data.chitsBag);
@@ -107,13 +109,13 @@ class Board
       }
     }
   }
-  Board copy([JsonObject data]) => data == null ? new Board() :  new Board.data(data);
-  JsonObject get data() {
-    BoardData data = new JsonObject();
+  Board copy([JsonObject data]) => data == null ? new Board() :  new Board.fromData(data);
+  JsonObject get data {
+    var data = new JsonObject();
     data.type = nameOf(this);
     data.id = id;
     data.name = name;
-    data.tiles = Oracle.toDataList(_tilesByCell.getValues());
+    data.tiles = Oracle.toDataList(_tilesByCell.values);
     data.chitsBag = Oracle.toDataList(chitsBag);
     data.tilesBag = Oracle.toDataList(tilesBag);
     data.portsBag = Oracle.toDataList(portsBag);
@@ -122,12 +124,13 @@ class Board
   }
   /** Fills this instance with a grid of specified number of rows and columns */
   void from2DMatrix(int totalCols, int totalRows) {
-    for (int column = 0; column < totalCols; column++)
+    for (int column = 0; column < totalCols; column++) {
       for (int row = 0; row < totalRows; row++) {
         Cell c = new Cell(row, column);
         Tile s = new Sea(c);
         addTile(s);
       }
+    }
   }
   /** Adds target [Tile] t and its edges + vertices */
   void addTile(Tile t) {
@@ -187,7 +190,7 @@ class Board
   /** Compiles and returns a list with all ports used on this board */
   List<Port> ports() {
     List<Port> result = new List();
-    for (Tile t in _tilesByCell.getValues()) {
+    for (Tile t in _tilesByCell.values) {
       if (t.hasPort) {
         result.add(t.port);
       }
@@ -197,7 +200,7 @@ class Board
   /** Compiles and returns a list of all chits on this board */
   List<Chit> chits() {
     List<Chit> result = new List();
-    for (Tile t in _tilesByCell.getValues()) {
+    for (Tile t in _tilesByCell.values) {
       if (t.hasChit) {
         result.add(t.chit);
       }
@@ -238,8 +241,8 @@ class Board
     return _tilesByCell[c];
   }
   // Hashable
-  int hashCode() {
-    return name.hashCode();
+  int get hashCode {
+    return name.hashCode;
   }
   // Observable
   void onSetted(String property, PropertyChanged handler) {
@@ -248,7 +251,7 @@ class Board
   void offSetted(String property, PropertyChanged handler) {
     observable.removeListener(property, handler);
   }
-  bool equals(other) => other.name == name;
+  bool operator ==(other) => other.name == name;
   void test() {
     new BoardTest().test();
   }
@@ -442,7 +445,7 @@ class Standard4p extends Board {
     List<Tile> tilesWithHotChit = new List<Tile>();
 
     // 1. First place 4 red chits
-    while (!hotChits.isEmpty()) {
+    while (!hotChits.isEmpty) {
       int intPick = random.intFromZero(hotChits.length - 1);
       Chit t = hotChits[intPick];
 
@@ -474,8 +477,9 @@ class Standard4p extends Board {
     newTileBag();
     List<RandomTile> rts = new List<RandomTile>(); // randomtiles to replace
     for (Tile t in tiles)
-      if (t.isRandom)
+      if (t.isRandom) {
         rts.add(t);
+      }
 
     for (RandomTile rt in rts) {
       int intPick = random.intFromZero(tilesBag.length-1);

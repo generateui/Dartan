@@ -1,5 +1,7 @@
+part of Dartan;
+
 /** Randomization for simpicity sake */
-interface Random extends Testable {
+abstract class Random extends Testable {
   int intFromZero(int length);
   int intFromOne(int length);
 }
@@ -12,7 +14,8 @@ class ClientRandom implements Random {
     if (length==1) {
       return 0;
     }
-    double rnd = Math.random();
+    Math.Random r = new Math.Random();
+    double rnd = r.nextDouble();
     double rndl = rnd * length.toDouble();
     return rndl.toInt();
   }

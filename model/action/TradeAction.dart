@@ -1,9 +1,11 @@
+part of Dartan;
+
 /** Any response to a trade action */
-interface TradeResponse extends GameAction {
+abstract class TradeResponse extends GameAction {
   TradeOffer offer;
   int offerId;
 }
-interface TradeBankData extends GameActionData {
+abstract class TradeBankData extends GameActionData {
   List offered;
   List wanted;
 }
@@ -13,8 +15,8 @@ class TradeBank extends AbstractGameAction {
   ResourceList wanted;
 
   TradeBank();
-  TradeBank.data(JsonObject json) : super.data(json) {
-    TradeBankData data = json;
+  TradeBank.fromData(JsonObject json) : super.fromData(json) {
+    var data = json;
     wanted = new ResourceListIm(listFrom(data.wanted));
     offered = new ResourceListIm(listFrom(data.offered));
   }
@@ -27,18 +29,18 @@ class TradeBank extends AbstractGameAction {
 
   bool allowedGamePhase(GamePhase gp) => gp.isTurns;
   bool allowedTurnPhase(TurnPhase tp) => tp.isTrading;
-  bool get isTrade() => true;
+  bool get isTrade => true;
 
-  JsonObject get data() {
-    TradeOfferData data = super.data;
+  JsonObject get data {
+    var data = super.data;
     data.wanted = nullOrDataListFrom(wanted);
     data.offered = nullOrDataListFrom(offered);
     return data;
   }
   TradeBank copy([JsonObject data]) => data == null ?
-      new TradeBank() : new TradeBank.data(data);
+      new TradeBank() : new TradeBank.fromData(data);
 }
-interface TradeOfferData extends GameActionData {
+abstract class TradeOfferData extends GameActionData {
   List offered;
   List wanted;
 }
@@ -50,8 +52,8 @@ class TradeOffer extends AbstractGameAction {
   ListenableList<TradeResponse> responses;
 
   TradeOffer();
-  TradeOffer.data(JsonObject json) : super.data(json) {
-    TradeOfferData data = json;
+  TradeOffer.fromData(JsonObject json) : super.fromData(json) {
+    var data = json;
     wanted = new ResourceListIm(listFrom(data.wanted));
     offered = new ResourceListIm(listFrom(data.offered));
   }
@@ -60,20 +62,20 @@ class TradeOffer extends AbstractGameAction {
   }
   bool allowedGamePhase(GamePhase gp) => gp.isTurns;
   bool allowedTurnPhase(TurnPhase tp) => tp.isTrading;
-  bool get isTrade() => true;
+  bool get isTrade => true;
 
-  JsonObject get data() {
-    TradeOfferData data = super.data;
+  JsonObject get data {
+    var data = super.data;
     data.wanted = nullOrDataListFrom(wanted);
     data.offered = nullOrDataListFrom(offered);
     return data;
   }
 
-  bool get allPlayersResponded() => _allPlayersResponded;
+  bool get allPlayersResponded => _allPlayersResponded;
   TradeOffer copy([JsonObject data]) => data == null ?
-      new TradeOffer() : new TradeOffer.data(data);
+      new TradeOffer() : new TradeOffer.fromData(data);
 }
-interface RejectOfferData extends GameActionData {
+abstract class RejectOfferData extends GameActionData {
   int offerId;// Of the rejected offer
 }
 class RejectOffer extends AbstractGameAction implements TradeResponse {
@@ -88,21 +90,21 @@ class RejectOffer extends AbstractGameAction implements TradeResponse {
   }
 
   RejectOffer();
-  RejectOffer.data(JsonObject json) : super.data(json);
+  RejectOffer.fromData(JsonObject json) : super.fromData(json);
 
   bool allowedGamePhase(GamePhase gp) => gp.isTurns;
   bool allowedTurnPhase(TurnPhase tp) => tp.isTrading;
-  bool get isTrade() => true;
+  bool get isTrade => true;
 
-  JsonObject get data() {
-    RejectOfferData data = super.data;
+  JsonObject get data {
+    var data = super.data;
     data.offerId = offerId;
     return data;
   }
   RejectOffer copy([JsonObject data]) => data == null ?
-      new RejectOffer() : new RejectOffer.data(data);
+      new RejectOffer() : new RejectOffer.fromData(data);
 }
-interface CounterOfferData extends GameActionData {
+abstract class CounterOfferData extends GameActionData {
   List offered;
   List wanted;
   int offerId;
@@ -122,31 +124,31 @@ class CounterOffer extends AbstractGameAction implements TradeResponse {
   }
 
   CounterOffer();
-  CounterOffer.data(JsonObject json) : super.data(json) {
-    CounterOfferData data = json;
+  CounterOffer.fromData(JsonObject json) : super.fromData(json) {
+    var data = json;
     offerId = data.offerId;
     wanted = new ResourceListIm(listFrom(data.wanted));
     offered = new ResourceListIm(listFrom(data.offered));
   }
   bool allowedGamePhase(GamePhase gp) => gp.isTurns;
   bool allowedTurnPhase(TurnPhase tp) => tp.isTrading;
-  bool get isTrade() => true;
+  bool get isTrade => true;
 
-  JsonObject get data() {
-    CounterOfferData data = super.data;
+  JsonObject get data {
+    var data = super.data;
     data.offerId = offerId;
     data.wanted = Oracle.toDataList(wanted);
     data.offered = Oracle.toDataList(offered);
     return data;
   }
   CounterOffer copy([JsonObject data]) => data == null ?
-      new CounterOffer() : new CounterOffer.data(data);
+      new CounterOffer() : new CounterOffer.fromData(data);
 
   String toText() => "${player.user.name} countered ";
 }
 
 
-interface AcceptOfferData extends GameActionData {
+abstract class AcceptOfferData extends GameActionData {
   int offerId;
 }
 /** Wanted & Offered are flipped, because this action is seen from the accepting player */
@@ -155,8 +157,8 @@ class AcceptOffer extends AbstractGameAction  implements TradeResponse {
   int offerId;
 
   AcceptOffer();
-  AcceptOffer.data(JsonObject json) : super.data(json) {
-    AcceptOfferData data = json;
+  AcceptOffer.fromData(JsonObject json) : super.fromData(json) {
+    var data = json;
     offerId = data.offerId;
   }
   prepare(Game game) {
@@ -167,18 +169,18 @@ class AcceptOffer extends AbstractGameAction  implements TradeResponse {
   }
   bool allowedGamePhase(GamePhase gp) => gp.isTurns;
   bool allowedTurnPhase(TurnPhase tp) => tp.isTrading;
-  bool get isTrade() => true;
+  bool get isTrade => true;
 
-  JsonObject get data() {
-    RejectOfferData data = super.data;
+  JsonObject get data {
+    var data = super.data;
     data.offerId = offer == null ? offerId == null ?
         null : offerId : offer.id;
     return data;
   }
   AcceptOffer copy([JsonObject data]) => data == null ?
-      new AcceptOffer() : new AcceptOffer.data(data);
+      new AcceptOffer() : new AcceptOffer.fromData(data);
 }
-interface TradeData extends GameActionData {
+abstract class TradeData extends GameActionData {
   int toPlayerId;
   int offerId;
   int positiveResponseId;
@@ -197,8 +199,8 @@ class Trade extends AbstractGameAction {
   ResourceList wanted;
 
   Trade();
-  Trade.data(JsonObject json) : super.data(json) {
-    TradeData data = json;
+  Trade.fromData(JsonObject json) : super.fromData(json) {
+    var data = json;
     toPlayerId = data.toPlayerId;
     offerId = data.offerId;
     positiveResponseId = data.positiveResponseId;
@@ -207,7 +209,7 @@ class Trade extends AbstractGameAction {
   }
   bool allowedGamePhase(GamePhase gp) => gp.isTurns;
   bool allowedTurnPhase(TurnPhase tp) => tp.isTrading;
-  bool get isTrade() => true;
+  bool get isTrade => true;
 
   prepare(Game game) {
     toPlayer = game.playerById(toPlayerId);
@@ -217,8 +219,8 @@ class Trade extends AbstractGameAction {
   perform(Game game) {
     // Actually perform the exchange
   }
-  JsonObject get data() {
-    TradeData data = super.data;
+  JsonObject get data {
+    var data = super.data;
     data.offerId = offer == null ? offerId == null ?
         null : offerId : offer.id;
     data.positiveResponseId = positiveResponse ==  null ? positiveResponseId == null ?

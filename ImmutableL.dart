@@ -1,3 +1,5 @@
+part of Dartan;
+
 /** I'd like to be able to declare immutable collection types, not
 necesarily instances with const. */
 class ImmutableL<T> implements Iterable<T> {

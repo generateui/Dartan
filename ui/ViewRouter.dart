@@ -1,3 +1,5 @@
+part of Dartan;
+
 /** Simple cycle presenter for main views. The name of the [View] implementor
 is used as unique identification */
 class ViewRouter {
@@ -19,8 +21,9 @@ class ViewRouter {
       });
     }
     String loc = window.location.hash;
-    if (loc == null || loc == "")
+    if (loc == null || loc == "") {
       loc = "#Intro";
+    }
 
     show(views.filter((View v) => v.id == loc).iterator().next());
 
@@ -28,8 +31,9 @@ class ViewRouter {
 
   show(View view) {
     print(view.id);
-    if (activeView != null)
+    if (activeView != null) {
       activeView.div.style.display = "none";
+    }
     activeView = view;
     activeView.div.style.display = "block";
     document.queryAll(".active").forEach((Element e) { e.classes.clear(); });
@@ -39,7 +43,7 @@ class ViewRouter {
 }
 /** Intent-like concept to present the user with UI to perform acertain task */
 class View {
-  String get id() => "#${Dartan.name(this)}";
+  String get id => "#${Dartan.name(this)}";
   DivElement div;
   View() {
     div = document.query(id);
@@ -56,7 +60,7 @@ class Intro extends View {
 
       Element beEl = document.query("#welcomeEditor");
       BoardsViewer bv = new BoardsViewer();
-      beEl.elements.add(bv.element);
+      beEl.children.add(bv.element);
     }
   }
 }
@@ -74,8 +78,8 @@ class Play extends View {
       GameTester gt = new GameTester.manual(sgt);
       LobbyView lobbyView = new LobbyView(sgt.clientLobby);
       ActsView actsView = new ActsView(gt);
-      div.elements.add(actsView.element);
-      div.elements.add(lobbyView.toElement());
+      div.children.add(actsView.element);
+      div.children.add(lobbyView.toElement());
 
       rendered = true;
     }

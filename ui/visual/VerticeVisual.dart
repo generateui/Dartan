@@ -1,9 +1,11 @@
+part of Dartan;
+
 /** Vertice selection box on a canvas */
 class VerticeVisual extends AbstractVisual {
-  SVGCircleElement c;
+  svg.CircleElement c;
   Vertice vertice;
   VerticeVisual.svg(Board2D board2d, this.vertice) : super.svg(board2d) {
-    c = new SVGElement.tag("circle");
+    c = new svg.SvgElement.tag("circle");
     isSvg = true;
 
     Point2D xy = board2d.xyVertice(vertice);
@@ -13,6 +15,6 @@ class VerticeVisual extends AbstractVisual {
       "r":board2d.hex2d._sideLength * 0.2,
       "fill":"orange"
     };
-    svg=c;
+    svgRoot=c;
   }
 }

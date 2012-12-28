@@ -1,9 +1,11 @@
+part of Dartan;
+
 /** Displays all board info for a player to pick one */
 class BoardViewer {
   Element element;
   DivElement listsDiv;
   BoardVisual _boardVisual;
-  BoardVisual get boardVisual() => _boardVisual;
+  BoardVisual get boardVisual => _boardVisual;
   bool _show;
   set showInfo(bool show) {
     _show = show;
@@ -45,7 +47,7 @@ class BoardViewer {
 //    boardElement.elements.add(_boardVisual.element);
 //    element.elements.add(boardElement);
 //    element.elements.add(listsDiv);
-    element.elements.add(_boardVisual.element);
+    element.children.add(_boardVisual.element);
   }
 }
 /** Simple button bar to manipulte a target Board */
@@ -66,8 +68,8 @@ class BoardActionBar {
     buttonRandomTiles.on.click.add((e) {
       board.setStartingState();
     });
-    element.elements.add(buttonRandomTiles);
-    element.elements.add(buttonRender);
+    element.children.add(buttonRandomTiles);
+    element.children.add(buttonRender);
   }
 }
 /** Displays a list of board and lets the user pick one */
@@ -102,16 +104,16 @@ class BoardsViewer {
         changeBoard(board, li);
       });
       elementsByBoard[board] = li;
-      listElement.elements.add(li);
+      listElement.children.add(li);
     }
-    boardElement.elements.add(h1Element);
-    boardElement.elements.add(actionBar.element);
+    boardElement.children.add(h1Element);
+    boardElement.children.add(actionBar.element);
 //    boardElement.elements.add(actions);
-    boardElement.elements.add(boardViewer.element);
-    boardElement.elements.add(jsonTextTelement);
-    listDiv.elements.add(listElement);
-    element.elements.add(listDiv);
-    element.elements.add(boardElement);
+    boardElement.children.add(boardViewer.element);
+    boardElement.children.add(jsonTextTelement);
+    listDiv.children.add(listElement);
+    element.children.add(listDiv);
+    element.children.add(boardElement);
     changeBoard(boards[0], elementsByBoard[boards[0]]); // First as selected
   }
   String toIconListByTypeAmount(List l) {
@@ -159,9 +161,9 @@ class ListViewPerType {
     element = new Element.tag("div");
     listEl = new Element.tag('ul');
     if (title != null) {
-      element.elements.add(new Element.html("<h2>${title}</h2>"));
+      element.children.add(new Element.html("<h2>${title}</h2>"));
     }
-    element.elements.add(listEl);
+    element.children.add(listEl);
   }
   /** Set target list to display */
   set list(ListenableList list) {
@@ -171,7 +173,7 @@ class ListViewPerType {
     }
     _list = list;
     amountByType.clear();
-    for (Element e in elementsByType.getValues()) {
+    for (Element e in elementsByType.values) {
       e.remove();
     }
     elementsByType.clear();
@@ -191,7 +193,7 @@ class ListViewPerType {
       Element li = new Element.html(
         "<li>${Dartan.smallIcon(item)} ${Dartan.name(item)}: <span class=amount id= ${type}>${amountByType[type]}</span></li>");
       elementsByType[type] = li;
-      listEl.elements.add(li);
+      listEl.children.add(li);
     } else {
       updateType(type);
     }
@@ -212,7 +214,7 @@ class ListView {
   Element element;
   UListElement listEl;
   ListenableList _list;
-  HashMap<Dynamic, Element> elementsByItem;
+  HashMap<dynamic, Element> elementsByItem;
   /** Set target list to display */
   set list(ListenableList list) {
     if (_list != null) {
@@ -226,17 +228,17 @@ class ListView {
   ListView([String title]) {
     element = new Element.tag("div");
     _title=title;
-    elementsByItem = new HashMap<Dynamic,Element>();
+    elementsByItem = new HashMap<dynamic,Element>();
     listEl = new Element.tag('ul');
     if (title != null) {
-      element.elements.add(new Element.html("<h2>${_title}</h2>"));
+      element.children.add(new Element.html("<h2>${_title}</h2>"));
     }
-    element.elements.add(listEl);
+    element.children.add(listEl);
   }
   addItem(var item) {
     Element li = new Element.html("<li>${Dartan.smallIcon(item)} ${Dartan.name(item)}</li>");
     elementsByItem[item] = li;
-    listEl.elements.add(li);
+    listEl.children.add(li);
   }
   removeItem(var item) {
     Element elToRemove = elementsByItem[item];

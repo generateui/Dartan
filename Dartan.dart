@@ -1,100 +1,100 @@
-#library('Dartan');
+library Dartan;
 
-#import('dart:html');
-#import('dart:coreimpl');
-#import('dart:json');
+import 'dart:html';
+import 'dart:json';
+import 'dart:svg' as svg;
+import 'dart:math' as Math;
+import "dart:mirrors" as mirrors;
+import 'package:json_object/json_object.dart';
 
-#source('SeeAllTested.dart');
+part 'SeeAllTested.dart';
 
-#source('ImmutableL.dart');
-#source('Observable.dart');
-#source('Testable.dart');
-#source('JsonObject.dart');
-#source('Oracle.dart');
-#source('Jsonable.dart');
-#source('Identifyable.dart');
-#source('Copyable.dart');
+part 'ImmutableL.dart';
+part 'Observable.dart';
+part 'Testable.dart';
+part 'Oracle.dart';
+part 'Jsonable.dart';
+part 'Identifyable.dart';
+part 'Copyable.dart';
 
 // Model
-#source('model/Resource.dart');
-#source('model/Resources.dart');
-#source('model/Game.dart');
-#source('model/Board.dart');
-#source('model/Vertice.dart');
-#source('model/Edge.dart');
-#source('model/Cell.dart');
-#source('model/Port.dart');
-#source('model/PortList.dart');
-#source('model/Chit.dart');
-#source('model/Territory.dart');
-#source('model/Tile.dart');
-#source('model/GamePhase.dart');
-#source('model/GameStatus.dart');
-#source('model/DevelopmentCard.dart');
-#source('model/TurnPhase.dart');
-#source('model/Turn.dart');
-#source('model/Player.dart');
-#source('model/action/Action.dart');
-#source('model/ServerGame.dart');
-#source('model/Dice.dart');
-#source('model/Random.dart');
-#source('model/action/TradeAction.dart');
-#source('model/action/GameAction.dart');
-#source('model/action/LobbyAction.dart');
-#source('model/GameServer.dart');
-#source('model/Lobby.dart');
-#source('model/Piece.dart');
-#source('model/Stock.dart');
-#source('model/Robber.dart');
-#source('model/LongestRoad.dart');
-#source('model/Route.dart');
-#source('model/LargestArmy.dart');
-#source('model/GameSetting.dart');
+part 'model/Resource.dart';
+part 'model/Resources.dart';
+part 'model/Game.dart';
+part 'model/Board.dart';
+part 'model/Vertice.dart';
+part 'model/Edge.dart';
+part 'model/Cell.dart';
+part 'model/Port.dart';
+part 'model/PortList.dart';
+part 'model/Chit.dart';
+part 'model/Territory.dart';
+part 'model/Tile.dart';
+part 'model/GamePhase.dart';
+part 'model/GameStatus.dart';
+part 'model/DevelopmentCard.dart';
+part 'model/TurnPhase.dart';
+part 'model/Turn.dart';
+part 'model/Player.dart';
+part 'model/action/Action.dart';
+part 'model/ServerGame.dart';
+part 'model/Dice.dart';
+part 'model/Random.dart';
+part 'model/action/TradeAction.dart';
+part 'model/action/GameAction.dart';
+part 'model/action/LobbyAction.dart';
+part 'model/GameServer.dart';
+part 'model/Lobby.dart';
+part 'model/Piece.dart';
+part 'model/Stock.dart';
+part 'model/Robber.dart';
+part 'model/LongestRoad.dart';
+part 'model/Route.dart';
+part 'model/LargestArmy.dart';
+part 'model/GameSetting.dart';
 
 // UI
-#source('ui/BoardState.dart');
-#source('ui/BoardEditor.dart');
-#source('ui/TileInfoView.dart');
-#source('ui/ViewRouter.dart');
-#source('ui/Objects.dart');
-#source('ui/Views.dart');
-#source('ui/CellNeighboursView.dart');
-#source('ui/TileMeasurementInfo.dart');
-#source('ui/ResourcePicker.dart');
-#source('ui/ResourcesView.dart');
-#source('ui/GameView.dart');
-#source('ui/LobbyView.dart');
-#source('ui/BoardViewer.dart');
+part 'ui/BoardState.dart';
+part 'ui/BoardEditor.dart';
+part 'ui/TileInfoView.dart';
+part 'ui/ViewRouter.dart';
+part 'ui/Objects.dart';
+part 'ui/Views.dart';
+part 'ui/CellNeighboursView.dart';
+part 'ui/TileMeasurementInfo.dart';
+part 'ui/ResourcePicker.dart';
+part 'ui/ResourcesView.dart';
+part 'ui/GameView.dart';
+part 'ui/LobbyView.dart';
+part 'ui/BoardViewer.dart';
 
 // Visual
-#source('ui/visual/BoardVisual.dart');
-#source('ui/visual/ChitVisual.dart');
-#source('ui/visual/EdgeVisual.dart');
-#source('ui/visual/VerticeVisual.dart');
-#source('ui/visual/TileVisual.dart');
-#source('ui/visual/PortPickerVisual.dart');
-#source('ui/visual/TerritoryVisual.dart');
-#source('ui/visual/PortVisual.dart');
-#source('ui/visual/TownVisual.dart');
-#source('ui/visual/Visual.dart');
+part 'ui/visual/BoardVisual.dart';
+part 'ui/visual/ChitVisual.dart';
+part 'ui/visual/EdgeVisual.dart';
+part 'ui/visual/VerticeVisual.dart';
+part 'ui/visual/TileVisual.dart';
+part 'ui/visual/PortPickerVisual.dart';
+part 'ui/visual/TerritoryVisual.dart';
+part 'ui/visual/PortVisual.dart';
+part 'ui/visual/TownVisual.dart';
+part 'ui/visual/Visual.dart';
 
 // Test
-#source('test/ResourcesTest.dart');
-#source('test/Test.dart');
-#source('test/EdgeTest.dart');
-#source('test/BoardTest.dart');
-#source('test/CellTest.dart');
-#source('test/ListenableListTest.dart');
-#source('test/PortTest.dart');
-#source('test/RandomTest.dart');
-#source('test/GameTest.dart');
-#source('test/TownTest.dart');
-#source('test/CityTest.dart');
-#source('test/RoadTest.dart');
-#source('test/JsonableTest.dart');
-#source('test/VerticeTest.dart');
-
-#resource('zettown.css');
+part 'test/ResourcesTest.dart';
+part 'test/Test.dart';
+part 'test/EdgeTest.dart';
+part 'test/BoardTest.dart';
+part 'test/CellTest.dart';
+part 'test/ListenableListTest.dart';
+part 'test/PortTest.dart';
+part 'test/RandomTest.dart';
+part 'test/GameTest.dart';
+part 'test/TownTest.dart';
+part 'test/CityTest.dart';
+part 'test/RoadTest.dart';
+part 'test/JsonableTest.dart';
+part 'test/VerticeTest.dart';
 
 /** Instances of all collections containing instances of supported objects
     One day, AllSupportedLists can add itself to itself. Or look in a mirror. */
@@ -150,7 +150,10 @@ class Dartan {
     }
   }
   /** Free random hashcodes for all! */
-  static int generateHashCode(var obj) => (Math.random()* 10000000).toInt();
+  static int generateHashCode(var obj) {
+    Math.Random r = new Math.Random();
+    return r.nextInt(10000000).toInt();
+  }
 
   static String supName(var obj) {
     String temp = Dartan.name(obj).substring(9);
@@ -169,8 +172,9 @@ class Dartan {
 
   String toIconList(Iterable<Object> objectz) {
     StringBuffer result = new StringBuffer();
-    for (Object o in objectz)
+    for (Object o in objectz) {
       result.add(smallIcon(o));
+    }
     return result.toString();
   }
 

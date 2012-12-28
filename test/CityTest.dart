@@ -1,3 +1,5 @@
+part of Dartan;
+
 class CityTest {
   test() {
     User user = new ServerUser();
@@ -21,7 +23,7 @@ class CityTest {
     toCopy.playerId = 1;
     toCopy.vertice = new Vertice(new Cell(0,0), new Cell(1,0), new Cell(1,1));
     City copy = copyJsonable(toCopy);
-    Expect.isTrue(copy.equals(toCopy), "Expected equal instance of city");
+    Expect.isTrue(copy == toCopy, "Expected equal instance of city");
     expectEqualCopy(toCopy);
   }
 }

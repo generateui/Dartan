@@ -1,4 +1,6 @@
-interface StockData extends JsonObject{
+part of Dartan;
+
+abstract class StockData extends JsonObject{
   String type;
   List<RoadData> roads;
   List<TownData> towns;
@@ -6,7 +8,7 @@ interface StockData extends JsonObject{
   List<JsonObject> tokens;
 }
 /** What the player owns as pieces, but not yet is into play */
-class Stock implements Jsonable {
+class Stock implements Jsonable, Testable {
   ListenableList<Road> roads;
   ListenableList<Town> towns;
   ListenableList<City> cities;
@@ -19,8 +21,8 @@ class Stock implements Jsonable {
     tokens = tokens == null ? new ListenableList<Piece>() : tokens;
   }
 
-  Stock.data(JsonObject json) {
-    StockData data = json;
+  Stock.fromData(JsonObject json) {
+    var data = json;
     roads = llFrom(data.roads);
     towns = llFrom(data.towns);
     cities = llFrom(data.cities);
@@ -29,8 +31,9 @@ class Stock implements Jsonable {
   Stock() {
     init();
   }
-  JsonObject get data() {
-    StockData data = new JsonObject();
+  bool operator ==(other) => true; // TODO: implement
+  JsonObject get data {
+    var data = new JsonObject();
     data.type = nameOf(this);
     data.cities = Oracle.toDataList(cities);
     data.towns = Oracle.toDataList(towns);
@@ -38,5 +41,8 @@ class Stock implements Jsonable {
     return data;
   }
   Stock copy([JsonObject data]) => data==null ?
-      new Stock() : new Stock.data(data);
+      new Stock() : new Stock.fromData(data);
+      
+  // Testable
+  void test() {}
 }

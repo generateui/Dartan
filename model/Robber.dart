@@ -1,4 +1,6 @@
-interface RobberData extends JsonObject {
+part of Dartan;
+
+abstract class RobberData extends JsonObject {
   String type;
   CellData cell;
 }
@@ -11,9 +13,9 @@ class Robber implements Testable, Observable, Jsonable {
   Robber() {
     init();
   }
-  Robber.data(JsonObject json) {
+  Robber.fromData(JsonObject json) {
     init();
-    RobberData data = json;
+    var data = json;
     cell = fromData(data.cell);
   }
   move(Cell newCell) {
@@ -23,9 +25,10 @@ class Robber implements Testable, Observable, Jsonable {
       observable.fire("cell", oldCell, newCell);
     }
   }
+  bool operator ==(other) => cell == other.cell;
   // Jsonable
-  JsonObject get data() {
-    RobberData d = new JsonObject();
+  JsonObject get data {
+    var d = new JsonObject();
     d.type = nameOf(this);
     d.cell = nullOrDataFrom(cell);
     return d;
@@ -39,7 +42,7 @@ class Robber implements Testable, Observable, Jsonable {
   }
   // Copyable
   Robber copy([JsonObject data]) => data == null ?
-      new Robber() : new Robber.data(data);
+      new Robber() : new Robber.fromData(data);
   // Testable
   test() {
 

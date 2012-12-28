@@ -1,4 +1,6 @@
-interface EdgeData extends JsonObject{
+part of Dartan;
+
+abstract class EdgeData extends JsonObject{
   CellData c1;
   CellData c2;
   String type;
@@ -30,31 +32,32 @@ class Edge implements Hashable, Jsonable, Testable {
   List<Cell> _neighbourCells; // TODO impl
   List<Edge> _neighbourEdges; // TODO impl
 
-  Edge.data(JsonObject json) {
-    EdgeData data = json;
-    c1 = new Cell.data(data.c1);
-    c2 = new Cell.data(data.c2);
+  Edge.fromData(JsonObject json) {
+    c1 = new Cell.fromData(json.c1);
+    c2 = new Cell.fromData(json.c2);
     _calculateVertices();
   }
   Edge([this.c1, this.c2]) {_calculateVertices(); }
   Edge.fromVertices(this.v1, this.v2) { _calculateCells(); }
 
-  JsonObject get data() {
-    EdgeData data = new JsonObject();
+  JsonObject get data {
+    JsonObject data = new JsonObject();
     data.c1 = c1.data;
     data.c2 = c2.data;
     data.type = Dartan.name(this);
     return data;
   }
-  int hashCode() => c1.hashCode() * c2.hashCode();
+  int get hashCode => c1.hashCode * c2.hashCode;
 
-  String toText() => "c1: {$c1}, c2: ${c2}, hash: ${hashCode()}";
+  String toText() => "c1: {$c1}, c2: ${c2}, hash: ${hashCode}";
 
   bool operator ==(other) {
-    if (other === this)
+    if (identical(other, this)) {
       return true;
-    if (other == null)
+    }
+    if (other == null) {
       return false;
+    }
     return this.equals(other);
   }
 
@@ -115,21 +118,24 @@ class Edge implements Hashable, Jsonable, Testable {
   Cell highestOrLeftestCell() => c1;
 
   /** Returns the direction this side is pointing to */
-  int get direction() {
+  int get direction {
     if (_direction == -1) { // lazy init
-      if (c1.row == c2.row)  // both cells are on the same row, vertical edge
+      if (c1.row == c2.row) {  // both cells are on the same row, vertical edge
         return EdgeDirection.Vertical;
+      }
 
       if (highestOrLeftestCell().row % 2 == 0) {  // even rows
-        if (c1.column == c2.column)
+        if (c1.column == c2.column) {
           _direction = EdgeDirection.SlopeDown;
-        else
+        } else {
           _direction = EdgeDirection.SlopeUp;
+        }
       } else { // uneven rows
-        if (c1.column == c2.column)
+        if (c1.column == c2.column) {
           _direction = EdgeDirection.SlopeUp;
-        else
+        } else {
           _direction = EdgeDirection.SlopeDown;
+        }
       }
     }
     return _direction;
@@ -140,5 +146,5 @@ class Edge implements Hashable, Jsonable, Testable {
   }
   // Copyable
   copy([JsonObject data]) =>
-      data == null ? new Edge(c1, c2) : new Edge.data(data);
+      data == null ? new Edge(c1, c2) : new Edge.fromData(data);
 }

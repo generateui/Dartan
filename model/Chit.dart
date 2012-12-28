@@ -1,15 +1,17 @@
+part of Dartan;
+
 /** A simple class would work here, but the approach to have a defined
 implementation for a concept eventually creates an API */
-interface Chit
-  extends Hashable, Copyable, Testable, Identifyable, Jsonable
-  default ChitImpl {
+abstract class Chit
+  implements Hashable, Copyable, Testable, Identifyable, Jsonable
+  {
+  //default ChitImpl {
 
   set id(int id);
-  int get number();
-  int get chance();
-  bool get isRed(); // True on the best numbers
-  bool equals(other);
-  Chit.number(int number); // 2,3,4,5,6, 8,9,10,11,12
+  int get number;
+  int get chance;
+  bool get isRed; // True on the best numbers
+  Chit.ofNumber(int number); // 2,3,4,5,6, 8,9,10,11,12
   Chit.random();
 }
 class SupportedChits extends ImmutableL {
@@ -22,44 +24,45 @@ class SupportedChits extends ImmutableL {
 /** Abstract convenience implementation of a [Chit] */
 class AbstractChit implements Chit {
   int _id;
-  int get number() => 0;
-  int get chance() => 0;
-  bool get isRed() => number == 6 || number == 8;
-  int get id() => _id;
+  int get number => 0;
+  int get chance => 0;
+  bool get isRed => number == 6 || number == 8;
+  int get id => _id;
   set id(int id) {
     _id = id;
   }
 
   AbstractChit();
-  AbstractChit.data(JsonObject json) {
-    ChitData data = json;
+  AbstractChit.fromData(JsonObject json) {
+    var data = json;
     _id = data.id;
   }
-  bool equals(other) => other.id == id;
+  bool operator ==(other) => other.id == id;
   // Hashable
-  int hashCode() {
-    if (_id == null)
+  int get hashCode {
+    if (_id == null) {
       _id = Dartan.generateHashCode(this);
+    }
     return _id;
   }
   // Jsonable
-  JsonObject get data() {
-    ChitData data = new JsonObject();
+  JsonObject get data {
+    var data = new JsonObject();
     data.id = id;
     data.type = Dartan.name(this);
     return data;
   }
   // Copyable
   Chit copy([JsonObject data]) => data == null ?
-      new AbstractChit() : new AbstractChit.data(data);
+      new AbstractChit() : new AbstractChit.fromData(data);
   test() {
     Chit chit3 = new Chit3();
     chit3.id = 1;
-    Chit jsonChit3 = new Jsonable.data(new JsonObject.fromMap({"id": 1, "type": "Chit3"}));
-    Expect.isTrue(chit3.equals(jsonChit3), "Expected equals chit after serialization");
+    Chit jsonChit3 = new Jsonable.fromData(new JsonObject.fromMap({"id": 1, "type": "Chit3"}));
+    Expect.isTrue(chit3 == jsonChit3, "Expected equals chit after serialization");
   }
 }
-interface ChitData extends JsonObject{
+abstract class ChitData extends JsonObject{
   int id;
   String type;
   int number;
@@ -72,13 +75,13 @@ class ChitImpl extends AbstractChit {
   int _number = 0;
   int _chance = 0;
   bool _isRandom;
-  int get chance() => _chance;
-  bool get isRandom() => _isRandom;
+  int get chance => _chance;
+  bool get isRandom => _isRandom;
 
   ChitImpl();
   ChitImpl.number(int n) {
     List isOk = numbers.filter((e) => e == n);
-    if (isOk.isEmpty()) {
+    if (isOk.isEmpty) {
       throw new Exception("No chit exists with number ${n}");
     } else {
       int i = numbers.indexOf(n);
@@ -86,7 +89,7 @@ class ChitImpl extends AbstractChit {
       _setChance();
     }
   }
-  ChitImpl.data(JsonObject json) {
+  ChitImpl.fromData(JsonObject json) {
     ChitData d = json;
     _number = d.number;
     _isRandom = d.isRandom;
@@ -95,7 +98,7 @@ class ChitImpl extends AbstractChit {
   ChitImpl.random() {
     _isRandom = true;
   }
-  JsonObject get data() {
+  JsonObject get data {
     ChitData data = super.data;
     data.isRandom = _isRandom;
     data.number = _number;
@@ -103,7 +106,7 @@ class ChitImpl extends AbstractChit {
     return data;
   }
   Chit copy([JsonObject data]) => data == null ?
-      new ChitImpl() : new ChitImpl.data(data);
+      new ChitImpl() : new ChitImpl.fromData(data);
 
   _setChance() {
     int i = numbers.indexOf(_number);
@@ -119,57 +122,57 @@ class RandomChit extends AbstractChit {
 /** Madness. Maybe switch to ChitImpl instead of all these things? */
 class Chit2 extends AbstractChit {
   Chit2();
-  Chit2.data(JsonObject json) : super.data(json);
-  int get number() => 2;
-  int get chance() => 1;
+  Chit2.data(JsonObject json) : super.fromData(json);
+  int get number => 2;
+  int get chance => 1;
   Chit copy([JsonObject data]) =>
       data==null ? new Chit2() : new Chit2.data(data);
 }
 class Chit3 extends AbstractChit {
   Chit3();
-  Chit3.data(JsonObject json) : super.data(json);
-  int get number() => 3;
-  int get chance() => 2;
+  Chit3.data(JsonObject json) : super.fromData(json);
+  int get number => 3;
+  int get chance => 2;
   Chit copy([JsonObject data]) => data == null ?
       new Chit3() : new Chit3.data(data);
 }
 class Chit4 extends AbstractChit {
-  int get number() => 4;
-  int get chance() => 3;
+  int get number => 4;
+  int get chance => 3;
   Chit copy([JsonObject data]) => new Chit4();
 }
 class Chit5 extends AbstractChit {
-  int get number() => 5;
-  int get chance() => 4;
+  int get number => 5;
+  int get chance => 4;
   Chit copy([JsonObject data]) => new Chit5();
 }
 class Chit6 extends AbstractChit {
-  int get number() => 6;
-  int get chance() => 5;
+  int get number => 6;
+  int get chance => 5;
   Chit copy([JsonObject data]) => new Chit6();
 }
 class Chit8 extends AbstractChit {
-  int get number() => 8;
-  int get chance() => 5;
+  int get number => 8;
+  int get chance => 5;
   Chit copy([JsonObject data]) => new Chit8();
 }
 class Chit9 extends AbstractChit {
-  int get number() => 9;
-  int get chance() => 4;
+  int get number => 9;
+  int get chance => 4;
   Chit copy([JsonObject data]) => new Chit9();
 }
 class Chit10 extends AbstractChit{
-  int get number() => 10;
-  int get chance() => 3;
+  int get number => 10;
+  int get chance => 3;
   Chit copy([JsonObject data]) => new Chit10();
 }
 class Chit11 extends AbstractChit{
-  int get number() => 11;
-  int get chance() => 2;
+  int get number => 11;
+  int get chance => 2;
   Chit copy([JsonObject data]) => new Chit11();
 }
 class Chit12 extends AbstractChit{
-  int get number() => 12;
-  int get chance() => 1;
+  int get number => 12;
+  int get chance => 1;
   Chit copy([JsonObject data]) => new Chit12();
 }

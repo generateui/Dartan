@@ -1,3 +1,5 @@
+part of Dartan;
+
 /** Displays all known views which are allowed to be tested in a sandbox */
 class Views extends View {
   bool isRendered = false;
@@ -7,13 +9,13 @@ class Views extends View {
   show() {
     if (!isRendered) {
       BoardInfoView biv = new BoardInfoView(new Board(10,10));
-      document.query("#infoBoard").elements.add(biv.element);
+      document.query("#infoBoard").children.add(biv.element);
       isRendered=true;
     }
   }
   void makeTestPicker() {
     div = new Element.html("<div id=testPicker>");
-    document.body.elements.add(div);
+    document.body.children.add(div);
     new ResourcePicker(new MonopolyableResources(), 2);
     ResourceListMu mu = new ResourceListMu();
     new ResourcesView(mu, div);
@@ -23,15 +25,15 @@ class Views extends View {
       addListButton.on.click.add((Event e) {
         l.forEach((f) { mu.add(f.copy()); });
       });
-      div.elements.add(addListButton);
+      div.children.add(addListButton);
     }
     ButtonElement removeRandom = new Element.html("<button><span class=failure>${Dartan.noCheck}</span> Remove</button>");
     removeRandom.on.click.add((Event e) {
       mu.removeLast();
     });
     mu.onChanged(() { removeRandom.disabled = mu.length == 0; });
-    div.elements.add(removeRandom);
-    document.query("#resourcesView").elements.add(div);
+    div.children.add(removeRandom);
+    document.query("#resourcesView").children.add(div);
   }
 }
 /** Show a debug info view of a board */
@@ -47,14 +49,15 @@ class BoardInfoView {
     Element infoColumn = new Element.html("<div class=span4></div>");
     boardVisual = new SvgBoard();
     boardVisual.board = board;
-    boardColumn.elements.add(boardVisual.element);
+    boardColumn.children.add(boardVisual.element);
     TileMeasurementInfo tmi = new TileMeasurementInfo();
 
     // Show neighbours of hovered tile
     cellNeighbours = new CellNeighboursView();
-    boardVisual.onSetted("currentVisual", (Visual old, TileVisual newValue) {
-      if (newValue is TileVisual)
+    boardVisual.onSetted("currentVisual", (Visual old, Visual newValue) {
+      if (newValue is TileVisual) {
         cellNeighbours.showCell(newValue.tile.cell);
+      }
     });
 
     // Some buttons to switch edges/vertices groups on/off
@@ -62,32 +65,32 @@ class BoardInfoView {
     buttonShowEdges.on.click.add((Event e) {
       boardVisual.showAllEdges();
     });
-    infoColumn.elements.add(buttonShowEdges);
+    infoColumn.children.add(buttonShowEdges);
 
     ButtonElement buttonHideEdges = new Element.html("<button>hide edges</button>");
     buttonHideEdges.on.click.add((Event e) {
       boardVisual.hideAllEdges();
     });
-    infoColumn.elements.add(buttonHideEdges);
+    infoColumn.children.add(buttonHideEdges);
 
     ButtonElement buttonShowVertices = new Element.html("<button>show vertices</button>");
     buttonShowVertices.on.click.add((Event e) {
       boardVisual.showAllVertices();
     });
-    infoColumn.elements.add(buttonShowVertices);
+    infoColumn.children.add(buttonShowVertices);
 
     ButtonElement buttonHideVertices= new Element.html("<button>hide vertices</button>");
     buttonHideVertices.on.click.add((Event e) {
       boardVisual.hideAllVertices();
     });
-    infoColumn.elements.add(buttonHideVertices);
+    infoColumn.children.add(buttonHideVertices);
 
-    infoColumn.elements.add(cellNeighbours.element);
+    infoColumn.children.add(cellNeighbours.element);
     //infoColumn.elements.add(tmi.element);
 
-    boardColumn.elements.add(boardVisual.element);
+    boardColumn.children.add(boardVisual.element);
 
-    element.elements.add(infoColumn);
-    element.elements.add(boardColumn);
+    element.children.add(infoColumn);
+    element.children.add(boardColumn);
   }
 }

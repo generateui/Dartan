@@ -1,5 +1,7 @@
+part of Dartan;
+
 /** User interaction with a board */
-interface BoardState {
+abstract class BoardState {
   BoardVisual boardVisual; // The [BoardVisual] to interact with
 
   start(); // set begin state

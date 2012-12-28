@@ -1,10 +1,12 @@
+part of Dartan;
+
 class ChitVisual extends AbstractVisual {
-  SVGGElement group;
-  SVGCircleElement circle;
-  SVGGElement chanceGroup; // TODO: implement
+  svg.GElement group;
+  svg.CircleElement circle;
+  svg.SvgElement chanceGroup; // TODO: implement
   Chit _chit;
   Cell _cell;
-  SVGTextElement text;
+  svg.TextElement text;
   double radius;
 
   setChit(Chit chit, Cell c) {
@@ -14,12 +16,12 @@ class ChitVisual extends AbstractVisual {
   }
 
   ChitVisual.svg(Board2D b): super.svg(b) {
-    group = new SVGElement.tag("g");
-    chanceGroup = new SVGElement.tag("g");
-    circle = new SVGElement.tag("circle");
-    group.elements.add(circle);
-    group.elements.add(chanceGroup);
-    svg = group;
+    group = new svg.SvgElement.tag("g");
+    chanceGroup = new svg.SvgElement.tag("g");
+    circle = new svg.SvgElement.tag("circle");
+    group.nodes.add(circle);
+    group.nodes.add(chanceGroup);
+    svgRoot = group;
   }
   updateChit() {
     if (_chit == null) {
@@ -51,7 +53,7 @@ class ChitVisual extends AbstractVisual {
     }
     String strText = _chit is RandomChit ? "R" : _chit.number.toString();
 
-    text = new SVGElement.svg("<text>$strText</text>");
+    text = new svg.SvgElement.svg("<text>$strText</text>");
     int size = 0;
     String fontWeight;
     if (_chit is RandomChit) {
@@ -69,7 +71,7 @@ class ChitVisual extends AbstractVisual {
     text.style.fontSize = "${fontSize}px";
     text.attributes["stroke"] = _chit.isRed ? "red" : "black";
 
-    group.elements.add(text);
+    group.nodes.add(text);
 
     // Center after BBox calc
     num w = text.getBBox().width;

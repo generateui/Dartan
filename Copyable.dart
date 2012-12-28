@@ -1,3 +1,5 @@
+part of Dartan;
+
 /** Mirror kitteh sees wall - No mirrors detected.
 Each object requires:
 - Object.data(JsonObject json) constructor
@@ -6,8 +8,8 @@ Each object requires:
     new ObjectName() : new ObjectName.data(data);
 
 */
-interface Copyable {
-  Dynamic copy([JsonObject data]);
+abstract class Copyable {
+  dynamic copy([JsonObject data]);
 }
 /** Returns [amount] copies of target copyable */
 List copiesOf(Copyable c, int amount) {

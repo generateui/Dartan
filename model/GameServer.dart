@@ -1,5 +1,7 @@
+part of Dartan;
+
 /** basic command handling */
-interface Server {
+abstract class Server {
   Lobby lobby;
 
   perform(Action action);
@@ -42,7 +44,7 @@ class LocalServer implements Server { // LocalGameServer
         initGame(ga);
       }
       serverGame.perform(ga);
-    } catch (Exception ex) {
+    } on Exception catch (ex) {
       print("GameAction exec fail at localServer: ${ga.toText()}");
       throw ex;
     }
@@ -54,7 +56,7 @@ class LocalServer implements Server { // LocalGameServer
       la.performAtLobbyServer(lobby);
       la.update(lobby);
       lobby.actions.add(la);
-    } catch(Exception ex) {
+    } on Exception catch(ex) {
       print ("Error exec LobbyAction at LocalServer");
       throw ex;
     }
@@ -72,8 +74,8 @@ class LocalServer implements Server { // LocalGameServer
     JsonObject obj;
     try {
       obj = new JsonObject.fromJsonString(data);
-      jso = new Jsonable.data(obj);
-    } catch (Exception ex) {
+      jso = new Jsonable.fromData(obj);
+    } on Exception catch (ex) {
       print("merp");
     }
     if (jso != null) {
@@ -134,7 +136,7 @@ class GameClient {
   }
   receive(String data) {
     JsonObject obj = new JsonObject.fromJsonString(data);
-    Jsonable json = new Jsonable.data(obj);
+    Jsonable json = new Jsonable.fromData(obj);
     if (json != null) {
       if (json is Action) {
         Action a = json;

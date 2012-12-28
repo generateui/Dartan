@@ -1,12 +1,14 @@
-interface TurnPhase
-  extends Testable, Jsonable, Identifyable {
+part of Dartan;
+
+abstract class TurnPhase
+  implements Testable, Jsonable, Identifyable {
 
   //TurnPhase processAction(GameAction action, Game game);
   //bool isAllowed(GameAction action);
-  bool get isBeforeDiceRoll();
-  bool get isDiceRoll();
-  bool get isTrading();
-  bool get isBuilding();
+  bool get isBeforeDiceRoll;
+  bool get isDiceRoll;
+  bool get isTrading;
+  bool get isBuilding;
 }
 class SupportedTurnPhases extends ImmutableL<TurnPhase> {
   SupportedTurnPhases() : super([new AbstractTurnPhase(), new TradingTurnPhase(),
@@ -15,34 +17,34 @@ class SupportedTurnPhases extends ImmutableL<TurnPhase> {
 class AbstractTurnPhase implements TurnPhase {
   int id;
   AbstractTurnPhase();
-  AbstractTurnPhase.data(JsonObject json) {
-    TurnPhaseData data = json;
+  AbstractTurnPhase.fromData(JsonObject json) {
+    var data = json;
     id = data.id;
   }
   _initByData(JsonObject json) {
-    TurnPhaseData data = json;
+    var data = json;
     id = data.id;
   }
-  bool get isBeforeDiceRoll() => false;
-  bool get isTrading() => false;
-  bool get isBuilding() => false;
-  bool get isDiceRoll() => false;
-  JsonObject get data() {
-    TurnPhaseData data = new JsonObject();
+  bool get isBeforeDiceRoll => false;
+  bool get isTrading => false;
+  bool get isBuilding => false;
+  bool get isDiceRoll => false;
+  JsonObject get data {
+    var data = new JsonObject();
     data.id = id;
     data.type = Dartan.name(this);
     return data;
   }
-  bool equals(other) => other.id==id;
-  Dynamic copy([JsonObject data]) =>
-      data == null ? new AbstractTurnPhase() : new AbstractTurnPhase.data(data);
+  bool operator ==(other) => other.id==id;
+  dynamic copy([JsonObject data]) =>
+      data == null ? new AbstractTurnPhase() : new AbstractTurnPhase.fromData(data);
   test() { }
 }
-interface TurnPhaseData extends JsonObject {
+abstract class TurnPhaseData extends JsonObject {
   int id;
   String type;
 }
-interface AllTurnPhasesData extends JsonObject {
+abstract class AllTurnPhasesData extends JsonObject {
   TurnPhaseData trading;
   TurnPhaseData building;
   TurnPhaseData diceRoll;
@@ -81,10 +83,10 @@ class AllTurnPhases {
     current = iterator.next();
   }
 
-  bool get isBeforeDiceRoll() => current.isBeforeDiceRoll;
-  bool get isDiceRoll() => current.isDiceRoll;
-  bool get isTrading() => current.isTrading;
-  bool get isBuilding() => current.isBuilding;
+  bool get isBeforeDiceRoll => current.isBeforeDiceRoll;
+  bool get isDiceRoll => current.isDiceRoll;
+  bool get isTrading => current.isTrading;
+  bool get isBuilding => current.isBuilding;
   // Copyable
   copy([JsonObject data]) =>
       data == null ? new AllTurnPhases() : new AllTurnPhases.data(data);
@@ -92,7 +94,7 @@ class AllTurnPhases {
 class TradingTurnPhase extends AbstractTurnPhase {
   TradingTurnPhase();
   TradingTurnPhase.data(JsonObject json) { _initByData(json); }
-  bool get isTrading() => true;
+  bool get isTrading => true;
   // Copyable
   copy([JsonObject data]) =>
       data == null ? new TradingTurnPhase() : new TradingTurnPhase.data(data);
@@ -100,7 +102,7 @@ class TradingTurnPhase extends AbstractTurnPhase {
 class BuildingTurnPhase extends AbstractTurnPhase {
   BuildingTurnPhase();
   BuildingTurnPhase.data(JsonObject json) { _initByData(json); }
-  bool get isBuilding() => true;
+  bool get isBuilding => true;
   // Copyable
   copy([JsonObject data]) =>
       data == null ? new BuildingTurnPhase() : new BuildingTurnPhase.data(data);
@@ -108,7 +110,7 @@ class BuildingTurnPhase extends AbstractTurnPhase {
 class DiceRollTurnPhase extends AbstractTurnPhase {
   DiceRollTurnPhase();
   DiceRollTurnPhase.data(JsonObject json) { _initByData(json); }
-  bool get isDiceRoll() => true;
+  bool get isDiceRoll => true;
   // Copyable
   copy([JsonObject data]) =>
       data == null ? new DiceRollTurnPhase() : new DiceRollTurnPhase.data(data);
@@ -116,7 +118,7 @@ class DiceRollTurnPhase extends AbstractTurnPhase {
 class BeforeDiceRollTurnPhase extends AbstractTurnPhase {
   BeforeDiceRollTurnPhase();
   BeforeDiceRollTurnPhase.data(JsonObject json) { _initByData(json); }
-  bool get isBeforeDiceRoll() => true;
+  bool get isBeforeDiceRoll => true;
   // Copyable
   copy([JsonObject data]) =>
       data == null ? new BeforeDiceRollTurnPhase() : new BeforeDiceRollTurnPhase.data(data);

@@ -1,4 +1,6 @@
-interface ResourceList extends Collection<Resource>, Testable default ResourceListIm {
+part of Dartan;
+
+abstract class ResourceList implements Collection<Resource>, Testable {
   bool hasType(String type);
   ResourceList ofType(String type);
   Collection<String> types();
@@ -18,23 +20,23 @@ class SupportedResourceLists extends ImmutableL<ResourceList> {
 }
 
 class DevelopmentCardCost extends ResourceListIm {
-  String get description() => "Total cost for a development card";
+  String get description => "Total cost for a development card";
   DevelopmentCardCost() : super([new Wheat(), new Ore(), new Sheep()]);
 }
 class TownCost extends ResourceListIm {
-  String get description() => "Total cost for a town";
+  String get description => "Total cost for a town";
   TownCost() : super([new Wheat(), new Timber(), new Sheep(), new Clay()]);
 }
 class RoadCost extends ResourceListIm {
-  String get description() => "Total cost for a road";
+  String get description => "Total cost for a road";
   RoadCost() : super([new Timber(), new Clay()]);
 }
 class CityCost extends ResourceListIm {
-  String get description() => "Total cost for a city";
+  String get description => "Total cost for a city";
   CityCost() : super([new Ore(), new Ore(),new Ore(), new Wheat(), new Wheat()]);
 }
 class MonopolyableResources extends ResourceListIm {
-  String get description() => "Total cost for a town";
+  String get description => "Total cost for a town";
   MonopolyableResources() : super([new Wheat(), new Ore(), new Timber(), new Sheep(), new Clay()]);
 }
 
@@ -43,10 +45,11 @@ class ResourceListIm implements ResourceList {
   ResourceListMu wrapped;
 
   ResourceListIm([List<Resource> other]) {
-    if (other != null)
+    if (other != null) {
       wrapped = new ResourceListMu.from(other);
-    else
+    } else {
       wrapped = new ResourceListMu();
+    }
   }
 
   // ResourceList
@@ -61,13 +64,15 @@ class ResourceListIm implements ResourceList {
   Iterator<Resource> iterator() => wrapped.iterator();
 
   // Collection<Resource>:
+  Resource reduce(initial, combine(previous, Resource r)) => wrapped.reduce(initial, combine);
+  bool contains(Resource element) => wrapped.contains(element);
   Collection<Resource> filter(bool f(Resource element)) => wrapped.filter(f);
   Collection map(f(Resource element)) => wrapped.map(f);
   bool every(bool f(Resource element)) => wrapped.every(f);
   bool some(bool f(Resource element)) => wrapped.some(f);
   void forEach(void f(Resource element)) { wrapped.forEach(f); }
-  bool isEmpty() => wrapped.isEmpty();
-  int get length() => wrapped.length;
+  bool get isEmpty => wrapped.isEmpty;
+  int get length => wrapped.length;
 
   test() {
     new ResourceListImTest().test();
@@ -79,8 +84,9 @@ class ResourceListMu extends ListenableList<Resource> implements ResourceList {
 
   initr() {
     _res = new Map<String, List<Resource>>();
-    for (Resource r in _internal)
+    for (Resource r in _internal) {
       _add(r);
+    }
   }
 
   ResourceListMu.from(Iterable<Resource> other) : super.from(other) {
@@ -93,22 +99,25 @@ class ResourceListMu extends ListenableList<Resource> implements ResourceList {
   num halfCount() {
     num temp = _internal.length;
     // Make number even
-    if (temp % 2 != 0)
+    if (temp % 2 != 0) {
       temp++;
+    }
     return temp / 2;
   }
 
   String toSummary() {
     StringBuffer s = new StringBuffer();
     for (String t in types())
-      if (hasType(t))
+      if (hasType(t)) {
         s.add("${ofType(t).length} ${t}, ");
+      }
 
     String tmp = s.toString();
-    if (tmp.length > 0)
+    if (tmp.length > 0) {
       return tmp.substring(0, tmp.length-2);
-    else
+    } else {
       return "Empty";
+    }
   }
 
   void _remove(Resource toRemove) {
@@ -145,7 +154,7 @@ class ResourceListMu extends ListenableList<Resource> implements ResourceList {
     }
   }
   Collection<String> types() {
-    return _res.getKeys();
+    return _res.keys;
   }
 
   /** True if this list has at least amount of resources contained in toHave, per Type */

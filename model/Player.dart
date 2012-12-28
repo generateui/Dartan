@@ -1,4 +1,6 @@
-interface PlayerData extends JsonObject{
+part of Dartan;
+
+abstract class PlayerData extends JsonObject{
   int id;
   String type;
   UserData user;
@@ -42,7 +44,7 @@ class Player implements Hashable, Identifyable, Observable, Jsonable, Testable {
   Stock stock;
 
   /* A user can change because users may leave or join, but players stay */
-  User /* on */ get user() => _user;
+  User /* on */ get user => _user;
   set /* on */ user(User u) {
     if (user != u) {
       User old = _user;
@@ -53,15 +55,15 @@ class Player implements Hashable, Identifyable, Observable, Jsonable, Testable {
   init() {
     observable = new ObservableHelper();
   }
-  Player.data(JsonObject json) {
+  Player.fromData(JsonObject json) {
     init();
 
-    PlayerData data = json;
+    var data = json;
     id = data.id;
-    user = data.user == null ? null : new User.data(data.user);
+    user = data.user == null ? null : new User.fromData(data.user);
     color = data.color;
 
-    data.resources.forEach((d) { resources.add(new Jsonable.data(d)); });
+    data.resources.forEach((d) { resources.add(new Jsonable.fromData(d)); });
     ports = new PortListMu.from(Oracle.fromDataList(data.ports));
 
     roads = llFrom(data.roads);
@@ -109,14 +111,15 @@ class Player implements Hashable, Identifyable, Observable, Jsonable, Testable {
 
   String toText() => "${id}, ${_user.name}, ${color}";
   // Hashable
-  int hashCode() {
-    if (id==null)
+  int get hashCode {
+    if (id==null) {
       id = Dartan.generateHashCode(this);
+    }
     return id;
   }
   // Jsonable
-  JsonObject get data() {
-    PlayerData data = new JsonObject();
+  JsonObject get data {
+    var data = new JsonObject();
     data.id = id;
     data.user = nullOrDataFrom(user);
     data.type = Dartan.name(this);
@@ -147,13 +150,13 @@ class Player implements Hashable, Identifyable, Observable, Jsonable, Testable {
   }
   // Copyable
   Player copy([JsonObject data]) =>
-      data == null ? new Player(user) : new Player.data(data);
-  bool equals(other) => id == other.id;
+      data == null ? new Player(user) : new Player.fromData(data);
+  bool operator ==(other) => id == other.id;
   test() {
 
   }
 }
-interface UserData extends JsonObject {
+abstract class UserData extends JsonObject {
   int id;
   String name;
   String email;
@@ -165,19 +168,19 @@ class User implements Hashable, Identifyable, Jsonable, Testable {
   String name;
   String email;
 
-  bool get hasEmail() => email != null;
+  bool get hasEmail => email != null;
 
   User([this.id, this.name, this.email]);
-  User.data(JsonObject json) {
-    UserData data = json;
+  User.fromData(JsonObject json) {
+    var data = json;
     id = data.id;
     name = data.name;
     email = data.email;
   }
 
   // Jsonable
-  JsonObject get data() {
-    UserData data = new JsonObject();
+  JsonObject get data {
+    var data = new JsonObject();
     data.id = id;
     data.name = name;
     data.email = email;
@@ -185,18 +188,19 @@ class User implements Hashable, Identifyable, Jsonable, Testable {
     return data;
   }
   // Hashable
-  int hashCode() {
-    if (id==null)
+  int get hashCode {
+    if (id==null) {
       id = Dartan.generateHashCode(this);
+    }
     return id;
   }
-  bool equals(other) =>
-      id == other.id &&
-      name == other.name &&
-      email == other.email;
+  bool operator ==(other) =>
+    id == other.id &&
+    name == other.name &&
+    email == other.email;
 
   // Copyable
-  User copy([JsonObject data]) => data == null ? new User() : new User.data(data);
+  User copy([JsonObject data]) => data == null ? new User() : new User.fromData(data);
   String toText() => "[${id}, ${name}, ${email}]";
   test() {
 

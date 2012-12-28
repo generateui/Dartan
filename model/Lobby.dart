@@ -1,3 +1,5 @@
+part of Dartan;
+
 /** The lobby residing on both the client and the server */
 class Lobby {
   ListenableList<User> users;

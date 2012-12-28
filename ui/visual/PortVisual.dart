@@ -1,14 +1,16 @@
+part of Dartan;
+
 class PortVisual extends AbstractVisual {
-  SVGPolygonElement portElement;
+  svg.PolygonElement portElement;
   Port _port;
-  Port get port() => _port;
+  Port get port => _port;
   set port(Port p) {
     _port = p;
     updatePort();
   }
   PortVisual.svg(Board2D board2d) : super.svg(board2d) {
-    portElement = new SVGElement.tag("polygon");
-    svg = portElement;
+    portElement = new svg.SvgElement.tag("polygon");
+    svgRoot = portElement;
   }
   void updatePort() {
     if (_port == null) {

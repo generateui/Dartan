@@ -1,3 +1,5 @@
+part of Dartan;
+
 class EdgeTest {
   test() {
     Cell c = new Cell(0,0);

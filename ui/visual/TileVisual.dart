@@ -1,19 +1,21 @@
+part of Dartan;
+
 /** Tile on a canvas */
 class TileVisual extends AbstractVisual {
-  SVGPolygonElement p;
-  SVGGElement group;
+  svg.PolygonElement p;
+  svg.GElement group;
   Tile tile;
   ChitVisual chit;
   PortVisual port;
 
   TileVisual.svg(Board2D board2d, this.tile) : super.svg(board2d) {
-    group = new SVGElement.tag("g");
+    group = new svg.SvgElement.tag("g");
 
     createTileVisual();
 
     if (tile.canHaveChit) {
       chit = new ChitVisual.svg(board2d);
-      group.elements.add(chit.svg);
+      group.nodes.add(chit.svgRoot);
       tile.onSetted("chit", _chitChange);
       if (tile.hasChit) {
         _chitChange(null, tile.chit);
@@ -21,7 +23,7 @@ class TileVisual extends AbstractVisual {
     }
     if (tile.canHavePort) {
       port = new PortVisual.svg(board2d);
-      group.elements.add(port.svg);
+      group.nodes.add(port.svgRoot);
       tile.onSetted("port", _portChange);
       if (tile.hasPort) {
         _portChange(null, tile.port);
@@ -30,7 +32,7 @@ class TileVisual extends AbstractVisual {
     if (tile.canHaveTerritory) {
       // TODO: implement
     }
-    svg = group;
+    svgRoot = group;
   }
   _chitChange(Chit old, Chit newChit) {
     chit.setChit(tile.chit, tile.cell);
@@ -39,7 +41,7 @@ class TileVisual extends AbstractVisual {
     port.port = newPort;
   }
   createTileVisual() {
-    p = new SVGElement.tag("polygon");
+    p = new svg.SvgElement.tag("polygon");
     Point2D xy = board2d.xyCell(tile.cell);
     p.attributes = {
        "fill": tile.color,
@@ -55,16 +57,16 @@ class TileVisual extends AbstractVisual {
          ${board2d.hex2d.halfWidth}, 0
        """
      };
-    group.elements.add(p);
+    group.nodes.add(p);
   }
   remove() {
     tile.offSetted("port", _portChange);
     tile.offSetted("chit", _chitChange);
     if (port != null) {
-      port.svg.remove();
+      port.svgRoot.remove();
     }
     if (chit != null) {
-      chit.svg.remove();
+      chit.svgRoot.remove();
     }
     group.remove();
   }

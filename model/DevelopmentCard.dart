@@ -1,9 +1,11 @@
-interface DevelopmentCard
-  extends Identifyable, Hashable, Testable, Jsonable {
+part of Dartan;
 
-  bool get onePerTurn(); // Is this devcard limited to play one per turn?
-  bool get summoningSickness(); // Wait one turn before able to play this card?
-  bool get keepInStock(); // After playing, move the card to stock?
+abstract class DevelopmentCard
+  implements Identifyable, Hashable, Testable, Jsonable {
+
+  bool get onePerTurn; // Is this devcard limited to play one per turn?
+  bool get summoningSickness; // Wait one turn before able to play this card?
+  bool get keepInStock; // After playing, move the card to stock?
   bool turnAllowed(TurnPhase turn);
   bool gameAllowed(GamePhase phase);
   Turn turnBought;
@@ -19,7 +21,7 @@ class SupportedDevelopmentCards extends ImmutableL<DevelopmentCard> {
     new DummyDevelopmentCard()
   ]);
 }
-interface DevelopmentCardData extends JsonObject {
+abstract class DevelopmentCardData extends JsonObject {
   int id;
   int playerId;
   String type;
@@ -37,33 +39,33 @@ class AbstractDevelopmentCard implements DevelopmentCard {
   Player player;
 
   AbstractDevelopmentCard([this.id]);
-  AbstractDevelopmentCard.data(JsonObject json) {
-    DevelopmentCardData data = json;
+  AbstractDevelopmentCard.fromData(JsonObject json) {
+    var data = json;
     id = data.id;
     _playerId = data.playerId == null ? null : data.playerId;
     turnBoughtId = data.turnBoughtId;
     turnPlayedId = data.turnPlayedId;
   }
-  bool get onePerTurn() => true;
-  bool get summoningSickness() => true;
-  bool get keepInStock() => true;
+  bool get onePerTurn => true;
+  bool get summoningSickness => true;
+  bool get keepInStock => true;
   bool turnAllowed(TurnPhase turnPhase) => true;
   bool gameAllowed(GamePhase gamePhase) => true;
 
   // Hashable
-  int hashCode() {
+  int get hashCode {
     if (id == null) {
       id = Dartan.generateHashCode(this);
     }
     return id;
   }
-  bool equals(other) => other.id == id;
+  bool operator ==(other) => other.id == id;
   // Copyable
   DevelopmentCard copy([JsonObject data]) => data == null?
-      new AbstractDevelopmentCard() : new AbstractDevelopmentCard.data(data);
+      new AbstractDevelopmentCard() : new AbstractDevelopmentCard.fromData(data);
   // Jsonable
-  JsonObject get data() {
-    DevelopmentCardData data = new JsonObject();
+  JsonObject get data {
+    var data = new JsonObject();
     data.id=id;
     data.type = Dartan.name(this);
     data.playerId = player == null ? _playerId == null ?
@@ -77,7 +79,7 @@ class AbstractDevelopmentCard implements DevelopmentCard {
   }
   test() {}
 }
-interface InventionData extends DevelopmentCardData {
+abstract class InventionData extends DevelopmentCardData {
   List resourcePicks;
 }
 /** Player picks two resources he then gets */
@@ -85,19 +87,19 @@ class Invention extends AbstractDevelopmentCard {
   ResourceList picks;
 
   Invention();
-  Invention.data(JsonObject json) : super.data(json) {
-    InventionData data = json;
+  Invention.fromData(JsonObject json) : super.fromData(json) {
+    var data = json;
     //picks = new
   }
-  JsonObject get data() {
-    InventionData json = super.data;
+  JsonObject get data {
+    var json = super.data;
     json.resourcePicks = Oracle.toDataList(picks);
     return json;
   }
   DevelopmentCard copy([JsonObject data]) => data == null ?
-      new Invention() : new Invention.data(data);
+      new Invention() : new Invention.fromData(data);
 }
-interface VictoryPointData extends DevelopmentCardData {
+abstract class VictoryPointData extends DevelopmentCardData {
   String bonusName;
 }
 class VictoryPoint extends AbstractDevelopmentCard implements VictoryPointItem {
@@ -108,33 +110,33 @@ class VictoryPoint extends AbstractDevelopmentCard implements VictoryPointItem {
   VictoryPoint.market() : bonusName = bonuses[0];
   VictoryPoint.university() : bonusName = bonuses[1];
   VictoryPoint.townHall() : bonusName = bonuses[2];
-  VictoryPoint.data(JsonObject json) : super.data(json) {
-    VictoryPointData data = json;
+  VictoryPoint.fromData(JsonObject json) : super.fromData(json) {
+    var data = json;
     bonusName = data.bonusName;
   }
-  JsonObject get data() {
-    VictoryPointData json = super.data;
+  JsonObject get data {
+    var json = super.data;
     json.bonusName = bonusName;
     return json;
   }
   DevelopmentCard copy([JsonObject data]) => data == null ?
-      new VictoryPoint() : new VictoryPoint.data(data);
+      new VictoryPoint() : new VictoryPoint.fromData(data);
 
-  bool get summoningSickness() => false;
-  bool get onePerTurn() => false;
-  int get points() => 1;
+  bool get summoningSickness => false;
+  bool get onePerTurn => false;
+  int get points => 1;
 }
 /** Clientside placeholder for a devcard in the stack of devcards */
 class DummyDevelopmentCard extends AbstractDevelopmentCard {
   DummyDevelopmentCard([int id]) : super(id);
-  DummyDevelopmentCard.data(JsonObject json) : super.data(json);
+  DummyDevelopmentCard.data(JsonObject json) : super.fromData(json);
   DummyDevelopmentCard copy([JsonObject data]) =>
       data == null ? new DummyDevelopmentCard() : new DummyDevelopmentCard.data(data);
 }
 /** Move the robber, rob a player and build an army */
 class Knight extends AbstractDevelopmentCard {
   Knight([id]) : super(id);
-  Knight.data(JsonObject json) : super.data(json);
+  Knight.data(JsonObject json) : super.fromData(json);
   bool turnAllowed(TurnPhase turnPhase) =>
       turnPhase.isBeforeDiceRoll || turnPhase.isBuilding;
   bool gameAllowed(GamePhase gamePhase) => gamePhase.isTurns;

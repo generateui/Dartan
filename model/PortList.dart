@@ -1,4 +1,6 @@
-interface PortList extends Collection<Port>, Testable  {
+part of Dartan;
+
+abstract class PortList implements Collection<Port>, Testable  {
   int amountGold(ResourceList resources);
   Port bestPortForResource(Resource resource);
   int amountNeededToTrade(Resource resource);

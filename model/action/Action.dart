@@ -1,3 +1,5 @@
+part of Dartan;
+
 /** Any user or server initiated action
     -When sending from client, action is wrapped in a [ClientAction]
     -When sending via server, action is wrapped in a [ViaServer] action
@@ -6,22 +8,22 @@
     Actions are async. Within a session,
 
     */
-interface Action
-  extends Hashable, Copyable, Identifyable, Testable, Jsonable  {
+abstract class Action
+  implements Copyable, Identifyable, Testable, Jsonable  {
 
   User user;
   int userId;
   Date performedTime;
 
   /** Flags */
-  bool get isServer();
-  bool get isGame();
-  bool get isLobby();
-  bool get isTrade();
+  bool get isServer;
+  bool get isGame;
+  bool get isLobby;
+  bool get isTrade;
 
   toText();
 }
-interface ActionData extends JsonObject {
+abstract class ActionData extends JsonObject {
   String type;
   int id;
   int userId;
@@ -37,22 +39,22 @@ class AbstractAction implements Action {
   int userId;
   Date performedTime;
 
-  bool get isServer() => this is ServerAction;
-  bool get isGame() => this is GameAction;
-  bool get isLobby() => this is LobbyAction;
-  bool get isTrade() => false;
+  bool get isServer => this is ServerAction;
+  bool get isGame => this is GameAction;
+  bool get isLobby => this is LobbyAction;
+  bool get isTrade => false;
 
   // Jsonable
   AbstractAction();
-  AbstractAction.data(JsonObject json) {
-    ActionData data = json;
+  AbstractAction.fromData(JsonObject json) {
+    var data = json;
     userId = data.userId;
     if (data.performedTime != null) {
       performedTime = new Date.fromString(data.performedTime);
     }
   }
-  JsonObject get data()  {
-    ActionData data = new JsonObject();
+  JsonObject get data  {
+    var data = new JsonObject();
     data.id = id;
     if (data.performedTime != null) {
       data.performedTime = performedTime.toString();
@@ -63,26 +65,27 @@ class AbstractAction implements Action {
 
   toText() => "AbstractAction id:${id}";
 
-  int hashCode() {
-    if (id==null)
+  int get hashCode {
+    if (id==null) {
       id = Dartan.generateHashCode(this);
+    }
     return id;
   }
   test() { }
 }
-interface ConnectData extends ActionData {
+abstract class ConnectData extends ActionData {
   UserData connectedUser;
 }
 class Connect extends AbstractGameAction {
   User connectedUser;
 
   Connect();
-  Connect.data(JsonObject json) : super.data(json) {
-    ConnectData data = json;
-    connectedUser = new Jsonable.data(data.connectedUser);
+  Connect.fromData(JsonObject json) : super.fromData(json) {
+    var data = json;
+    connectedUser = new Jsonable.fromData(data.connectedUser);
   }
 }
-interface SayData extends GameActionData {
+abstract class SayData extends GameActionData {
   String message;
   bool isLobby;
 }
@@ -94,10 +97,10 @@ class Say
   bool _isLobby = false;
   String message;
 
-  bool get isServer() => false;
-  bool get isGame() => gameId != null;
-  bool get isLobby() => _isLobby;
-  bool get isTrade() => false;
+  bool get isServer => false;
+  bool get isGame => gameId != null;
+  bool get isLobby => _isLobby;
+  bool get isTrade => false;
   bool isValid() => true;
   bool allowedTurnPhase(TurnPhase tp) => true;
   bool allowedGamePhase(GamePhase gp) => true;
@@ -105,8 +108,8 @@ class Say
   Say();
   Say.game(Game game) { gameId = game.id; }
   Say.lobby() { _isLobby = true; }
-  Say.data(SayData json) : super.data(json) {
-    SayData data = json;
+  Say.fromData(JsonObject json) : super.fromData(json) {
+    var data = json;
     message = data.message;
     _isLobby = data.isLobby;
   }
@@ -131,13 +134,13 @@ class Say
     game.chats.add(this);
   }
   // Jsonable
-  JsonObject get data() {
-    SayData data = super.data;
+  JsonObject get data {
+    var data = super.data;
     data.message = message;
     data.isLobby = isLobby;
     return data;
   }
-  Say copy([JsonObject data]) => data ==  null ? new Say() : new Say.data(data);
+  Say copy([JsonObject data]) => data ==  null ? new Say() : new Say.fromData(data);
   String toText() => "${user.name}: ${message}";
 }
 /** An wrapped action from the client to the server */

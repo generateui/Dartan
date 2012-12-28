@@ -1,12 +1,14 @@
+part of Dartan;
+
 /** Renders a board onto a SVG surface */
 class SvgBoard implements BoardVisual {
   Element element;
-  SVGElement svg;
+  svg.SvgElement svgRoot;
 
   Board2D board2d;
   Board _board;
   BoardState _boardState;
-  SVGGElement vertices, edges, tiles; // G element to group them
+  svg.GElement vertices, edges, tiles; // G element to group them
 
   // Basically map all elements
   // Should e.g. towns/cities in seperate lists or generic list?
@@ -23,7 +25,7 @@ class SvgBoard implements BoardVisual {
   Visual _currentVisual;
   PortPickerVisual portPicker;
 
-  Board /* on */ get board() => _board;
+  Board /* on */ get board => _board;
   set /* on */ board(Board b) {
     Board old = _board;
     clear();
@@ -35,32 +37,33 @@ class SvgBoard implements BoardVisual {
     observable.fire("board", old, _board);
   }
   clear() {
-    _elementsByEdge.getValues().forEach((e) => e.svg.remove());
-    _elementsByVertice.getValues().forEach((e) => e.svg.remove());
-    _elementsByTile.getValues().forEach((e) => e.remove());
+    _elementsByEdge.values.forEach((e) => e.svgRoot.remove());
+    _elementsByVertice.values.forEach((e) => e.svgRoot.remove());
+    _elementsByTile.values.forEach((e) => e.remove());
     _elementsByEdge.clear();
     _elementsByTile.clear();
     _elementsByVertice.clear();
-    tiles.elements.clear();
-    edges.elements.clear();
-    vertices.elements.clear();
+    tiles.nodes.clear();
+    edges.nodes.clear();
+    vertices.nodes.clear();
 
     if (_board != null) {
       _board.offSetted("changeTile", tileChanged);
     }
   }
 
-  Visual get currentVisual() => _currentVisual;
+  Visual get currentVisual => _currentVisual;
   void set /* on */ currentVisual(Visual v) {
     Visual old = _currentVisual;
     _currentVisual = v;
     observable.fire("currentVisual", old, v);
   }
 
-  BoardState get boardState() => _boardState;
+  BoardState get boardState => _boardState;
   set /* on */ boardState(BoardState bs) {
-    if (_boardState != null)
+    if (_boardState != null) {
       _boardState.end();
+    }
     BoardState old = _boardState;
     bs.boardVisual = this;
     _boardState = bs;
@@ -81,8 +84,8 @@ class SvgBoard implements BoardVisual {
   showEdges(Collection<Edge> edgesToShow) {}
 
   SvgBoard() {
-    svg = new SVGElement.tag("svg");
-    element = svg;
+    svgRoot = new svg.SvgElement.tag("svg");
+    element = svgRoot;
     _elementsByEdge = new HashMap<Edge, EdgeVisual>();
     _elementsByTile = new HashMap<Tile, TileVisual>();
     _elementsByVertice = new HashMap<Vertice, VerticeVisual>();
@@ -95,32 +98,32 @@ class SvgBoard implements BoardVisual {
     portPicker = new PortPickerVisual(board2d);
     portPicker.hide();
 
-    tiles = new SVGElement.tag("g");
-    vertices = new SVGElement.tag("g");
-    edges = new SVGElement.tag("g");
+    tiles = new svg.SvgElement.tag("g");
+    vertices = new svg.SvgElement.tag("g");
+    edges = new svg.SvgElement.tag("g");
 
-    svg.elements.add(tiles);
-    svg.elements.add(edges);
-    svg.elements.add(vertices);
-    svg.elements.add(portPicker.toSvg());
+    svgRoot.nodes.add(tiles);
+    svgRoot.nodes.add(edges);
+    svgRoot.nodes.add(vertices);
+    svgRoot.nodes.add(portPicker.toSvg());
   }
   createElements() {
     for (Tile t in board.tiles) {
       TileVisual visual = new TileVisual.svg(board2d, t);
       _elementsByTile[t] = visual;
-      tiles.elements.add(visual.svg);
+      tiles.nodes.add(visual.svgRoot);
       _addEventHandlers(visual);
     }
     for (Vertice v in board.vertices) {
       VerticeVisual visual = new VerticeVisual.svg(board2d, v);
       _elementsByVertice[v] = visual;
-      vertices.elements.add(visual.svg);
+      vertices.nodes.add(visual.svgRoot);
       _addEventHandlers(visual);
     }
     for (Edge e in board.edges) {
       EdgeVisual visual = new EdgeVisual.svg(board2d, e);
       _elementsByEdge[e] = visual;
-      edges.elements.add(visual.svg);
+      edges.nodes.add(visual.svgRoot);
       _addEventHandlers(visual);
     }
   }
@@ -130,26 +133,26 @@ class SvgBoard implements BoardVisual {
       _elementsByTile[old].remove();
     }
     TileVisual visual = new TileVisual.svg(board2d, newTile);
-    tiles.elements.add(visual.toSvg());
+    tiles.nodes.add(visual.toSvg());
     _elementsByTile[newTile] = visual;
     _addEventHandlers(visual);
   }
   _addEventHandlers(Visual v) {
-    v.svg.on.click.add((Event e) {
+    v.svgRoot.on.click.add((Event e) {
       _boardState.click(v);
     });
-    v.svg.on.mouseOver.add((Event e) {
+    v.svgRoot.on.mouseOver.add((Event e) {
       _boardState.mouseOver(v);
     });
-    v.svg.on.mouseOut.add((Event e) {
+    v.svgRoot.on.mouseOut.add((Event e) {
       _boardState.mouseOut(v);
     });
   }
   show() {
-    svg.style.display = "block";
+    svgRoot.style.display = "block";
   }
   hide() {
-    svg.style.display = "none";
+    svgRoot.style.display = "none";
   }
   select() {} // render as user selected
   deSelect() {} // toggle off user selected

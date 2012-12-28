@@ -1,3 +1,5 @@
+part of Dartan;
+
 /** Displays 6 neighbours with coordinates of target cell */
 class CellNeighboursView {
   Element element; // root html element to add SVG element with board onto
@@ -13,14 +15,15 @@ class CellNeighboursView {
     entries = new List<CellTextEntry>();
     fake = new Cell(1,1);
     board = new Board();
-    for (Cell c in fake.cells)
+    for (Cell c in fake.cells) {
       cells.add(c);
+    }
     cells.add(fake);
     for (Cell c in cells) {
       board.addTile(new Sea(c));
     }
     boardVisual = new SvgBoard();
-    boardVisual.svg.attributes = {
+    boardVisual.svgRoot.attributes = {
       "width": 200,
       "height": 200
     };
@@ -28,7 +31,7 @@ class CellNeighboursView {
     boardVisual.hideAllEdges();
     boardVisual.hideAllVertices();
     for (Cell c in cells) {
-      SVGTextElement text = new SVGElement.tag("text");
+      svg.TextElement text = new svg.SvgElement.tag("text");
       text.attributes = {
         "x": boardVisual.board2d.xyCell(c).x + 5.0,
         "y": boardVisual.board2d.xyCell(c).y + boardVisual.board2d.hex2d.halfHeight,
@@ -39,8 +42,8 @@ class CellNeighboursView {
       };
       text.text = "woei";
       entries.add(new CellTextEntry(c, text));
-      boardVisual.svg.elements.add(text);
-      element.elements.add(boardVisual.svg);
+      boardVisual.svgRoot.nodes.add(text);
+      element.children.add(boardVisual.svgRoot);
     }
   }
   void showCell(Cell cellToShow) {
@@ -49,12 +52,12 @@ class CellNeighboursView {
       showText(entries[i].textElement, cellToShow.cells[i], "${i} ${cellToShow.cells[i].toText()}");
     }
   }
-  void showText(SVGTextElement te, Cell cell, String text) {
+  void showText(svg.TextElement te, Cell cell, String text) {
     te.text = text;
   }
 }
 class CellTextEntry {
-  SVGTextElement textElement;
+  svg.TextElement textElement;
   Cell cell;
   CellTextEntry(this.cell, this.textElement);
 }

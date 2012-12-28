@@ -1,10 +1,12 @@
+part of Dartan;
+
 /** Edge on a canvas */
 class EdgeVisual extends AbstractVisual {
-  SVGRectElement r;
+  svg.RectElement r;
   Edge edge;
 
   EdgeVisual.svg(Board2D board2d, Edge edge) : super.svg(board2d) {
-    r = new SVGElement.tag("rect");
+    r = new svg.SvgElement.tag("rect");
     double rectw = board2d.hex2d.sideLength * 0.8; // ensure proportion to hexagon size
     double recth = board2d.hex2d.sideLength * 0.2;
     Point2D pos = board2d.xyEdge(edge, rectw, recth);
@@ -27,6 +29,6 @@ class EdgeVisual extends AbstractVisual {
       "y": pos.y,
       "transform": "${rotate}"
     };
-    svg=r;
+    svgRoot=r;
   }
 }

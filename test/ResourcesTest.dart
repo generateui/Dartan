@@ -1,3 +1,5 @@
+part of Dartan;
+
 class ResourceListImTest {
   void test() {
     ResourceListIm cost = new RoadCost();
@@ -24,11 +26,12 @@ class ResourceListImTest {
       new Wheat(),new Wheat(),new Wheat(),new Wheat(), new Wheat()]);
     Expect.equals(im9.halfCount(), 5, "half of 9 rounded up is 5");
 
-    Resource jsonWheat = new Jsonable.data(new JsonObject.fromMap(
-      {"type": "Wheat", "id": 20}));
+    Resource jsonWheat = new Jsonable.fromData(new JsonObject.fromMap(
+      {"type": "Wheat", "id": 20})
+    );
     Wheat w  = new Wheat();
     w.id = 20;
-    Expect.isTrue(jsonWheat.equals(w),
+    Expect.isTrue(jsonWheat == w,
         "Expected wheat from Jsonable and new() constructor to be equal");
 
     List<String> l = new List<String>();
